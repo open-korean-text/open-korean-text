@@ -18,6 +18,7 @@
 
 package org.openkoreantext.processor.tools
 
+import java.io.File
 import java.io.FileOutputStream
 
 import scala.io.Source
@@ -35,39 +36,39 @@ object DeduplicateAndSortDictionaries extends Runnable  {
         .toSet
   }
 
-  private val RESOURCES_TO_CLEANUP = Seq(
-    "noun/nouns.txt", "noun/entities.txt", "noun/spam.txt",
-    "noun/names.txt", "noun/twitter.txt", "noun/lol.txt",
-    "noun/slangs.txt", "noun/company_names.txt",
-    "noun/foreign.txt", "noun/geolocations.txt", "noun/profane.txt",
-    "noun/kpop.txt", "noun/bible.txt",
-    "noun/wikipedia_title_nouns.txt", "noun/pokemon.txt", "noun/congress.txt",
-
-    "substantives/noun_prefix.txt", "substantives/suffix.txt",
-    "substantives/family_names.txt", "substantives/given_names.txt",
-
-    "adjective/adjective.txt", "adverb/adverb.txt",
-
-    "auxiliary/determiner.txt", "auxiliary/exclamation.txt", "auxiliary/conjunctions.txt",
-
-    "josa/josa.txt", "typos/typos.txt",
-
-    "verb/eomi.txt", "verb/pre_eomi.txt", "verb/verb.txt", "verb/verb_prefix.txt"
+  private val EXCEPTION_RESOURCES = Seq(
+    "example_chunks.txt", "example_tweets.txt"
   )
+  
+  def work(file: File) {
+    if (!file.exists) return;
+    
+    if (file.isDirectory) {
+      val files = file.listFiles.toList
+      for (file <- files) {
+        work(file)
+      }
+    } else if (file.isFile) {
+      val extPos = file.getName.lastIndexOf(".");
+      val ext = file.getName.substring(extPos + 1);
+      
+      if (!ext.equals("txt")) return;
+      if (EXCEPTION_RESOURCES.contains(file.getName)) return;
+      
+      val words = readWords(file.getPath).toList.sorted
+
+      val out = new FileOutputStream(file.getPath)
+
+      words.foreach {
+        word: String => out.write((word + "\n").getBytes)
+      }
+      out.close()
+    }
+  }
 
   def run {
-    RESOURCES_TO_CLEANUP.foreach {
-      f: String =>
-        val outputFolder = "src/main/resources/org/openkoreantext/processor/util/"
-        System.err.println("Processing %s.".format(f))
-        val words = readWords(outputFolder + f).toList.sorted
-
-        val out = new FileOutputStream(outputFolder + f)
-
-        words.foreach {
-          word: String => out.write((word + "\n").getBytes)
-        }
-        out.close()
-    }
+    val directoryName = "src/main/resources/org/openkoreantext/processor/util/";
+    val directory = new File(directoryName);
+    work(directory);
   }
 }

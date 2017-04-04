@@ -1,0 +1,1344 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/util/KoreanConjugation.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
+</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>3 <span style=''> *
+</span>4 <span style=''> * Copyright 2014 Twitter, Inc.
+</span>5 <span style=''> *
+</span>6 <span style=''> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>7 <span style=''> * you may not use this file except in compliance with the License.
+</span>8 <span style=''> * You may obtain a copy of the License at
+</span>9 <span style=''> *
+</span>10 <span style=''> *   http://www.apache.org/licenses/LICENSE-2.0
+</span>11 <span style=''> *
+</span>12 <span style=''> * Unless required by applicable law or agreed to in writing, software
+</span>13 <span style=''> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>14 <span style=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>15 <span style=''> * See the License for the specific language governing permissions and
+</span>16 <span style=''> * limitations under the License.
+</span>17 <span style=''> */
+</span>18 <span style=''>
+</span>19 <span style=''>package org.openkoreantext.processor.util
+</span>20 <span style=''>
+</span>21 <span style=''>import org.openkoreantext.processor.util.Hangul._
+</span>22 <span style=''>import org.openkoreantext.processor.util.KoreanDictionaryProvider._
+</span>23 <span style=''>
+</span>24 <span style=''>import scala.collection.JavaConversions._
+</span>25 <span style=''>
+</span>26 <span style=''>/**
+</span>27 <span style=''> * Expands Korean verbs and adjectives to all possible conjugation forms.
+</span>28 <span style=''> */
+</span>29 <span style=''>object KoreanConjugation {
+</span>30 <span style=''>  // ㅋ, ㅎ for 잨ㅋㅋㅋㅋ 잔댛ㅎㅎㅎㅎ
+</span>31 <span style=''>  private[this] val CODAS_COMMON = Seq('ㅂ', 'ㅆ', 'ㄹ', 'ㄴ', 'ㅁ')
+</span>32 <span style=''>  // 파랗다 -&gt; 파래, 파램, 파랠, 파랬
+</span>33 <span style=''>  private[this] val CODAS_FOR_CONTRACTION = Seq('ㅆ', 'ㄹ', 'ㅁ')
+</span>34 <span style=''>  private[this] val CODAS_NO_PAST = Seq('ㅂ', 'ㄹ', 'ㄴ', 'ㅁ')
+</span>35 <span style=''>
+</span>36 <span style=''>  private[this] val CODAS_SLANG_CONSONANT = Seq('ㅋ', 'ㅎ')
+</span>37 <span style=''>  private[this] val CODAS_SLANG_VOWEL = Seq('ㅜ', 'ㅠ')
+</span>38 <span style=''>
+</span>39 <span style=''>  private[this] val PRE_EOMI_COMMON = &quot;거게겠고구기긴길네다더던도든면자잖재져죠지진질&quot;.toSeq
+</span>40 <span style=''>  private[this] val PRE_EOMI_1_1 = &quot;야서써도준&quot;.toSeq
+</span>41 <span style=''>  private[this] val PRE_EOMI_1_2 = &quot;어었&quot;.toSeq
+</span>42 <span style=''>  private[this] val PRE_EOMI_1_3 = &quot;아았&quot;.toSeq
+</span>43 <span style=''>  private[this] val PRE_EOMI_1_4 = &quot;워웠&quot;.toSeq
+</span>44 <span style=''>  private[this] val PRE_EOMI_1_5 = &quot;여였&quot;.toSeq
+</span>45 <span style=''>
+</span>46 <span style=''>  private[this] val PRE_EOMI_2 = &quot;노느니냐&quot;.toSeq
+</span>47 <span style=''>  private[this] val PRE_EOMI_3 = &quot;러려며&quot;.toSeq
+</span>48 <span style=''>  private[this] val PRE_EOMI_4 = &quot;으&quot;.toSeq
+</span>49 <span style=''>  private[this] val PRE_EOMI_5 = &quot;은&quot;.toSeq
+</span>50 <span style=''>  private[this] val PRE_EOMI_6 = &quot;는&quot;.toSeq
+</span>51 <span style=''>  private[this] val PRE_EOMI_7 = &quot;운&quot;.toSeq
+</span>52 <span style=''>
+</span>53 <span style=''>  private[this] val PRE_EOMI_RESPECT = &quot;세시실신셔습셨십&quot;.toSeq
+</span>54 <span style=''>
+</span>55 <span style=''>  // 모음 어말어미
+</span>56 <span style=''>  private[this] val PRE_EOMI_VOWEL = PRE_EOMI_COMMON </span><span style='background: #AEF1AE'>++ PRE_EOMI_2 ++ PRE_EOMI_3 ++</span><span style=''> PRE_EOMI_RESPECT
+</span>57 <span style=''>
+</span>58 <span style=''>  private[this] def addPreEomi(lastChar: Char, charsToAdd: Seq[Char]): Seq[String] = {
+</span>59 <span style=''>    charsToAdd.map(lastChar </span><span style='background: #AEF1AE'>+</span><span style=''> _.toString)
+</span>60 <span style=''>  }
+</span>61 <span style=''>
+</span>62 <span style=''>  /**
+</span>63 <span style=''>   * Wrap conjugatePredicated
+</span>64 <span style=''>   *
+</span>65 <span style=''>   * @param words Set of adjectives or verbs.
+</span>66 <span style=''>   * @param isAdjective True if the set contains adjectives.
+</span>67 <span style=''>   * @return CharArraySet with conjugated words.
+</span>68 <span style=''>   */
+</span>69 <span style=''>  protected[processor] def conjugatePredicatesToCharArraySet(words: Set[String], isAdjective: Boolean = false): CharArraySet = {
+</span>70 <span style=''>    val expanded: Set[String] = conjugatePredicated(words, isAdjective)
+</span>71 <span style=''>
+</span>72 <span style=''>    val newSet = newCharArraySet
+</span>73 <span style=''>    newSet.addAll(expanded)
+</span>74 <span style=''>    newSet
+</span>75 <span style=''>  }
+</span>76 <span style=''>
+</span>77 <span style=''>  /**
+</span>78 <span style=''>   * Conjugate adjectives and verbs.
+</span>79 <span style=''>   *
+</span>80 <span style=''>   * @param words Set of adjectives or verbs.
+</span>81 <span style=''>   * @param isAdjective True if the set contains adjectives.
+</span>82 <span style=''>   * @return Set of conjugated words
+</span>83 <span style=''>   */
+</span>84 <span style=''>  protected[processor] def conjugatePredicated(words: Set[String], isAdjective: Boolean): Set[String] = {
+</span>85 <span style=''>    lazy val expanded = words.flatMap { word: String =&gt;
+</span>86 <span style=''>      val init = word.init
+</span>87 <span style=''>      val lastChar = word.last
+</span>88 <span style=''>      val lastCharString = lastChar.toString
+</span>89 <span style=''>      val lastCharDecomposed = decomposeHangul(lastChar)
+</span>90 <span style=''>
+</span>91 <span style=''>      val expandedLast: Seq[String] = lastCharDecomposed match {
+</span>92 <span style=''>        // Cases without codas
+</span>93 <span style=''>        // 하다, special case
+</span>94 <span style=''>        case HangulChar('ㅎ', 'ㅏ', ' ') =&gt;
+</span>95 <span style=''>          val endings = if (isAdjective) Seq(&quot;합&quot;, &quot;해&quot;, &quot;히&quot;, &quot;하&quot;) else Seq(&quot;합&quot;, &quot;해&quot;)
+</span>96 <span style=''>          addPreEomi(lastChar, PRE_EOMI_COMMON ++ PRE_EOMI_2 ++ PRE_EOMI_6 ++ PRE_EOMI_RESPECT) ++
+</span>97 <span style=''>              CODAS_COMMON.map {
+</span>98 <span style=''>                case c: Char if c == 'ㅆ' =&gt; composeHangul('ㅎ', 'ㅐ', c).toString
+</span>99 <span style=''>                case c: Char =&gt; composeHangul('ㅎ', 'ㅏ', c).toString
+</span>100 <span style=''>              } ++ addPreEomi('하', PRE_EOMI_VOWEL ++ PRE_EOMI_1_5 ++ PRE_EOMI_6) ++
+</span>101 <span style=''>              addPreEomi('해', PRE_EOMI_1_1) ++ endings
+</span>102 <span style=''>
+</span>103 <span style=''>        // 쏘다
+</span>104 <span style=''>        case HangulChar(o: Char, 'ㅗ', ' ') =&gt;
+</span>105 <span style=''>          addPreEomi(lastChar, PRE_EOMI_VOWEL ++ PRE_EOMI_2 ++ PRE_EOMI_1_3 ++ PRE_EOMI_6) ++
+</span>106 <span style=''>              CODAS_NO_PAST.map(composeHangul(o, 'ㅗ', _).toString) ++
+</span>107 <span style=''>              Seq(composeHangul(o, 'ㅘ', ' ').toString,
+</span>108 <span style=''>                composeHangul(o, 'ㅘ', 'ㅆ').toString,
+</span>109 <span style=''>                lastCharString)
+</span>110 <span style=''>
+</span>111 <span style=''>        // 맞추다, 겨누다, 재우다,
+</span>112 <span style=''>        case HangulChar(o: Char, 'ㅜ', ' ') =&gt;
+</span>113 <span style=''>          addPreEomi(lastChar, PRE_EOMI_VOWEL ++ PRE_EOMI_1_2 ++ PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>114 <span style=''>              CODAS_NO_PAST.map(composeHangul(o, 'ㅜ', _).toString) ++
+</span>115 <span style=''>              Seq(composeHangul(o, 'ㅝ').toString,
+</span>116 <span style=''>                composeHangul(o, 'ㅝ', 'ㅆ').toString,
+</span>117 <span style=''>                lastCharString)
+</span>118 <span style=''>
+</span>119 <span style=''>        // 치르다, 구르다, 굴르다, 뜨다, 모으다, 고르다, 골르다
+</span>120 <span style=''>        case HangulChar(o: Char, 'ㅡ', ' ') =&gt;
+</span>121 <span style=''>          addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>122 <span style=''>              CODAS_NO_PAST.map(composeHangul(o, 'ㅡ', _).toString) ++
+</span>123 <span style=''>              Seq(composeHangul(o, 'ㅝ').toString,
+</span>124 <span style=''>                composeHangul(o, 'ㅓ').toString,
+</span>125 <span style=''>                composeHangul(o, 'ㅏ').toString,
+</span>126 <span style=''>                composeHangul(o, 'ㅝ', 'ㅆ').toString,
+</span>127 <span style=''>                composeHangul(o, 'ㅓ', 'ㅆ').toString,
+</span>128 <span style=''>                composeHangul(o, 'ㅏ', 'ㅆ').toString,
+</span>129 <span style=''>                lastCharString)
+</span>130 <span style=''>
+</span>131 <span style=''>        // 사귀다
+</span>132 <span style=''>        case HangulChar('ㄱ', 'ㅟ', ' ') =&gt;
+</span>133 <span style=''>          addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>134 <span style=''>              CODAS_NO_PAST.map(composeHangul('ㄱ', 'ㅟ', _).toString) ++
+</span>135 <span style=''>              Seq(composeHangul('ㄱ', 'ㅕ', ' ').toString, composeHangul('ㄱ', 'ㅕ', 'ㅆ').toString) ++
+</span>136 <span style=''>              Seq(lastCharString)
+</span>137 <span style=''>
+</span>138 <span style=''>        // 쥐다
+</span>139 <span style=''>        case HangulChar(o: Char, 'ㅟ', ' ') =&gt;
+</span>140 <span style=''>          CODAS_NO_PAST.map(composeHangul(o, 'ㅟ', _).toString) ++
+</span>141 <span style=''>              addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>142 <span style=''>              Seq(lastCharString)
+</span>143 <span style=''>
+</span>144 <span style=''>        // 마시다, 엎드리다, 치다, 이다, 아니다
+</span>145 <span style=''>        case HangulChar(o: Char, 'ㅣ', ' ') =&gt;
+</span>146 <span style=''>          CODAS_NO_PAST.map(composeHangul(o, 'ㅣ', _).toString) ++
+</span>147 <span style=''>              addPreEomi(lastChar, PRE_EOMI_1_2 ++ PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>148 <span style=''>              Seq(composeHangul(o, 'ㅣ', 'ㅂ') + &quot;니&quot;,
+</span>149 <span style=''>                composeHangul(o, 'ㅕ', ' ').toString,
+</span>150 <span style=''>                composeHangul(o, 'ㅕ', 'ㅆ').toString,
+</span>151 <span style=''>                lastCharString)
+</span>152 <span style=''>
+</span>153 <span style=''>        // 꿰다, 꾀다
+</span>154 <span style=''>        case HangulChar(o: Char, v: Char, ' ') if v == 'ㅞ' || v == 'ㅚ' || v == 'ㅙ' =&gt;
+</span>155 <span style=''>          addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>156 <span style=''>              CODAS_COMMON.map(composeHangul(o, v, _).toString) ++
+</span>157 <span style=''>              Seq(lastCharString)
+</span>158 <span style=''>
+</span>159 <span style=''>        // All other vowel endings: 둘러서다, 켜다, 세다, 캐다, 차다
+</span>160 <span style=''>        case HangulChar(o: Char, v: Char, ' ') =&gt;
+</span>161 <span style=''>          CODAS_COMMON.map(composeHangul(o, v, _).toString) ++
+</span>162 <span style=''>              addPreEomi(lastChar, PRE_EOMI_VOWEL ++ PRE_EOMI_1_1 ++ PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>163 <span style=''>              Seq(lastCharString)
+</span>164 <span style=''>
+</span>165 <span style=''>        // Cases with codas
+</span>166 <span style=''>        // 만들다, 알다, 풀다
+</span>167 <span style=''>        case HangulChar(o: Char, v: Char, 'ㄹ') if (o == 'ㅁ' &amp;&amp; v == 'ㅓ') || v == 'ㅡ' || v == 'ㅏ' || v == 'ㅜ' =&gt;
+</span>168 <span style=''>          addPreEomi(lastChar, PRE_EOMI_1_2 ++ PRE_EOMI_3) ++
+</span>169 <span style=''>              addPreEomi(composeHangul(o, v, ' '),
+</span>170 <span style=''>                PRE_EOMI_2 ++ PRE_EOMI_6 ++ PRE_EOMI_RESPECT) ++
+</span>171 <span style=''>              Seq(composeHangul(o, v, 'ㄻ').toString,
+</span>172 <span style=''>                composeHangul(o, v, 'ㄴ').toString,
+</span>173 <span style=''>                lastCharString)
+</span>174 <span style=''>
+</span>175 <span style=''>        // 낫다, 뺴앗다
+</span>176 <span style=''>        case HangulChar(o: Char, 'ㅏ', 'ㅅ') =&gt;
+</span>177 <span style=''>          addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>178 <span style=''>              addPreEomi(composeHangul(o, 'ㅏ'), PRE_EOMI_4 ++ PRE_EOMI_5) ++
+</span>179 <span style=''>              Seq(lastCharString)
+</span>180 <span style=''>
+</span>181 <span style=''>        // 묻다
+</span>182 <span style=''>        case HangulChar('ㅁ', 'ㅜ', 'ㄷ') =&gt;
+</span>183 <span style=''>          addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>184 <span style=''>              Seq(composeHangul('ㅁ', 'ㅜ', 'ㄹ').toString,
+</span>185 <span style=''>                lastCharString)
+</span>186 <span style=''>
+</span>187 <span style=''>        // 붇다
+</span>188 <span style=''>        case HangulChar(o: Char, 'ㅜ', 'ㄷ') =&gt;
+</span>189 <span style=''>          addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>190 <span style=''>              addPreEomi(composeHangul(o, 'ㅜ', ' '),
+</span>191 <span style=''>                PRE_EOMI_1_2 ++ PRE_EOMI_1_4 ++ PRE_EOMI_4 ++ PRE_EOMI_5) ++
+</span>192 <span style=''>              Seq(composeHangul(o, 'ㅜ', 'ㄹ').toString,
+</span>193 <span style=''>                lastCharString)
+</span>194 <span style=''>
+</span>195 <span style=''>        // 눕다
+</span>196 <span style=''>        case HangulChar(o: Char, 'ㅜ', 'ㅂ') =&gt;
+</span>197 <span style=''>          addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>198 <span style=''>              addPreEomi(composeHangul(o, 'ㅜ', ' '), PRE_EOMI_1_4 ++ PRE_EOMI_4 ++ PRE_EOMI_5) ++
+</span>199 <span style=''>              Seq(lastCharString)
+</span>200 <span style=''>
+</span>201 <span style=''>        // 간지럽다, 갑작스럽다 -&gt; 갑작스런
+</span>202 <span style=''>        case HangulChar(o: Char, 'ㅓ', 'ㅂ') if isAdjective =&gt;
+</span>203 <span style=''>          addPreEomi(composeHangul(o, 'ㅓ', ' '), PRE_EOMI_1_4 ++ PRE_EOMI_7) ++
+</span>204 <span style=''>              Seq(composeHangul(o, 'ㅓ', ' ').toString, composeHangul(o, 'ㅓ', 'ㄴ').toString, lastCharString)
+</span>205 <span style=''>
+</span>206 <span style=''>        // 아름답다, 가볍다, 덥다, 간지럽다
+</span>207 <span style=''>        case HangulChar(o: Char, v: Char, 'ㅂ') if isAdjective =&gt;
+</span>208 <span style=''>          addPreEomi(composeHangul(o, v, ' '), PRE_EOMI_1_4 ++ PRE_EOMI_7) ++
+</span>209 <span style=''>              Seq(composeHangul(o, v, ' ').toString, lastCharString)
+</span>210 <span style=''>
+</span>211 <span style=''>        // 놓다
+</span>212 <span style=''>        case HangulChar(o: Char, 'ㅗ', 'ㅎ') =&gt;
+</span>213 <span style=''>          addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+</span>214 <span style=''>              CODAS_COMMON.map(composeHangul(o, 'ㅗ', _).toString) ++
+</span>215 <span style=''>              Seq(composeHangul(o, 'ㅘ', ' ').toString, composeHangul(o, 'ㅗ', ' ').toString, lastCharString)
+</span>216 <span style=''>
+</span>217 <span style=''>        // 파랗다, 퍼렇다, 어떻다
+</span>218 <span style=''>        case HangulChar(o: Char, v: Char, 'ㅎ') if isAdjective =&gt;
+</span>219 <span style=''>          CODAS_COMMON.map(composeHangul(o, v, _).toString) ++
+</span>220 <span style=''>              CODAS_FOR_CONTRACTION.map(composeHangul(o, 'ㅐ', _).toString) ++
+</span>221 <span style=''>              Seq(composeHangul(o, 'ㅐ', ' ').toString,
+</span>222 <span style=''>                composeHangul(o, v, ' ').toString,
+</span>223 <span style=''>                lastCharString)
+</span>224 <span style=''>
+</span>225 <span style=''>        // 1 char with coda adjective, 있다, 컸다
+</span>226 <span style=''>        case HangulChar(o: Char, v: Char, c: Char) if word.length == 1 || (isAdjective &amp;&amp; c == 'ㅆ') =&gt;
+</span>227 <span style=''>          addPreEomi(lastChar,
+</span>228 <span style=''>            PRE_EOMI_COMMON ++ PRE_EOMI_1_2 ++ PRE_EOMI_1_3 ++ PRE_EOMI_2 ++ PRE_EOMI_4 ++ PRE_EOMI_5 ++ PRE_EOMI_6) ++
+</span>229 <span style=''>              Seq(lastCharString)
+</span>230 <span style=''>
+</span>231 <span style=''>        // 1 char with coda adjective, 밝다
+</span>232 <span style=''>        case HangulChar(o: Char, v: Char, c: Char) if word.length == 1 &amp;&amp; isAdjective =&gt;
+</span>233 <span style=''>          addPreEomi(lastChar,
+</span>234 <span style=''>            PRE_EOMI_COMMON ++ PRE_EOMI_1_2 ++ PRE_EOMI_1_3 ++ PRE_EOMI_2 ++ PRE_EOMI_4 ++ PRE_EOMI_5) ++
+</span>235 <span style=''>              Seq(lastCharString)
+</span>236 <span style=''>
+</span>237 <span style=''>        // 부여잡다, 얻어맞다, 얻어먹다
+</span>238 <span style=''>        case _ =&gt;
+</span>239 <span style=''>          Seq(lastCharString)
+</span>240 <span style=''>
+</span>241 <span style=''>      }
+</span>242 <span style=''>
+</span>243 <span style=''>      expandedLast.map(init + _)
+</span>244 <span style=''>    }
+</span>245 <span style=''>
+</span>246 <span style=''>    if (isAdjective) {
+</span>247 <span style=''>      expanded
+</span>248 <span style=''>    } else {
+</span>249 <span style=''>      // Edge cases: these more likely to be a conjugation of an adjective than a verb
+</span>250 <span style=''>      expanded </span><span style='background: #AEF1AE'>--</span><span style=''> Set(&quot;아니&quot;, &quot;입&quot;, &quot;입니&quot;, &quot;나는&quot;)
+</span>251 <span style=''>    }
+</span>252 <span style=''>  }
+</span>253 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1336
+        </td>
+        <td>
+          1040
+          -
+          1040
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[Char]('ㅂ', 'ㅆ', 'ㄹ', 'ㄴ', 'ㅁ')
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1337
+        </td>
+        <td>
+          1140
+          -
+          1140
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[Char]('ㅆ', 'ㄹ', 'ㅁ')
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1338
+        </td>
+        <td>
+          1195
+          -
+          1195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[Char]('ㅂ', 'ㄹ', 'ㄴ', 'ㅁ')
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1339
+        </td>
+        <td>
+          1264
+          -
+          1264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[Char]('ㅋ', 'ㅎ')
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1340
+        </td>
+        <td>
+          1318
+          -
+          1318
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[Char]('ㅜ', 'ㅠ')
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1342
+        </td>
+        <td>
+          1394
+          -
+          1394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;거게겠고구기긴길네다더던도든면자잖재져죠지진질&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1341
+        </td>
+        <td>
+          1368
+          -
+          1368
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;거게겠고구기긴길네다더던도든면자잖재져죠지진질&quot;
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1344
+        </td>
+        <td>
+          1443
+          -
+          1443
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;야서써도준&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1343
+        </td>
+        <td>
+          1435
+          -
+          1435
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;야서써도준&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1345
+        </td>
+        <td>
+          1484
+          -
+          1484
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;어었&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1346
+        </td>
+        <td>
+          1489
+          -
+          1489
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;어었&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1348
+        </td>
+        <td>
+          1535
+          -
+          1535
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;아았&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1347
+        </td>
+        <td>
+          1530
+          -
+          1530
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;아았&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1350
+        </td>
+        <td>
+          1581
+          -
+          1581
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;워웠&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1349
+        </td>
+        <td>
+          1576
+          -
+          1576
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;워웠&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1351
+        </td>
+        <td>
+          1622
+          -
+          1622
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;여였&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1352
+        </td>
+        <td>
+          1627
+          -
+          1627
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;여였&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1354
+        </td>
+        <td>
+          1674
+          -
+          1674
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;노느니냐&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1353
+        </td>
+        <td>
+          1667
+          -
+          1667
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;노느니냐&quot;
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1356
+        </td>
+        <td>
+          1719
+          -
+          1719
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;러려며&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1355
+        </td>
+        <td>
+          1713
+          -
+          1713
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;러려며&quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1357
+        </td>
+        <td>
+          1758
+          -
+          1758
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;으&quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1358
+        </td>
+        <td>
+          1762
+          -
+          1762
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;으&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1360
+        </td>
+        <td>
+          1805
+          -
+          1805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;은&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1359
+        </td>
+        <td>
+          1801
+          -
+          1801
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;은&quot;
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1362
+        </td>
+        <td>
+          1848
+          -
+          1848
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;는&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1361
+        </td>
+        <td>
+          1844
+          -
+          1844
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;는&quot;
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1363
+        </td>
+        <td>
+          1887
+          -
+          1887
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;운&quot;
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1364
+        </td>
+        <td>
+          1891
+          -
+          1891
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;운&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1366
+        </td>
+        <td>
+          1948
+          -
+          1948
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;세시실신셔습셨십&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1365
+        </td>
+        <td>
+          1937
+          -
+          1937
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;세시실신셔습셨십&quot;
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1369
+        </td>
+        <td>
+          2038
+          -
+          2038
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_3
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanConjugation.this.PRE_EOMI_3
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1372
+        </td>
+        <td>
+          2049
+          -
+          2049
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Char]
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1368
+        </td>
+        <td>
+          2021
+          -
+          2021
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Char]
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1371
+        </td>
+        <td>
+          2052
+          -
+          2052
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_RESPECT
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanConjugation.this.PRE_EOMI_RESPECT
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1370
+        </td>
+        <td>
+          2035
+          -
+          2035
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Char]
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1373
+        </td>
+        <td>
+          2021
+          -
+          2051
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanConjugation.this.PRE_EOMI_COMMON.++[Char, Seq[Char]](KoreanConjugation.this.PRE_EOMI_2)(collection.this.Seq.canBuildFrom[Char]).++[Char, Seq[Char]](KoreanConjugation.this.PRE_EOMI_3)(collection.this.Seq.canBuildFrom[Char]).++[Char, Seq[Char]](KoreanConjugation.this.PRE_EOMI_RESPECT)(collection.this.Seq.canBuildFrom[Char])
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1367
+        </td>
+        <td>
+          2024
+          -
+          2024
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_2
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanConjugation.this.PRE_EOMI_2
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1375
+        </td>
+        <td>
+          2185
+          -
+          2186
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Char.+
+        </td>
+        <td style="background: #AEF1AE">
+          lastChar.+(x$1.toString())
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1374
+        </td>
+        <td>
+          2189
+          -
+          2189
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.toString()
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1377
+        </td>
+        <td>
+          2175
+          -
+          2175
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          charsToAdd.map[String, Seq[String]](((x$1: Char) =&gt; lastChar.+(x$1.toString())))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1376
+        </td>
+        <td>
+          2175
+          -
+          2175
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1378
+        </td>
+        <td>
+          2587
+          -
+          2587
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicated
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanConjugation.this.conjugatePredicated(words, isAdjective)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          1379
+        </td>
+        <td>
+          2626
+          -
+          2626
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.newCharArraySet
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.newCharArraySet
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          1381
+        </td>
+        <td>
+          2659
+          -
+          2659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.AbstractCollection.addAll
+        </td>
+        <td style="background: #AEF1AE">
+          newSet.addAll(scala.collection.JavaConversions.deprecated setAsJavaSet[String](expanded))
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          1380
+        </td>
+        <td>
+          2660
+          -
+          2660
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.collection.convert.WrapAsJava.deprecated setAsJavaSet
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConversions.deprecated setAsJavaSet[String](expanded)
+        </td>
+      </tr><tr>
+        <td>
+          247
+        </td>
+        <td>
+          1382
+        </td>
+        <td>
+          10204
+          -
+          10204
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanConjugation.expanded
+        </td>
+        <td style="background: #AEF1AE">
+          expanded
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          1384
+        </td>
+        <td>
+          10328
+          -
+          10330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.Subtractable.--
+        </td>
+        <td style="background: #AEF1AE">
+          expanded.--(scala.Predef.Set.apply[String](&quot;아니&quot;, &quot;입&quot;, &quot;입니&quot;, &quot;나는&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          1383
+        </td>
+        <td>
+          10334
+          -
+          10334
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[String](&quot;아니&quot;, &quot;입&quot;, &quot;입니&quot;, &quot;나는&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          1385
+        </td>
+        <td>
+          10328
+          -
+          10330
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.generic.Subtractable.--
+        </td>
+        <td style="background: #AEF1AE">
+          expanded.--(scala.Predef.Set.apply[String](&quot;아니&quot;, &quot;입&quot;, &quot;입니&quot;, &quot;나는&quot;))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

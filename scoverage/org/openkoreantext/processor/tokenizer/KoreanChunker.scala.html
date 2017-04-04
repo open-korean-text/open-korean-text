@@ -1,0 +1,3518 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/tokenizer/KoreanChunker.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
+</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>3 <span style=''> *
+</span>4 <span style=''> * Copyright 2014 Twitter, Inc.
+</span>5 <span style=''> *
+</span>6 <span style=''> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>7 <span style=''> * you may not use this file except in compliance with the License.
+</span>8 <span style=''> * You may obtain a copy of the License at
+</span>9 <span style=''> *
+</span>10 <span style=''> *   http://www.apache.org/licenses/LICENSE-2.0
+</span>11 <span style=''> *
+</span>12 <span style=''> * Unless required by applicable law or agreed to in writing, software
+</span>13 <span style=''> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>14 <span style=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>15 <span style=''> * See the License for the specific language governing permissions and
+</span>16 <span style=''> * limitations under the License.
+</span>17 <span style=''> */
+</span>18 <span style=''>
+</span>19 <span style=''>package org.openkoreantext.processor.tokenizer
+</span>20 <span style=''>
+</span>21 <span style=''>import java.util.regex.Matcher
+</span>22 <span style=''>
+</span>23 <span style=''>import com.twitter.Regex
+</span>24 <span style=''>import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken
+</span>25 <span style=''>import org.openkoreantext.processor.util.KoreanPos
+</span>26 <span style=''>import org.openkoreantext.processor.util.KoreanPos._
+</span>27 <span style=''>
+</span>28 <span style=''>import scala.collection.mutable.ListBuffer
+</span>29 <span style=''>
+</span>30 <span style=''>case class KoreanChunk(text: String, offset: Int, length: Int)
+</span>31 <span style=''>
+</span>32 <span style=''>/**
+</span>33 <span style=''> * Split input text into Korean Chunks (어절)
+</span>34 <span style=''> */
+</span>35 <span style=''>object KoreanChunker {
+</span>36 <span style=''>  private val POS_PATTERNS = Map(
+</span>37 <span style=''>    Korean </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> &quot;&quot;&quot;([가-힣]+)&quot;&quot;&quot;.r.pattern,
+</span>38 <span style=''>    Alpha </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> &quot;&quot;&quot;(\p{Alpha}+)&quot;&quot;&quot;.r.pattern,
+</span>39 <span style=''>    Number </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> (&quot;&quot;&quot;(\$?\p{Digit}+&quot;&quot;&quot;
+</span>40 <span style=''>      </span><span style='background: #AEF1AE'>+ &quot;&quot;&quot;(,\p{Digit}{3})*([/~:\.-]\p{Digit}+)?&quot;&quot;&quot;
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      +</span><span style=''> &quot;&quot;&quot;(천|만|억|조)*(%|원|달러|위안|옌|엔|유로|등|년|월|일|회|시간|시|분|초)?)&quot;&quot;&quot;).r.pattern,
+</span>42 <span style=''>    KoreanParticle </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> &quot;&quot;&quot;([ㄱ-ㅣ]+)&quot;&quot;&quot;.r.pattern,
+</span>43 <span style=''>    Punctuation </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> &quot;&quot;&quot;([\p{Punct}·…’]+)&quot;&quot;&quot;.r.pattern,
+</span>44 <span style=''>    URL </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Regex.VALID_URL,
+</span>45 <span style=''>    Email </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> &quot;&quot;&quot;([\p{Alnum}\.\-_]+@[\p{Alnum}\.]+)&quot;&quot;&quot;.r.pattern,
+</span>46 <span style=''>    Hashtag </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Regex.VALID_HASHTAG,
+</span>47 <span style=''>    ScreenName </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Regex.VALID_MENTION_OR_LIST,
+</span>48 <span style=''>    CashTag </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Regex.VALID_CASHTAG,
+</span>49 <span style=''>    Space </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> &quot;&quot;&quot;\s+&quot;&quot;&quot;.r.pattern
+</span>50 <span style=''>  )
+</span>51 <span style=''>
+</span>52 <span style=''>  private val CHUNKING_ORDER = Seq(URL, Email, ScreenName, Hashtag, CashTag, Number, Korean, KoreanParticle, Alpha, Punctuation)
+</span>53 <span style=''>
+</span>54 <span style=''>  protected[processor] def getChunks(input: String, keepSpace: Boolean = false): Seq[String] = {
+</span>55 <span style=''>    chunk(input).map(_.text)
+</span>56 <span style=''>  }
+</span>57 <span style=''>
+</span>58 <span style=''>  private[this] case class ChunkMatch(start: Int, end: Int, text: String, pos: KoreanPos) {
+</span>59 <span style=''>    def disjoint(that: ChunkMatch): Boolean = {
+</span>60 <span style=''>      (that.start &lt; this.start &amp;&amp; that.end </span><span style='background: #AEF1AE'>&lt;=</span><span style=''> this.start) </span><span style='background: #AEF1AE'>||</span><span style=''>
+</span>61 <span style=''>        (that.start </span><span style='background: #AEF1AE'>&gt;= this.end &amp;&amp; that.end &gt;</span><span style=''> this.end)
+</span>62 <span style=''>    }
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  def splitBySpaceKeepingSpace(s: CharSequence): Seq[String] = {
+</span>66 <span style=''>    val space = &quot;&quot;&quot;\s+&quot;&quot;&quot;.r.pattern
+</span>67 <span style=''>    val m = space.matcher(s)
+</span>68 <span style=''>
+</span>69 <span style=''>    var tokens = new ListBuffer[String]()
+</span>70 <span style=''>    var index = 0
+</span>71 <span style=''>    while(m.find()) {
+</span>72 <span style=''>      if (index </span><span style='background: #AEF1AE'>&lt;</span><span style=''> m.start) {
+</span>73 <span style=''>        tokens </span><span style='background: #AEF1AE'>+=</span><span style=''> s.subSequence(index, m.start).toString
+</span>74 <span style=''>      }
+</span>75 <span style=''>      tokens </span><span style='background: #AEF1AE'>+=</span><span style=''> s.subSequence(m.start, m.end).toString
+</span>76 <span style=''>      index = m.end
+</span>77 <span style=''>    }
+</span>78 <span style=''>
+</span>79 <span style=''>    if (index </span><span style='background: #AEF1AE'>&lt;</span><span style=''> s.length()) {
+</span>80 <span style=''>      tokens </span><span style='background: #AEF1AE'>+=</span><span style=''> s.subSequence(index, s.length()).toString
+</span>81 <span style=''>    }
+</span>82 <span style=''>
+</span>83 <span style=''>    return tokens.toList
+</span>84 <span style=''>  }
+</span>85 <span style=''>
+</span>86 <span style=''>  /**
+</span>87 <span style=''>   * Recursively call m.find() to find all the matches.
+</span>88 <span style=''>   * Use tail-recursion optimization to avoid stack overflow.
+</span>89 <span style=''>   *
+</span>90 <span style=''>   * @param m input Matcher
+</span>91 <span style=''>   * @param pos KoreanPos to attach
+</span>92 <span style=''>   * @param matches ouput list of ChunkMatch
+</span>93 <span style=''>   * @return list of ChunkMatches
+</span>94 <span style=''>   */
+</span>95 <span style=''>  @scala.annotation.tailrec
+</span>96 <span style=''>  private[this] def findAllPatterns(m: Matcher, pos: KoreanPos, matches: List[ChunkMatch] = List()): List[ChunkMatch] = {
+</span>97 <span style=''>    if (m.find()) {
+</span>98 <span style=''>      findAllPatterns(m, pos, ChunkMatch(m.start, m.end, m.group(), pos) </span><span style='background: #F0ADAD'>::</span><span style=''> matches)
+</span>99 <span style=''>    } else {
+</span>100 <span style=''>      matches
+</span>101 <span style=''>    }
+</span>102 <span style=''>  }
+</span>103 <span style=''>
+</span>104 <span style=''>  private[this] def splitChunks(text: String): List[ChunkMatch] = {
+</span>105 <span style=''>    if (text.charAt(0).isSpaceChar) {
+</span>106 <span style=''>      List(ChunkMatch(0, text.length, text, Space))
+</span>107 <span style=''>    } else {
+</span>108 <span style=''>      val chunksBuf = new ListBuffer[ChunkMatch]()
+</span>109 <span style=''>      var matchedLen = 0
+</span>110 <span style=''>      CHUNKING_ORDER.foreach { pos =&gt;
+</span>111 <span style=''>        if (matchedLen </span><span style='background: #AEF1AE'>&lt;</span><span style=''> text.length) {
+</span>112 <span style=''>          val m = POS_PATTERNS(pos).matcher(text)
+</span>113 <span style=''>          while (m.find()) {
+</span>114 <span style=''>            val cm = ChunkMatch(m.start, m.end, m.group(), pos)
+</span>115 <span style=''>            if (chunksBuf.forall(cm.disjoint)) {
+</span>116 <span style=''>              chunksBuf </span><span style='background: #AEF1AE'>+=</span><span style=''> cm
+</span>117 <span style=''>              matchedLen </span><span style='background: #AEF1AE'>+= cm.end -</span><span style=''> cm.start
+</span>118 <span style=''>            }
+</span>119 <span style=''>          }
+</span>120 <span style=''>        }
+</span>121 <span style=''>      }
+</span>122 <span style=''>
+</span>123 <span style=''>      val chunks = chunksBuf.sortBy(cm =&gt; cm.start).toList
+</span>124 <span style=''>      fillInUnmatched(text, chunks, Foreign)
+</span>125 <span style=''>    }
+</span>126 <span style=''>  }
+</span>127 <span style=''>
+</span>128 <span style=''>  /**
+</span>129 <span style=''>   * Fill in unmatched segments with given pos
+</span>130 <span style=''>   *
+</span>131 <span style=''>   * @param text input text
+</span>132 <span style=''>   * @param chunks matched chunks
+</span>133 <span style=''>   * @param pos KoreanPos to attach to the unmatched chunk
+</span>134 <span style=''>   * @return list of ChunkMatches
+</span>135 <span style=''>   */
+</span>136 <span style=''>  private[this] def fillInUnmatched(text: String,
+</span>137 <span style=''>                                    chunks: Seq[ChunkMatch],
+</span>138 <span style=''>                                    pos: KoreanPos.Value): List[ChunkMatch] = {
+</span>139 <span style=''>
+</span>140 <span style=''>    // Add Foreign for unmatched parts
+</span>141 <span style=''>    val (chunksWithForeign, prevEnd) = chunks.foldLeft((List[ChunkMatch](), 0)) {
+</span>142 <span style=''>      case ((l: List[ChunkMatch], prevEnd: Int), cm: ChunkMatch) if cm.start == prevEnd =&gt;
+</span>143 <span style=''>        (cm :: l, cm.end)
+</span>144 <span style=''>      case ((l: List[ChunkMatch], prevEnd: Int), cm: ChunkMatch) if cm.start &gt; prevEnd =&gt;
+</span>145 <span style=''>        (cm :: ChunkMatch(prevEnd, cm.start, text.slice(prevEnd, cm.start), pos) :: l, cm.end)
+</span>146 <span style=''>      case ((l: List[ChunkMatch], prevEnd: Int), cm: ChunkMatch) =&gt;
+</span>147 <span style=''>        throw new IllegalStateException(&quot;Non-disjoint chunk matches found.&quot;)
+</span>148 <span style=''>    }
+</span>149 <span style=''>
+</span>150 <span style=''>    val output = if (prevEnd </span><span style='background: #AEF1AE'>&lt;</span><span style=''> text.length) {
+</span>151 <span style=''>      ChunkMatch(prevEnd, text.length, text.slice(prevEnd, text.length), pos) </span><span style='background: #AEF1AE'>::</span><span style=''> chunksWithForeign
+</span>152 <span style=''>    } else {
+</span>153 <span style=''>      chunksWithForeign
+</span>154 <span style=''>    }
+</span>155 <span style=''>
+</span>156 <span style=''>    output.reverse
+</span>157 <span style=''>  }
+</span>158 <span style=''>
+</span>159 <span style=''>
+</span>160 <span style=''>  /**
+</span>161 <span style=''>   * Get chunks by given pos.
+</span>162 <span style=''>   *
+</span>163 <span style=''>   * @param input input string
+</span>164 <span style=''>   * @param pos one of supported KoreanPos's: URL, Email, ScreenName, Hashtag,
+</span>165 <span style=''>   *            CashTag, Korean, KoreanParticle, Number, Alpha, Punctuation
+</span>166 <span style=''>   * @return sequence of Korean chunk strings
+</span>167 <span style=''>   */
+</span>168 <span style=''>  def getChunksByPos(input: String, pos: KoreanPos): Seq[KoreanToken] = {
+</span>169 <span style=''>    chunk(input).filter(_.pos </span><span style='background: #F0ADAD'>==</span><span style=''> pos)
+</span>170 <span style=''>  }
+</span>171 <span style=''>
+</span>172 <span style=''>  /**
+</span>173 <span style=''>   * Split input text into a sequnce of KoreanToken. A candidate for Korean parser
+</span>174 <span style=''>   * gets tagged with KoreanPos.Korean.
+</span>175 <span style=''>   *
+</span>176 <span style=''>   * @param input input string
+</span>177 <span style=''>   * @return sequence of KoreanTokens
+</span>178 <span style=''>   */
+</span>179 <span style=''>  def chunk(input: CharSequence): Seq[KoreanToken] = {
+</span>180 <span style=''>    val s = input.toString
+</span>181 <span style=''>    val (l: List[KoreanToken], i: Int) = splitBySpaceKeepingSpace(s).flatMap {
+</span>182 <span style=''>      s =&gt; splitChunks(s)
+</span>183 <span style=''>    }.foldLeft(List[KoreanToken](), 0) {
+</span>184 <span style=''>      case ((l: List[KoreanToken], i: Int), m: ChunkMatch) =&gt;
+</span>185 <span style=''>        val segStart = s.indexOf(m.text, i)
+</span>186 <span style=''>        (KoreanToken(m.text, m.pos, segStart, m.text.length) :: l, segStart + m.text.length)
+</span>187 <span style=''>    }
+</span>188 <span style=''>    l.reverse
+</span>189 <span style=''>  }
+</span>190 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          646
+        </td>
+        <td>
+          1160
+          -
+          1160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Map.apply[org.openkoreantext.processor.util.KoreanPos.Value, java.util.regex.Pattern](scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Korean).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;([가-힣]+)&quot;).r.pattern), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Alpha).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;(\\p{Alpha}+)&quot;).r.pattern), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Number).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;(\\$?\\p{Digit}+(,\\p{Digit}{3})*([/~:\\.-]\\p{Digit}+)?(천|만|억|조)*(%|원|달러|위안|옌|엔|유로|등|년|월|일|회|시간|시|분|초)?)&quot;).r.pattern), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.KoreanParticle).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;([ㄱ-ㅣ]+)&quot;).r.pattern), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Punctuation).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;([\\p{Punct}·…’]+)&quot;).r.pattern), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.URL).-&gt;[java.util.regex.Pattern](com.twitter.Regex.VALID_URL), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Email).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;([\\p{Alnum}\\.\\-_]+@[\\p{Alnum}\\.]+)&quot;).r.pattern), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Hashtag).-&gt;[java.util.regex.Pattern](com.twitter.Regex.VALID_HASHTAG), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.ScreenName).-&gt;[java.util.regex.Pattern](com.twitter.Regex.VALID_MENTION_OR_LIST), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.CashTag).-&gt;[java.util.regex.Pattern](com.twitter.Regex.VALID_CASHTAG), scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Space).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;\\s+&quot;).r.pattern))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          609
+        </td>
+        <td>
+          1173
+          -
+          1175
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Korean).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;([가-힣]+)&quot;).r.pattern)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          606
+        </td>
+        <td>
+          1166
+          -
+          1166
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Korean
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Korean
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          608
+        </td>
+        <td>
+          1193
+          -
+          1193
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;([가-힣]+)&quot;).r.pattern
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          607
+        </td>
+        <td>
+          1176
+          -
+          1176
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;([가-힣]+)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          612
+        </td>
+        <td>
+          1236
+          -
+          1236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;(\\p{Alpha}+)&quot;).r.pattern
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          611
+        </td>
+        <td>
+          1215
+          -
+          1215
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;(\\p{Alpha}+)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          613
+        </td>
+        <td>
+          1212
+          -
+          1214
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Alpha).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;(\\p{Alpha}+)&quot;).r.pattern)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          610
+        </td>
+        <td>
+          1206
+          -
+          1206
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          617
+        </td>
+        <td>
+          1256
+          -
+          1258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Number).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;(\\$?\\p{Digit}+(,\\p{Digit}{3})*([/~:\\.-]\\p{Digit}+)?(천|만|억|조)*(%|원|달러|위안|옌|엔|유로|등|년|월|일|회|시간|시|분|초)?)&quot;).r.pattern)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          614
+        </td>
+        <td>
+          1249
+          -
+          1249
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          615
+        </td>
+        <td>
+          1287
+          -
+          1340
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;(\\$?\\p{Digit}+(,\\p{Digit}{3})*([/~:\\.-]\\p{Digit}+)?(천|만|억|조)*(%|원|달러|위안|옌|엔|유로|등|년|월|일|회|시간|시|분|초)?)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          616
+        </td>
+        <td>
+          1400
+          -
+          1400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;(\\$?\\p{Digit}+(,\\p{Digit}{3})*([/~:\\.-]\\p{Digit}+)?(천|만|억|조)*(%|원|달러|위안|옌|엔|유로|등|년|월|일|회|시간|시|분|초)?)&quot;).r.pattern
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          618
+        </td>
+        <td>
+          1413
+          -
+          1413
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.KoreanParticle
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.KoreanParticle
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          621
+        </td>
+        <td>
+          1428
+          -
+          1430
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.KoreanParticle).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;([ㄱ-ㅣ]+)&quot;).r.pattern)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          620
+        </td>
+        <td>
+          1448
+          -
+          1448
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;([ㄱ-ㅣ]+)&quot;).r.pattern
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          619
+        </td>
+        <td>
+          1431
+          -
+          1431
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;([ㄱ-ㅣ]+)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          624
+        </td>
+        <td>
+          1502
+          -
+          1502
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;([\\p{Punct}·…’]+)&quot;).r.pattern
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          623
+        </td>
+        <td>
+          1476
+          -
+          1476
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;([\\p{Punct}·…’]+)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          622
+        </td>
+        <td>
+          1461
+          -
+          1461
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Punctuation
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Punctuation
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          625
+        </td>
+        <td>
+          1473
+          -
+          1475
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Punctuation).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;([\\p{Punct}·…’]+)&quot;).r.pattern)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          627
+        </td>
+        <td>
+          1528
+          -
+          1528
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.twitter.Regex.VALID_URL
+        </td>
+        <td style="background: #AEF1AE">
+          com.twitter.Regex.VALID_URL
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          626
+        </td>
+        <td>
+          1515
+          -
+          1515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.URL
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.URL
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          628
+        </td>
+        <td>
+          1519
+          -
+          1521
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.URL).-&gt;[java.util.regex.Pattern](com.twitter.Regex.VALID_URL)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          630
+        </td>
+        <td>
+          1552
+          -
+          1552
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;([\\p{Alnum}\\.\\-_]+@[\\p{Alnum}\\.]+)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          632
+        </td>
+        <td>
+          1549
+          -
+          1551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Email).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;([\\p{Alnum}\\.\\-_]+@[\\p{Alnum}\\.]+)&quot;).r.pattern)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          629
+        </td>
+        <td>
+          1543
+          -
+          1543
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Email
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Email
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          631
+        </td>
+        <td>
+          1595
+          -
+          1595
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;([\\p{Alnum}\\.\\-_]+@[\\p{Alnum}\\.]+)&quot;).r.pattern
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          633
+        </td>
+        <td>
+          1608
+          -
+          1608
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Hashtag
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Hashtag
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          635
+        </td>
+        <td>
+          1616
+          -
+          1618
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Hashtag).-&gt;[java.util.regex.Pattern](com.twitter.Regex.VALID_HASHTAG)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          634
+        </td>
+        <td>
+          1625
+          -
+          1625
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.twitter.Regex.VALID_HASHTAG
+        </td>
+        <td style="background: #AEF1AE">
+          com.twitter.Regex.VALID_HASHTAG
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          636
+        </td>
+        <td>
+          1644
+          -
+          1644
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.ScreenName
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.ScreenName
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          638
+        </td>
+        <td>
+          1655
+          -
+          1657
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.ScreenName).-&gt;[java.util.regex.Pattern](com.twitter.Regex.VALID_MENTION_OR_LIST)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          637
+        </td>
+        <td>
+          1664
+          -
+          1664
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.twitter.Regex.VALID_MENTION_OR_LIST
+        </td>
+        <td style="background: #AEF1AE">
+          com.twitter.Regex.VALID_MENTION_OR_LIST
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          639
+        </td>
+        <td>
+          1691
+          -
+          1691
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.CashTag
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.CashTag
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          641
+        </td>
+        <td>
+          1699
+          -
+          1701
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.CashTag).-&gt;[java.util.regex.Pattern](com.twitter.Regex.VALID_CASHTAG)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          640
+        </td>
+        <td>
+          1708
+          -
+          1708
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          com.twitter.Regex.VALID_CASHTAG
+        </td>
+        <td style="background: #AEF1AE">
+          com.twitter.Regex.VALID_CASHTAG
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          645
+        </td>
+        <td>
+          1733
+          -
+          1735
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Space).-&gt;[java.util.regex.Pattern](scala.Predef.augmentString(&quot;\\s+&quot;).r.pattern)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          642
+        </td>
+        <td>
+          1727
+          -
+          1727
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          644
+        </td>
+        <td>
+          1748
+          -
+          1748
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;\\s+&quot;).r.pattern
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          643
+        </td>
+        <td>
+          1736
+          -
+          1736
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\s+&quot;
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          654
+        </td>
+        <td>
+          1854
+          -
+          1854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.KoreanParticle
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.KoreanParticle
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          648
+        </td>
+        <td>
+          1801
+          -
+          1801
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Email
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Email
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          657
+        </td>
+        <td>
+          1795
+          -
+          1795
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.URL, org.openkoreantext.processor.util.KoreanPos.Email, org.openkoreantext.processor.util.KoreanPos.ScreenName, org.openkoreantext.processor.util.KoreanPos.Hashtag, org.openkoreantext.processor.util.KoreanPos.CashTag, org.openkoreantext.processor.util.KoreanPos.Number, org.openkoreantext.processor.util.KoreanPos.Korean, org.openkoreantext.processor.util.KoreanPos.KoreanParticle, org.openkoreantext.processor.util.KoreanPos.Alpha, org.openkoreantext.processor.util.KoreanPos.Punctuation)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          651
+        </td>
+        <td>
+          1829
+          -
+          1829
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.CashTag
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.CashTag
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          650
+        </td>
+        <td>
+          1820
+          -
+          1820
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Hashtag
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Hashtag
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          653
+        </td>
+        <td>
+          1846
+          -
+          1846
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Korean
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Korean
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          647
+        </td>
+        <td>
+          1796
+          -
+          1796
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.URL
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.URL
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          656
+        </td>
+        <td>
+          1877
+          -
+          1877
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Punctuation
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Punctuation
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          655
+        </td>
+        <td>
+          1870
+          -
+          1870
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          649
+        </td>
+        <td>
+          1808
+          -
+          1808
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.ScreenName
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.ScreenName
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          652
+        </td>
+        <td>
+          1838
+          -
+          1838
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          660
+        </td>
+        <td>
+          2008
+          -
+          2008
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanChunker.this.chunk(input).map[String, Seq[String]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.text))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          659
+        </td>
+        <td>
+          2008
+          -
+          2008
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          658
+        </td>
+        <td>
+          2011
+          -
+          2011
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.text
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          663
+        </td>
+        <td>
+          2205
+          -
+          2207
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;=
+        </td>
+        <td style="background: #AEF1AE">
+          that.end.&lt;=(this.start)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          668
+        </td>
+        <td>
+          2220
+          -
+          2222
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          that.start.&lt;(this.start).&amp;&amp;(that.end.&lt;=(this.start)).||(that.start.&gt;=(this.end).&amp;&amp;(that.end.&gt;(this.end)))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          662
+        </td>
+        <td>
+          2213
+          -
+          2213
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.start
+        </td>
+        <td style="background: #AEF1AE">
+          this.start
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          661
+        </td>
+        <td>
+          2187
+          -
+          2187
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.start
+        </td>
+        <td style="background: #AEF1AE">
+          this.start
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          666
+        </td>
+        <td>
+          2267
+          -
+          2268
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          that.end.&gt;(this.end)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          665
+        </td>
+        <td>
+          2274
+          -
+          2274
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.end
+        </td>
+        <td style="background: #AEF1AE">
+          this.end
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          664
+        </td>
+        <td>
+          2251
+          -
+          2251
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.end
+        </td>
+        <td style="background: #AEF1AE">
+          this.end
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          667
+        </td>
+        <td>
+          2243
+          -
+          2268
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          that.start.&gt;=(this.end).&amp;&amp;(that.end.&gt;(this.end))
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          669
+        </td>
+        <td>
+          2371
+          -
+          2371
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;\\s+&quot;
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          670
+        </td>
+        <td>
+          2383
+          -
+          2383
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.matching.Regex.pattern
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;\\s+&quot;).r.pattern
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          671
+        </td>
+        <td>
+          2416
+          -
+          2416
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Pattern.matcher
+        </td>
+        <td style="background: #AEF1AE">
+          space.matcher(s)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          672
+        </td>
+        <td>
+          2438
+          -
+          2438
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.ListBuffer[String]()
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          673
+        </td>
+        <td>
+          2479
+          -
+          2479
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          687
+        </td>
+        <td>
+          2485
+          -
+          2485
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          686
+        </td>
+        <td>
+          2485
+          -
+          2485
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    if (index.&lt;(m.start()))
+      tokens.+=(s.subSequence(index, m.start()).toString())
+    else
+      ();
+    tokens.+=(s.subSequence(m.start(), m.end()).toString());
+    index = m.end()
+  };
+  while$1()
+}
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          674
+        </td>
+        <td>
+          2497
+          -
+          2497
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Matcher.find
+        </td>
+        <td style="background: #AEF1AE">
+          m.find()
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          685
+        </td>
+        <td>
+          2501
+          -
+          2501
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.while$1
+        </td>
+        <td style="background: #AEF1AE">
+          while$1()
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          688
+        </td>
+        <td>
+          2485
+          -
+          2485
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          681
+        </td>
+        <td>
+          2509
+          -
+          2509
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          675
+        </td>
+        <td>
+          2523
+          -
+          2523
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Matcher.start
+        </td>
+        <td style="background: #AEF1AE">
+          m.start()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          680
+        </td>
+        <td>
+          2509
+          -
+          2509
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          676
+        </td>
+        <td>
+          2519
+          -
+          2520
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          index.&lt;(m.start())
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          678
+        </td>
+        <td>
+          2547
+          -
+          2549
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.+=(s.subSequence(index, m.start()).toString())
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          677
+        </td>
+        <td>
+          2580
+          -
+          2580
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          s.subSequence(index, m.start()).toString()
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          679
+        </td>
+        <td>
+          2547
+          -
+          2549
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.+=(s.subSequence(index, m.start()).toString())
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          683
+        </td>
+        <td>
+          2610
+          -
+          2612
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.+=(s.subSequence(m.start(), m.end()).toString())
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          682
+        </td>
+        <td>
+          2643
+          -
+          2643
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          s.subSequence(m.start(), m.end()).toString()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          684
+        </td>
+        <td>
+          2668
+          -
+          2668
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Matcher.end
+        </td>
+        <td style="background: #AEF1AE">
+          m.end()
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          690
+        </td>
+        <td>
+          2693
+          -
+          2694
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          index.&lt;(s.length())
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          695
+        </td>
+        <td>
+          2683
+          -
+          2683
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          689
+        </td>
+        <td>
+          2703
+          -
+          2703
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.CharSequence.length
+        </td>
+        <td style="background: #AEF1AE">
+          s.length()
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          694
+        </td>
+        <td>
+          2683
+          -
+          2683
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          693
+        </td>
+        <td>
+          2722
+          -
+          2724
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.+=(s.subSequence(index, s.length()).toString())
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          692
+        </td>
+        <td>
+          2722
+          -
+          2724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.+=(s.subSequence(index, s.length()).toString())
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          691
+        </td>
+        <td>
+          2758
+          -
+          2758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          s.subSequence(index, s.length()).toString()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          696
+        </td>
+        <td>
+          2792
+          -
+          2792
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.toList
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.toList
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          697
+        </td>
+        <td>
+          3246
+          -
+          3246
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Matcher.find
+        </td>
+        <td style="background: #F0ADAD">
+          m.find()
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          699
+        </td>
+        <td>
+          3273
+          -
+          3273
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.findAllPatterns
+        </td>
+        <td style="background: #F0ADAD">
+          KoreanChunker.this.findAllPatterns(m, pos, {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$2: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch = KoreanChunker.this.ChunkMatch.apply(m.start(), m.end(), m.group(), pos);
+  matches.::[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch](x$2)
+})
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          698
+        </td>
+        <td>
+          3325
+          -
+          3327
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.::
+        </td>
+        <td style="background: #F0ADAD">
+          matches.::[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch](x$2)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          700
+        </td>
+        <td>
+          3273
+          -
+          3273
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.findAllPatterns
+        </td>
+        <td style="background: #F0ADAD">
+          KoreanChunker.this.findAllPatterns(m, pos, {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$2: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch = KoreanChunker.this.ChunkMatch.apply(m.start(), m.end(), m.group(), pos);
+  matches.::[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch](x$2)
+})
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          701
+        </td>
+        <td>
+          3356
+          -
+          3356
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.matches
+        </td>
+        <td style="background: #F0ADAD">
+          matches
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          702
+        </td>
+        <td>
+          3462
+          -
+          3462
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.charAt
+        </td>
+        <td style="background: #AEF1AE">
+          text.charAt(0)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          703
+        </td>
+        <td>
+          3466
+          -
+          3466
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.runtime.RichChar.isSpaceChar
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.charWrapper(text.charAt(0)).isSpaceChar
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          705
+        </td>
+        <td>
+          3511
+          -
+          3511
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          text.length()
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          708
+        </td>
+        <td>
+          3491
+          -
+          3491
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch](KoreanChunker.this.ChunkMatch.apply(0, text.length(), text, org.openkoreantext.processor.util.KoreanPos.Space))
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          704
+        </td>
+        <td>
+          3503
+          -
+          3503
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          707
+        </td>
+        <td>
+          3502
+          -
+          3502
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanChunker.this.ChunkMatch.apply(0, text.length(), text, org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          706
+        </td>
+        <td>
+          3525
+          -
+          3525
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          709
+        </td>
+        <td>
+          3491
+          -
+          3491
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch](KoreanChunker.this.ChunkMatch.apply(0, text.length(), text, org.openkoreantext.processor.util.KoreanPos.Space))
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          742
+        </td>
+        <td>
+          3544
+          -
+          3544
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val chunksBuf: scala.collection.mutable.ListBuffer[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch] = new scala.collection.mutable.ListBuffer[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch]();
+  var matchedLen: Int = 0;
+  KoreanChunker.this.CHUNKING_ORDER.foreach[Unit](((pos: org.openkoreantext.processor.util.KoreanPos.Value) =&gt; if (matchedLen.&lt;(text.length()))
+    {
+      val m: java.util.regex.Matcher = KoreanChunker.this.POS_PATTERNS.apply(pos).matcher(text);
+      while$2(){
+        if (m.find())
+          {
+            {
+              val cm: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch = KoreanChunker.this.ChunkMatch.apply(m.start(), m.end(), m.group(), pos);
+              if (chunksBuf.forall({
+                ((that: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch) =&gt; cm.disjoint(that))
+              }))
+                {
+                  chunksBuf.+=(cm);
+                  matchedLen = matchedLen.+(cm.end.-(cm.start))
+                }
+              else
+                ()
+            };
+            while$2()
+          }
+        else
+          ()
+      }
+    }
+  else
+    ()));
+  val chunks: List[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch] = chunksBuf.sortBy[Int](((cm: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch) =&gt; cm.start))(math.this.Ordering.Int).toList;
+  KoreanChunker.this.fillInUnmatched(text, chunks, org.openkoreantext.processor.util.KoreanPos.Foreign)
+}
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          710
+        </td>
+        <td>
+          3568
+          -
+          3568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.collection.mutable.ListBuffer[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch]()
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          711
+        </td>
+        <td>
+          3620
+          -
+          3620
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          736
+        </td>
+        <td>
+          3651
+          -
+          3651
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanChunker.this.CHUNKING_ORDER.foreach[Unit](((pos: org.openkoreantext.processor.util.KoreanPos.Value) =&gt; if (matchedLen.&lt;(text.length()))
+  {
+    val m: java.util.regex.Matcher = KoreanChunker.this.POS_PATTERNS.apply(pos).matcher(text);
+    while$2(){
+      if (m.find())
+        {
+          {
+            val cm: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch = KoreanChunker.this.ChunkMatch.apply(m.start(), m.end(), m.group(), pos);
+            if (chunksBuf.forall({
+              ((that: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch) =&gt; cm.disjoint(that))
+            }))
+              {
+                chunksBuf.+=(cm);
+                matchedLen = matchedLen.+(cm.end.-(cm.start))
+              }
+            else
+              ()
+          };
+          while$2()
+        }
+      else
+        ()
+    }
+  }
+else
+  ()))
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          735
+        </td>
+        <td>
+          3668
+          -
+          3668
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          713
+        </td>
+        <td>
+          3683
+          -
+          3684
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          matchedLen.&lt;(text.length())
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          734
+        </td>
+        <td>
+          3668
+          -
+          3668
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          733
+        </td>
+        <td>
+          3698
+          -
+          3698
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val m: java.util.regex.Matcher = KoreanChunker.this.POS_PATTERNS.apply(pos).matcher(text);
+  while$2(){
+    if (m.find())
+      {
+        {
+          val cm: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch = KoreanChunker.this.ChunkMatch.apply(m.start(), m.end(), m.group(), pos);
+          if (chunksBuf.forall({
+            ((that: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch) =&gt; cm.disjoint(that))
+          }))
+            {
+              chunksBuf.+=(cm);
+              matchedLen = matchedLen.+(cm.end.-(cm.start))
+            }
+          else
+            ()
+        };
+        while$2()
+      }
+    else
+      ()
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          712
+        </td>
+        <td>
+          3690
+          -
+          3690
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          text.length()
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          714
+        </td>
+        <td>
+          3743
+          -
+          3743
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Pattern.matcher
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanChunker.this.POS_PATTERNS.apply(pos).matcher(text)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          729
+        </td>
+        <td>
+          3777
+          -
+          3777
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.while$2
+        </td>
+        <td style="background: #AEF1AE">
+          while$2()
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          732
+        </td>
+        <td>
+          3760
+          -
+          3760
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          731
+        </td>
+        <td>
+          3760
+          -
+          3760
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          715
+        </td>
+        <td>
+          3773
+          -
+          3773
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Matcher.find
+        </td>
+        <td style="background: #AEF1AE">
+          m.find()
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          730
+        </td>
+        <td>
+          3760
+          -
+          3760
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  {
+    val cm: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch = KoreanChunker.this.ChunkMatch.apply(m.start(), m.end(), m.group(), pos);
+    if (chunksBuf.forall({
+      ((that: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch) =&gt; cm.disjoint(that))
+    }))
+      {
+        chunksBuf.+=(cm);
+        matchedLen = matchedLen.+(cm.end.-(cm.start))
+      }
+    else
+      ()
+  };
+  while$2()
+}
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          717
+        </td>
+        <td>
+          3822
+          -
+          3822
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Matcher.end
+        </td>
+        <td style="background: #AEF1AE">
+          m.end()
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          719
+        </td>
+        <td>
+          3810
+          -
+          3810
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanChunker.this.ChunkMatch.apply(m.start(), m.end(), m.group(), pos)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          716
+        </td>
+        <td>
+          3813
+          -
+          3813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Matcher.start
+        </td>
+        <td style="background: #AEF1AE">
+          m.start()
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          718
+        </td>
+        <td>
+          3834
+          -
+          3834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.regex.Matcher.group
+        </td>
+        <td style="background: #AEF1AE">
+          m.group()
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          720
+        </td>
+        <td>
+          3879
+          -
+          3879
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.disjoint
+        </td>
+        <td style="background: #AEF1AE">
+          cm.disjoint(that)
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          726
+        </td>
+        <td>
+          3890
+          -
+          3890
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  chunksBuf.+=(cm);
+  matchedLen = matchedLen.+(cm.end.-(cm.start))
+}
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          728
+        </td>
+        <td>
+          3855
+          -
+          3855
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          727
+        </td>
+        <td>
+          3855
+          -
+          3855
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          721
+        </td>
+        <td>
+          3875
+          -
+          3875
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.TraversableForwarder.forall
+        </td>
+        <td style="background: #AEF1AE">
+          chunksBuf.forall({
+  ((that: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch) =&gt; cm.disjoint(that))
+})
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          722
+        </td>
+        <td>
+          3916
+          -
+          3918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.+=
+        </td>
+        <td style="background: #AEF1AE">
+          chunksBuf.+=(cm)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          723
+        </td>
+        <td>
+          3962
+          -
+          3962
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.start
+        </td>
+        <td style="background: #AEF1AE">
+          cm.start
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          725
+        </td>
+        <td>
+          3947
+          -
+          3958
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          matchedLen.+(cm.end.-(cm.start))
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          724
+        </td>
+        <td>
+          3957
+          -
+          3958
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          cm.end.-(cm.start)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          738
+        </td>
+        <td>
+          4048
+          -
+          4048
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.Int
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Ordering.Int
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          737
+        </td>
+        <td>
+          4058
+          -
+          4058
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch.start
+        </td>
+        <td style="background: #AEF1AE">
+          cm.start
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          739
+        </td>
+        <td>
+          4065
+          -
+          4065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.mutable.ListBuffer.toList
+        </td>
+        <td style="background: #AEF1AE">
+          chunksBuf.sortBy[Int](((cm: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch) =&gt; cm.start))(math.this.Ordering.Int).toList
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          741
+        </td>
+        <td>
+          4093
+          -
+          4093
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.fillInUnmatched
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanChunker.this.fillInUnmatched(text, chunks, org.openkoreantext.processor.util.KoreanPos.Foreign)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          740
+        </td>
+        <td>
+          4108
+          -
+          4108
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Foreign
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Foreign
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          744
+        </td>
+        <td>
+          4606
+          -
+          4606
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$6._2
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          743
+        </td>
+        <td>
+          4587
+          -
+          4587
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$6._1
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          746
+        </td>
+        <td>
+          5143
+          -
+          5144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          prevEnd.&lt;(text.length())
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          745
+        </td>
+        <td>
+          5150
+          -
+          5150
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          text.length()
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          747
+        </td>
+        <td>
+          5238
+          -
+          5240
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.::
+        </td>
+        <td style="background: #AEF1AE">
+          chunksWithForeign.::[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch](x$7)
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          748
+        </td>
+        <td>
+          5238
+          -
+          5240
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$7: org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch = KoreanChunker.this.ChunkMatch.apply(prevEnd, text.length(), scala.Predef.augmentString(text).slice(prevEnd, text.length()), pos);
+  chunksWithForeign.::[org.openkoreantext.processor.tokenizer.KoreanChunker.ChunkMatch](x$7)
+}
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          749
+        </td>
+        <td>
+          5278
+          -
+          5278
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanChunker.chunksWithForeign
+        </td>
+        <td style="background: #AEF1AE">
+          chunksWithForeign
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          750
+        </td>
+        <td>
+          5314
+          -
+          5314
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.List.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          output.reverse
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          752
+        </td>
+        <td>
+          5704
+          -
+          5704
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #F0ADAD">
+          KoreanChunker.this.chunk(input).filter(((x$8: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$8.pos.==(pos)))
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          751
+        </td>
+        <td>
+          5711
+          -
+          5713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$8.pos.==(pos)
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          753
+        </td>
+        <td>
+          6006
+          -
+          6006
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #AEF1AE">
+          input.toString()
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          755
+        </td>
+        <td>
+          6046
+          -
+          6046
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$10._2
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          754
+        </td>
+        <td>
+          6024
+          -
+          6024
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$10._1
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          756
+        </td>
+        <td>
+          6372
+          -
+          6372
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.List.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          l.reverse
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

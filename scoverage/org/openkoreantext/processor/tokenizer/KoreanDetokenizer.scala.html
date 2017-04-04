@@ -1,0 +1,817 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/tokenizer/KoreanDetokenizer.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
+</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>3 <span style=''> *
+</span>4 <span style=''> * Copyright 2015 Twitter, Inc.
+</span>5 <span style=''> *
+</span>6 <span style=''> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>7 <span style=''> * you may not use this file except in compliance with the License.
+</span>8 <span style=''> * You may obtain a copy of the License at
+</span>9 <span style=''> *
+</span>10 <span style=''> *   http://www.apache.org/licenses/LICENSE-2.0
+</span>11 <span style=''> *
+</span>12 <span style=''> * Unless required by applicable law or agreed to in writing, software
+</span>13 <span style=''> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>14 <span style=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>15 <span style=''> * See the License for the specific language governing permissions and
+</span>16 <span style=''> * limitations under the License.
+</span>17 <span style=''> */
+</span>18 <span style=''>
+</span>19 <span style=''>package org.openkoreantext.processor.tokenizer
+</span>20 <span style=''>
+</span>21 <span style=''>import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken
+</span>22 <span style=''>import org.openkoreantext.processor.util.KoreanPos
+</span>23 <span style=''>
+</span>24 <span style=''>/**
+</span>25 <span style=''>  * Detokenizes a list of tokenized words into a readable sentence.
+</span>26 <span style=''>  */
+</span>27 <span style=''>object KoreanDetokenizer {
+</span>28 <span style=''>  val SuffixPos = Set(KoreanPos.Josa, KoreanPos.Eomi, KoreanPos.PreEomi, KoreanPos.Suffix,
+</span>29 <span style=''>    KoreanPos.Punctuation)
+</span>30 <span style=''>  val PrefixPos = Set(KoreanPos.NounPrefix, KoreanPos.VerbPrefix)
+</span>31 <span style=''>
+</span>32 <span style=''>  def detokenize(input: Iterable[String]) = {
+</span>33 <span style=''>    // Space guide prevents tokenizing a word that was not tokenized in the input.
+</span>34 <span style=''>    val spaceGuide: Set[Int] = getSpaceGuide(input)
+</span>35 <span style=''>
+</span>36 <span style=''>    // Tokenize a merged text with the space guide.
+</span>37 <span style=''>    val tokenized = KoreanTokenizer.tokenize(input.mkString(&quot;&quot;), TokenizerProfile(spaceGuide = spaceGuide))
+</span>38 <span style=''>
+</span>39 <span style=''>    // Attach suffixes and prefixes.
+</span>40 <span style=''>    collapseTokens(tokenized).mkString(&quot; &quot;)
+</span>41 <span style=''>  }
+</span>42 <span style=''>
+</span>43 <span style=''>  private def collapseTokens(tokenized: Seq[KoreanToken]): List[String] = {
+</span>44 <span style=''>    val (output, isPrefix) = tokenized.foldLeft((List[String](), false)) {
+</span>45 <span style=''>      case ((output: List[String], isPrefix: Boolean), token: KoreanToken) =&gt;
+</span>46 <span style=''>        if (output.nonEmpty &amp;&amp; (isPrefix || SuffixPos.contains(token.pos))) {
+</span>47 <span style=''>          val attached = output.lastOption.getOrElse(&quot;&quot;) + token.text
+</span>48 <span style=''>          (output.init :+ attached, false)
+</span>49 <span style=''>        } else if (PrefixPos.contains(token.pos)) {
+</span>50 <span style=''>          (output :+ token.text, true)
+</span>51 <span style=''>        } else {
+</span>52 <span style=''>          (output :+ token.text, false)
+</span>53 <span style=''>        }
+</span>54 <span style=''>    }
+</span>55 <span style=''>    output
+</span>56 <span style=''>  }
+</span>57 <span style=''>
+</span>58 <span style=''>  private def getSpaceGuide(input: Iterable[String]): Set[Int] = {
+</span>59 <span style=''>    val (spaceGuide, index) = input.foldLeft((Set[Int](), 0)) {
+</span>60 <span style=''>      case ((output: Set[Int], i: Int), word: String) =&gt;
+</span>61 <span style=''>        (output + (i + word.length), i + word.length)
+</span>62 <span style=''>    }
+</span>63 <span style=''>    spaceGuide
+</span>64 <span style=''>  }
+</span>65 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          759
+        </td>
+        <td>
+          1003
+          -
+          1003
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.PreEomi
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.PreEomi
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          762
+        </td>
+        <td>
+          960
+          -
+          960
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Josa, org.openkoreantext.processor.util.KoreanPos.Eomi, org.openkoreantext.processor.util.KoreanPos.PreEomi, org.openkoreantext.processor.util.KoreanPos.Suffix, org.openkoreantext.processor.util.KoreanPos.Punctuation)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          758
+        </td>
+        <td>
+          987
+          -
+          987
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Eomi
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Eomi
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          757
+        </td>
+        <td>
+          971
+          -
+          971
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Josa
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Josa
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          760
+        </td>
+        <td>
+          1022
+          -
+          1022
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Suffix
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Suffix
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          761
+        </td>
+        <td>
+          1044
+          -
+          1044
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Punctuation
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Punctuation
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          765
+        </td>
+        <td>
+          1078
+          -
+          1078
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.NounPrefix, org.openkoreantext.processor.util.KoreanPos.VerbPrefix)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          764
+        </td>
+        <td>
+          1111
+          -
+          1111
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.VerbPrefix
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.VerbPrefix
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          763
+        </td>
+        <td>
+          1089
+          -
+          1089
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.NounPrefix
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.NounPrefix
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          766
+        </td>
+        <td>
+          1297
+          -
+          1297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanDetokenizer.getSpaceGuide
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanDetokenizer.this.getSpaceGuide(input)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          774
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$7
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$7
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          783
+        </td>
+        <td>
+          1439
+          -
+          1439
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply(x$4, x$5, x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$13, x$14, x$15, x$16, x$17, x$3, x$18)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          777
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$10
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$10
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          768
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          771
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          770
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          779
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$12
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$12
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          782
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$16
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$16
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          773
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$6
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          767
+        </td>
+        <td>
+          1417
+          -
+          1417
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          input.mkString(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          776
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$9
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$9
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          775
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$8
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$8
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          784
+        </td>
+        <td>
+          1402
+          -
+          1402
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanTokenizer.tokenize(input.mkString(&quot;&quot;), {
+  &lt;artifact&gt; val x$3: Set[Int] @scala.reflect.internal.annotations.uncheckedBounds = spaceGuide;
+  &lt;artifact&gt; val x$4: Float = TokenizerProfile.apply$default$1;
+  &lt;artifact&gt; val x$5: Float = TokenizerProfile.apply$default$2;
+  &lt;artifact&gt; val x$6: Float = TokenizerProfile.apply$default$3;
+  &lt;artifact&gt; val x$7: Float = TokenizerProfile.apply$default$4;
+  &lt;artifact&gt; val x$8: Float = TokenizerProfile.apply$default$5;
+  &lt;artifact&gt; val x$9: Float = TokenizerProfile.apply$default$6;
+  &lt;artifact&gt; val x$10: Float = TokenizerProfile.apply$default$7;
+  &lt;artifact&gt; val x$11: Float = TokenizerProfile.apply$default$8;
+  &lt;artifact&gt; val x$12: Float = TokenizerProfile.apply$default$9;
+  &lt;artifact&gt; val x$13: Float = TokenizerProfile.apply$default$10;
+  &lt;artifact&gt; val x$14: Float = TokenizerProfile.apply$default$11;
+  &lt;artifact&gt; val x$15: Float = TokenizerProfile.apply$default$12;
+  &lt;artifact&gt; val x$16: Float = TokenizerProfile.apply$default$13;
+  &lt;artifact&gt; val x$17: Seq[Seq[Any]] @scala.reflect.internal.annotations.uncheckedBounds = TokenizerProfile.apply$default$14;
+  &lt;artifact&gt; val x$18: Float = TokenizerProfile.apply$default$16;
+  TokenizerProfile.apply(x$4, x$5, x$6, x$7, x$8, x$9, x$10, x$11, x$12, x$13, x$14, x$15, x$16, x$17, x$3, x$18)
+})
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          778
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$11
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$11
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          769
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          772
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$5
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          781
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$14
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$14
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          780
+        </td>
+        <td>
+          1423
+          -
+          1423
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$13
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$13
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          785
+        </td>
+        <td>
+          1542
+          -
+          1542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanDetokenizer.this.collapseTokens(tokenized).mkString(&quot; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          786
+        </td>
+        <td>
+          1638
+          -
+          1638
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          787
+        </td>
+        <td>
+          1646
+          -
+          1646
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          788
+        </td>
+        <td>
+          2229
+          -
+          2229
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$2._1
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          789
+        </td>
+        <td>
+          2241
+          -
+          2241
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$2._2
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

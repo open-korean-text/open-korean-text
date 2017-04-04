@@ -1,0 +1,443 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/tokenizer/TokenizerProfile.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
+</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>3 <span style=''> *
+</span>4 <span style=''> * Copyright 2015 Twitter, Inc.
+</span>5 <span style=''> *
+</span>6 <span style=''> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>7 <span style=''> * you may not use this file except in compliance with the License.
+</span>8 <span style=''> * You may obtain a copy of the License at
+</span>9 <span style=''> *
+</span>10 <span style=''> *   http://www.apache.org/licenses/LICENSE-2.0
+</span>11 <span style=''> *
+</span>12 <span style=''> * Unless required by applicable law or agreed to in writing, software
+</span>13 <span style=''> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>14 <span style=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>15 <span style=''> * See the License for the specific language governing permissions and
+</span>16 <span style=''> * limitations under the License.
+</span>17 <span style=''> */
+</span>18 <span style=''>
+</span>19 <span style=''>package org.openkoreantext.processor.tokenizer
+</span>20 <span style=''>
+</span>21 <span style=''>import org.openkoreantext.processor.util.KoreanPos._
+</span>22 <span style=''>
+</span>23 <span style=''>object TokenizerProfile {
+</span>24 <span style=''>  val defaultProfile: TokenizerProfile = TokenizerProfile()
+</span>25 <span style=''>}
+</span>26 <span style=''>
+</span>27 <span style=''>// Lower score is better
+</span>28 <span style=''>case class TokenizerProfile(
+</span>29 <span style=''>    tokenCount: Float = 0.18f,
+</span>30 <span style=''>    unknown: Float = 0.3f,
+</span>31 <span style=''>    wordCount: Float = 0.3f,
+</span>32 <span style=''>    freq: Float = 0.2f,
+</span>33 <span style=''>    unknownCoverage: Float = 0.5f,
+</span>34 <span style=''>    exactMatch: Float = 0.5f,
+</span>35 <span style=''>    allNoun: Float = 0.1f,
+</span>36 <span style=''>    unknownPosCount: Float = 10.0f,
+</span>37 <span style=''>    determinerPosCount: Float = -0.01f,
+</span>38 <span style=''>    exclamationPosCount: Float = 0.01f,
+</span>39 <span style=''>    initialPostPosition: Float = 0.2f,
+</span>40 <span style=''>    haVerb: Float = 0.3f,
+</span>41 <span style=''>    preferredPattern: Float = 0.6f,
+</span>42 <span style=''>    preferredPatterns: Seq[Seq[Any]] = Seq(Seq(Noun, Josa), Seq(ProperNoun, Josa)),
+</span>43 <span style=''>    spaceGuide: Set[Int] = Set[Int](),
+</span>44 <span style=''>    spaceGuidePenalty: Float = 3.0f
+</span>45 <span style=''>)
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1115
+        </td>
+        <td>
+          846
+          -
+          846
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply(TokenizerProfile.apply$default$1, TokenizerProfile.apply$default$2, TokenizerProfile.apply$default$3, TokenizerProfile.apply$default$4, TokenizerProfile.apply$default$5, TokenizerProfile.apply$default$6, TokenizerProfile.apply$default$7, TokenizerProfile.apply$default$8, TokenizerProfile.apply$default$9, TokenizerProfile.apply$default$10, TokenizerProfile.apply$default$11, TokenizerProfile.apply$default$12, TokenizerProfile.apply$default$13, TokenizerProfile.apply$default$14, TokenizerProfile.apply$default$15, TokenizerProfile.apply$default$16)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1106
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$8
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$8
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1100
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1109
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$11
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$11
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1111
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$13
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$13
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1102
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$4
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1105
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$7
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$7
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1114
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$16
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$16
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1108
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$10
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$10
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1099
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1107
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$9
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$9
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1101
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$3
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1110
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$12
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$12
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1113
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$15
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$15
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1104
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$6
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$6
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1103
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$5
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$5
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1112
+        </td>
+        <td>
+          830
+          -
+          830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.TokenizerProfile.apply$default$14
+        </td>
+        <td style="background: #AEF1AE">
+          TokenizerProfile.apply$default$14
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -2,10 +2,9 @@
       <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
       <title id="title">Scoverage Code Coverage</title>
-      <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"/>
-      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-      <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
-      <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.18.3/addons/pager/jquery.tablesorter.pager.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
       <style>
         .meter {
         height: 14px;
@@ -54,16 +53,13 @@
 	overflow: hidden;
 }
       </style>
-      <script>
-        $(document).ready(function() {$(&quot;#packages&quot;).tablesorter();});
-      </script>
     </head><body style="font-family: monospace;">
       <div class="alert alert-info">
         <b>
           SCoverage
         </b>
         generated at
-        Sat Oct 10 12:23:10 PDT 2015
+        Tue Apr 04 15:19:37 PDT 2017
       </div>
       <div class="overview">
         <div class="stats">
@@ -73,33 +69,33 @@
           Lines of code:
         </td>
         <td>
-          2393
+          2680
         </td>
         <td>
           Files:
         </td>
         <td>
-          21
+          25
         </td>
         <td>
           Classes:
         </td>
         <td>
-          26
+          29
         </td>
         <td>
           Methods:
         </td>
         <td>
-          109
+          133
         </td>
       </tr>
       <tr>
         <td>
-          Lines per file
+          Lines per file:
         </td>
         <td>
-          113.95
+          107.20
         </td>
         <td>
           Packages:
@@ -108,16 +104,16 @@
           8
         </td>
         <td>
-          Clases per package:
+          Classes per package:
         </td>
         <td>
-          3.25
+          3.62
         </td>
         <td>
           Methods per class:
         </td>
         <td>
-          4.19
+          4.59
         </td>
       </tr>
       <tr>
@@ -125,50 +121,64 @@
           Total statements:
         </td>
         <td>
-          1905
+          1725
         </td>
         <td>
           Invoked statements:
         </td>
         <td>
-          1662
+          1455
         </td>
         <td>
           Total branches:
         </td>
         <td>
-          84
+          101
         </td>
         <td>
           Invoked branches:
         </td>
         <td>
-          72
+          86
         </td>
+      </tr>
+      <tr>
+        <td>
+          Ignored statements:
+        </td>
+        <td>
+          0
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
       </tr>
       <tr>
         <td>
           Statement coverage:
         </td>
         <td>
-          87.24
+          84.35
           %
         </td>
         <td colspan="2">
           <div class="meter">
-            <span style="width: 87%"></span>
+            <span style="width: 84%"></span>
           </div>
         </td>
         <td>
           Branch coverage:
         </td>
         <td>
-          85.71
+          85.15
           %
         </td>
         <td colspan="2">
           <div class="meter">
-            <span style="width: 86%"></span>
+            <span style="width: 85%"></span>
           </div>
         </td>
       </tr>
@@ -217,347 +227,32 @@
       <tbody>
         <tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/qa/BatchGetUnknownNouns.scala.html">
-          BatchGetUnknownNouns
+        <a href="org/openkoreantext/processor/OpenKoreanTextProcessor.scala.html">
+          OpenKoreanTextProcessor
         </a>
       </td>
       <td>
-        BatchGetUnknownNouns.scala
+        OpenKoreanTextProcessor.scala
       </td>
       <td>
-        65
+        155
       </td>
       <td>
-        2
-      </td>
-      <td>
-        26
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-      <td>
-        2
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/qa/BatchTokenizeTweets.scala.html">
-          BatchTokenizeTweets
-        </a>
-      </td>
-      <td>
-        BatchTokenizeTweets.scala
-      </td>
-      <td>
-        94
-      </td>
-      <td>
-        3
-      </td>
-      <td>
-        57
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-      <td>
-        4
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tokenizer/KoreanChunker.scala.html">
-          ChunkMatch
-        </a>
-      </td>
-      <td>
-        KoreanChunker.scala
-      </td>
-      <td>
-        60
-      </td>
-      <td>
-        1
-      </td>
-      <td>
-        8
-      </td>
-      <td>
-        8
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 100%"></span>
-        </div>
-      </td>
-      <td>
-        100.00
-        %
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 100%"></span>
-        </div>
-      </td>
-      <td>
-        100.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tools/CreateConjugationExamples.scala.html">
-          CreateConjugationExamples
-        </a>
-      </td>
-      <td>
-        CreateConjugationExamples.scala
-      </td>
-      <td>
-        57
-      </td>
-      <td>
-        2
+        9
       </td>
       <td>
         18
       </td>
       <td>
-        0
+        12
       </td>
       <td>
         <div class="meter">
-          <span style="width: 0%"></span>
+          <span style="width: 67%"></span>
         </div>
       </td>
       <td>
-        0.00
-        %
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tools/CreateParsingExamples.scala.html">
-          CreateParsingExamples
-        </a>
-      </td>
-      <td>
-        CreateParsingExamples.scala
-      </td>
-      <td>
-        59
-      </td>
-      <td>
-        1
-      </td>
-      <td>
-        27
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tools/CreatePhraseExtractionExamples.scala.html">
-          CreatePhraseExtractionExamples
-        </a>
-      </td>
-      <td>
-        CreatePhraseExtractionExamples.scala
-      </td>
-      <td>
-        63
-      </td>
-      <td>
-        1
-      </td>
-      <td>
-        31
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tools/DeduplicateAndSortDictionaries.scala.html">
-          DeduplicateAndSortDictionaries
-        </a>
-      </td>
-      <td>
-        DeduplicateAndSortDictionaries.scala
-      </td>
-      <td>
-        70
-      </td>
-      <td>
-        3
-      </td>
-      <td>
-        18
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/util/Hangul.scala.html">
-          Hangul
-        </a>
-      </td>
-      <td>
-        Hangul.scala
-      </td>
-      <td>
-        122
-      </td>
-      <td>
-        4
-      </td>
-      <td>
-        83
-      </td>
-      <td>
-        83
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 100%"></span>
-        </div>
-      </td>
-      <td>
-        100.00
+        66.67
         %
       </td>
       <td>
@@ -577,142 +272,7 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tokenizer/KoreanChunker.scala.html">
-          KoreanChunker
-        </a>
-      </td>
-      <td>
-        KoreanChunker.scala
-      </td>
-      <td>
-        157
-      </td>
-      <td>
-        7
-      </td>
-      <td>
-        91
-      </td>
-      <td>
-        89
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 98%"></span>
-        </div>
-      </td>
-      <td>
-        97.80
-        %
-      </td>
-      <td>
-        4
-      </td>
-      <td>
-        4
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 100%"></span>
-        </div>
-      </td>
-      <td>
-        100.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/util/KoreanConjugation.scala.html">
-          KoreanConjugation
-        </a>
-      </td>
-      <td>
-        KoreanConjugation.scala
-      </td>
-      <td>
-        250
-      </td>
-      <td>
-        4
-      </td>
-      <td>
-        355
-      </td>
-      <td>
-        341
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 96%"></span>
-        </div>
-      </td>
-      <td>
-        96.06
-        %
-      </td>
-      <td>
-        4
-      </td>
-      <td>
-        4
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 100%"></span>
-        </div>
-      </td>
-      <td>
-        100.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/util/KoreanDictionaryProvider.scala.html">
-          KoreanDictionaryProvider
-        </a>
-      </td>
-      <td>
-        KoreanDictionaryProvider.scala
-      </td>
-      <td>
-        161
-      </td>
-      <td>
-        10
-      </td>
-      <td>
-        138
-      </td>
-      <td>
-        134
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 97%"></span>
-        </div>
-      </td>
-      <td>
-        97.10
-        %
-      </td>
-      <td>
-        4
-      </td>
-      <td>
-        3
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 75%"></span>
-        </div>
-      </td>
-      <td>
-        75.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/normalizer/KoreanNormalizer.scala.html">
+        <a href="org/openkoreantext/processor/normalizer/KoreanNormalizer.scala.html">
           KoreanNormalizer
         </a>
       </td>
@@ -757,8 +317,53 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/phrase_extractor/KoreanPhraseExtractor.scala.html">
-          KoreanPhrase
+        <a href="org/openkoreantext/processor/phrase_extractor/KoreanPhraseExtractor.scala.html">
+          KoreanPhraseExtractor
+        </a>
+      </td>
+      <td>
+        KoreanPhraseExtractor.scala
+      </td>
+      <td>
+        341
+      </td>
+      <td>
+        26
+      </td>
+      <td>
+        289
+      </td>
+      <td>
+        281
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 97%"></span>
+        </div>
+      </td>
+      <td>
+        97.23
+        %
+      </td>
+      <td>
+        10
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 80%"></span>
+        </div>
+      </td>
+      <td>
+        80.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/phrase_extractor/KoreanPhraseExtractor.scala.html">
+          KoreanPhraseExtractor.KoreanPhrase
         </a>
       </td>
       <td>
@@ -802,97 +407,97 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/phrase_extractor/KoreanPhraseExtractor.scala.html">
-          KoreanPhraseExtractor
+        <a href="org/openkoreantext/processor/qa/BatchGetUnknownNouns.scala.html">
+          BatchGetUnknownNouns
         </a>
       </td>
       <td>
-        KoreanPhraseExtractor.scala
+        BatchGetUnknownNouns.scala
       </td>
       <td>
-        342
+        65
+      </td>
+      <td>
+        2
       </td>
       <td>
         26
       </td>
       <td>
-        289
-      </td>
-      <td>
-        281
+        0
       </td>
       <td>
         <div class="meter">
-          <span style="width: 97%"></span>
+          <span style="width: 0%"></span>
         </div>
       </td>
       <td>
-        97.23
+        0.00
         %
       </td>
       <td>
-        10
+        2
       </td>
       <td>
-        8
+        0
       </td>
       <td>
         <div class="meter">
-          <span style="width: 80%"></span>
+          <span style="width: 0%"></span>
         </div>
       </td>
       <td>
-        80.00
+        0.00
         %
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/util/KoreanPos.scala.html">
-          KoreanPos
+        <a href="org/openkoreantext/processor/qa/BatchTokenizeTweets.scala.html">
+          BatchTokenizeTweets
         </a>
       </td>
       <td>
-        KoreanPos.scala
+        BatchTokenizeTweets.scala
       </td>
       <td>
-        148
+        94
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        57
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
       </td>
       <td>
         4
       </td>
       <td>
-        142
-      </td>
-      <td>
-        140
+        0
       </td>
       <td>
         <div class="meter">
-          <span style="width: 99%"></span>
+          <span style="width: 0%"></span>
         </div>
       </td>
       <td>
-        98.59
-        %
-      </td>
-      <td>
-        6
-      </td>
-      <td>
-        5
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 83%"></span>
-        </div>
-      </td>
-      <td>
-        83.33
+        0.00
         %
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/qa/KoreanProcessorSandbox.scala.html">
+        <a href="org/openkoreantext/processor/qa/KoreanProcessorSandbox.scala.html">
           KoreanProcessorSandbox
         </a>
       </td>
@@ -937,7 +542,187 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tokenizer/KoreanSentenceSplitter.scala.html">
+        <a href="org/openkoreantext/processor/stemmer/KoreanStemmer.scala.html">
+          KoreanStemmer
+        </a>
+      </td>
+      <td>
+        KoreanStemmer.scala
+      </td>
+      <td>
+        67
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        64
+      </td>
+      <td>
+        63
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 98%"></span>
+        </div>
+      </td>
+      <td>
+        98.44
+        %
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 75%"></span>
+        </div>
+      </td>
+      <td>
+        75.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tokenizer/KoreanChunker.scala.html">
+          KoreanChunker
+        </a>
+      </td>
+      <td>
+        KoreanChunker.scala
+      </td>
+      <td>
+        188
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        143
+      </td>
+      <td>
+        134
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 94%"></span>
+        </div>
+      </td>
+      <td>
+        93.71
+        %
+      </td>
+      <td>
+        18
+      </td>
+      <td>
+        15
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 83%"></span>
+        </div>
+      </td>
+      <td>
+        83.33
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tokenizer/KoreanChunker.scala.html">
+          KoreanChunker.ChunkMatch
+        </a>
+      </td>
+      <td>
+        KoreanChunker.scala
+      </td>
+      <td>
+        61
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tokenizer/KoreanDetokenizer.scala.html">
+          KoreanDetokenizer
+        </a>
+      </td>
+      <td>
+        KoreanDetokenizer.scala
+      </td>
+      <td>
+        59
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        33
+      </td>
+      <td>
+        33
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tokenizer/KoreanSentenceSplitter.scala.html">
           KoreanSentenceSplitter
         </a>
       </td>
@@ -945,7 +730,7 @@
         KoreanSentenceSplitter.scala
       </td>
       <td>
-        41
+        44
       </td>
       <td>
         2
@@ -982,24 +767,24 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/stemmer/KoreanStemmer.scala.html">
-          KoreanStemmer
+        <a href="org/openkoreantext/processor/tokenizer/KoreanTokenizer.scala.html">
+          KoreanTokenizer
         </a>
       </td>
       <td>
-        KoreanStemmer.scala
+        KoreanTokenizer.scala
       </td>
       <td>
-        67
+        227
       </td>
       <td>
-        3
+        6
       </td>
       <td>
-        63
+        176
       </td>
       <td>
-        62
+        173
       </td>
       <td>
         <div class="meter">
@@ -1007,59 +792,14 @@
         </div>
       </td>
       <td>
-        98.41
+        98.30
         %
       </td>
       <td>
-        4
+        11
       </td>
       <td>
-        3
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 75%"></span>
-        </div>
-      </td>
-      <td>
-        75.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/util/KoreanSubstantive.scala.html">
-          KoreanSubstantive
-        </a>
-      </td>
-      <td>
-        KoreanSubstantive.scala
-      </td>
-      <td>
-        116
-      </td>
-      <td>
-        6
-      </td>
-      <td>
-        92
-      </td>
-      <td>
-        92
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 100%"></span>
-        </div>
-      </td>
-      <td>
-        100.00
-        %
-      </td>
-      <td>
-        12
-      </td>
-      <td>
-        12
+        11
       </td>
       <td>
         <div class="meter">
@@ -1072,15 +812,15 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tokenizer/KoreanTokenizer.scala.html">
-          KoreanToken
+        <a href="org/openkoreantext/processor/tokenizer/KoreanTokenizer.scala.html">
+          KoreanTokenizer.KoreanToken
         </a>
       </td>
       <td>
         KoreanTokenizer.scala
       </td>
       <td>
-        112
+        238
       </td>
       <td>
         2
@@ -1117,69 +857,24 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tokenizer/KoreanTokenizer.scala.html">
-          KoreanTokenizer
-        </a>
-      </td>
-      <td>
-        KoreanTokenizer.scala
-      </td>
-      <td>
-        261
-      </td>
-      <td>
-        3
-      </td>
-      <td>
-        171
-      </td>
-      <td>
-        171
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 100%"></span>
-        </div>
-      </td>
-      <td>
-        100.00
-        %
-      </td>
-      <td>
-        12
-      </td>
-      <td>
-        12
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 100%"></span>
-        </div>
-      </td>
-      <td>
-        100.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tokenizer/KoreanTokenizer.scala.html">
+        <a href="org/openkoreantext/processor/tokenizer/ParsedChunk.scala.html">
           ParsedChunk
         </a>
       </td>
       <td>
-        KoreanTokenizer.scala
+        ParsedChunk.scala
       </td>
       <td>
-        102
+        106
       </td>
       <td>
-        3
+        14
       </td>
       <td>
-        86
+        97
       </td>
       <td>
-        86
+        97
       </td>
       <td>
         <div class="meter">
@@ -1191,10 +886,10 @@
         %
       </td>
       <td>
-        8
+        14
       </td>
       <td>
-        8
+        14
       </td>
       <td>
         <div class="meter">
@@ -1207,52 +902,7 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tools/Runnable.scala.html">
-          Runnable
-        </a>
-      </td>
-      <td>
-        Runnable.scala
-      </td>
-      <td>
-        8
-      </td>
-      <td>
-        1
-      </td>
-      <td>
-        1
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        0
-      </td>
-      <td>
-        <div class="meter">
-          <span style="width: 0%"></span>
-        </div>
-      </td>
-      <td>
-        0.00
-        %
-      </td>
-    </tr><tr>
-      <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tokenizer/KoreanSentenceSplitter.scala.html">
+        <a href="org/openkoreantext/processor/tokenizer/KoreanSentenceSplitter.scala.html">
           Sentence
         </a>
       </td>
@@ -1297,32 +947,32 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/TwitterKoreanProcessor.scala.html">
-          TwitterKoreanProcessor
+        <a href="org/openkoreantext/processor/tokenizer/TokenizerProfile.scala.html">
+          TokenizerProfile
         </a>
       </td>
       <td>
-        TwitterKoreanProcessor.scala
+        TokenizerProfile.scala
       </td>
       <td>
-        90
+        24
       </td>
       <td>
-        6
+        1
       </td>
       <td>
-        10
+        17
       </td>
       <td>
-        5
+        17
       </td>
       <td>
         <div class="meter">
-          <span style="width: 50%"></span>
+          <span style="width: 100%"></span>
         </div>
       </td>
       <td>
-        50.00
+        100.00
         %
       </td>
       <td>
@@ -1342,7 +992,277 @@
       </td>
     </tr><tr>
       <td>
-        <a href="/Users/hohyonryu/workspace/twitter-korean-text/src/main/scala/com/twitter/penguin/korean/tools/UpdateAllTheExamples.scala.html">
+        <a href="org/openkoreantext/processor/tools/CreateChunkParsingCandidates.scala.html">
+          CreateChunkParsingCandidates
+        </a>
+      </td>
+      <td>
+        CreateChunkParsingCandidates.scala
+      </td>
+      <td>
+        45
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        26
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tools/CreateConjugationExamples.scala.html">
+          CreateConjugationExamples
+        </a>
+      </td>
+      <td>
+        CreateConjugationExamples.scala
+      </td>
+      <td>
+        57
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        18
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tools/CreateParsingExamples.scala.html">
+          CreateParsingExamples
+        </a>
+      </td>
+      <td>
+        CreateParsingExamples.scala
+      </td>
+      <td>
+        59
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        29
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tools/CreatePhraseExtractionExamples.scala.html">
+          CreatePhraseExtractionExamples
+        </a>
+      </td>
+      <td>
+        CreatePhraseExtractionExamples.scala
+      </td>
+      <td>
+        63
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        33
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tools/DeduplicateAndSortDictionaries.scala.html">
+          DeduplicateAndSortDictionaries
+        </a>
+      </td>
+      <td>
+        DeduplicateAndSortDictionaries.scala
+      </td>
+      <td>
+        70
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        18
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tools/Runnable.scala.html">
+          Runnable
+        </a>
+      </td>
+      <td>
+        Runnable.scala
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/tools/UpdateAllTheExamples.scala.html">
           UpdateAllTheExamples
         </a>
       </td>
@@ -1383,6 +1303,231 @@
       </td>
       <td>
         0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/util/Hangul.scala.html">
+          Hangul
+        </a>
+      </td>
+      <td>
+        Hangul.scala
+      </td>
+      <td>
+        122
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        83
+      </td>
+      <td>
+        83
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/util/KoreanConjugation.scala.html">
+          KoreanConjugation
+        </a>
+      </td>
+      <td>
+        KoreanConjugation.scala
+      </td>
+      <td>
+        250
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        50
+      </td>
+      <td>
+        50
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/util/KoreanDictionaryProvider.scala.html">
+          KoreanDictionaryProvider
+        </a>
+      </td>
+      <td>
+        KoreanDictionaryProvider.scala
+      </td>
+      <td>
+        138
+      </td>
+      <td>
+        10
+      </td>
+      <td>
+        106
+      </td>
+      <td>
+        102
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 96%"></span>
+        </div>
+      </td>
+      <td>
+        96.23
+        %
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 75%"></span>
+        </div>
+      </td>
+      <td>
+        75.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/util/KoreanPos.scala.html">
+          KoreanPos
+        </a>
+      </td>
+      <td>
+        KoreanPos.scala
+      </td>
+      <td>
+        149
+      </td>
+      <td>
+        4
+      </td>
+      <td>
+        142
+      </td>
+      <td>
+        140
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 99%"></span>
+        </div>
+      </td>
+      <td>
+        98.59
+        %
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 83%"></span>
+        </div>
+      </td>
+      <td>
+        83.33
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="org/openkoreantext/processor/util/KoreanSubstantive.scala.html">
+          KoreanSubstantive
+        </a>
+      </td>
+      <td>
+        KoreanSubstantive.scala
+      </td>
+      <td>
+        116
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        92
+      </td>
+      <td>
+        92
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        12
+      </td>
+      <td>
+        12
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
         %
       </td>
     </tr>

@@ -1,0 +1,673 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/qa/BatchGetUnknownNouns.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
+</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>3 <span style=''> *
+</span>4 <span style=''> * Copyright 2014 Twitter, Inc.
+</span>5 <span style=''> *
+</span>6 <span style=''> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>7 <span style=''> * you may not use this file except in compliance with the License.
+</span>8 <span style=''> * You may obtain a copy of the License at
+</span>9 <span style=''> *
+</span>10 <span style=''> *   http://www.apache.org/licenses/LICENSE-2.0
+</span>11 <span style=''> *
+</span>12 <span style=''> * Unless required by applicable law or agreed to in writing, software
+</span>13 <span style=''> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>14 <span style=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>15 <span style=''> * See the License for the specific language governing permissions and
+</span>16 <span style=''> * limitations under the License.
+</span>17 <span style=''> */
+</span>18 <span style=''>
+</span>19 <span style=''>package org.openkoreantext.processor.qa
+</span>20 <span style=''>
+</span>21 <span style=''>import java.util.logging.Logger
+</span>22 <span style=''>
+</span>23 <span style=''>import org.openkoreantext.processor.OpenKoreanTextProcessor
+</span>24 <span style=''>import org.openkoreantext.processor.tokenizer.KoreanChunker._
+</span>25 <span style=''>import org.openkoreantext.processor.tokenizer.KoreanTokenizer._
+</span>26 <span style=''>import org.openkoreantext.processor.util.KoreanPos
+</span>27 <span style=''>
+</span>28 <span style=''>import scala.io.Source
+</span>29 <span style=''>
+</span>30 <span style=''>/**
+</span>31 <span style=''> * Find unknown nouns from a file of tweets.
+</span>32 <span style=''> *
+</span>33 <span style=''> * Program arguments example = &quot;~/korean_201407_100&quot;
+</span>34 <span style=''> */
+</span>35 <span style=''>object BatchGetUnknownNouns {
+</span>36 <span style=''>  private val LOG = Logger.getLogger(getClass.getSimpleName)
+</span>37 <span style=''>  private val VERBOSE = true
+</span>38 <span style=''>
+</span>39 <span style=''>  case class ChunkWithTweet(chunk: String, tweet: String)
+</span>40 <span style=''>
+</span>41 <span style=''>  def main(args: Array[String]) {
+</span>42 <span style=''>    if (args.length </span><span style='background: #F0ADAD'>!=</span><span style=''> 1) {
+</span>43 <span style=''>      println(&quot;The first arg should be an input file path of Korean tweets.&quot;)
+</span>44 <span style=''>      return
+</span>45 <span style=''>    }
+</span>46 <span style=''>    val chunksWithUnknowns = Source.fromFile(args(0)).getLines().foldLeft(List[ChunkWithTweet]()) {
+</span>47 <span style=''>      case (l: List[ChunkWithTweet], line: String) if line.trim.length </span><span style='background: #F0ADAD'>&gt;</span><span style=''> 5 =&gt;
+</span>48 <span style=''>        chunk(line).flatMap {
+</span>49 <span style=''>          case t: KoreanToken if t.pos == KoreanPos.Korean &amp;&amp; tokenize(t.text).exists(_.unknown) =&gt;
+</span>50 <span style=''>            Some(ChunkWithTweet(t.text, line.trim))
+</span>51 <span style=''>          case t: KoreanToken =&gt; None
+</span>52 <span style=''>        }.toList </span><span style='background: #F0ADAD'>:::</span><span style=''> l
+</span>53 <span style=''>      case (l: List[ChunkWithTweet], line: String) =&gt; l
+</span>54 <span style=''>    }.toSet
+</span>55 <span style=''>
+</span>56 <span style=''>    chunksWithUnknowns.toSeq.sortBy(_.chunk).foreach {
+</span>57 <span style=''>      chunkWithTweet: ChunkWithTweet =&gt;
+</span>58 <span style=''>        println(chunkWithTweet.tweet)
+</span>59 <span style=''>        println(OpenKoreanTextProcessor
+</span>60 <span style=''>            .tokenize(chunkWithTweet.tweet)
+</span>61 <span style=''>            .mkString(&quot; &quot;))
+</span>62 <span style=''>
+</span>63 <span style=''>        println(chunkWithTweet.chunk </span><span style='background: #F0ADAD'>+ &quot;: &quot; +</span><span style=''>
+</span>64 <span style=''>            tokenize(chunkWithTweet.chunk).mkString(&quot; &quot;))
+</span>65 <span style=''>        println()
+</span>66 <span style=''>    }
+</span>67 <span style=''>
+</span>68 <span style=''>  }
+</span>69 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          450
+        </td>
+        <td>
+          1172
+          -
+          1172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.logging.Logger.getLogger
+        </td>
+        <td style="background: #F0ADAD">
+          java.util.logging.Logger.getLogger(BatchGetUnknownNouns.this.getClass().getSimpleName())
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          449
+        </td>
+        <td>
+          1182
+          -
+          1182
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getSimpleName
+        </td>
+        <td style="background: #F0ADAD">
+          BatchGetUnknownNouns.this.getClass().getSimpleName()
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          451
+        </td>
+        <td>
+          1221
+          -
+          1221
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          457
+        </td>
+        <td>
+          1324
+          -
+          1324
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          456
+        </td>
+        <td>
+          1324
+          -
+          1324
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          452
+        </td>
+        <td>
+          1340
+          -
+          1342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.!=
+        </td>
+        <td style="background: #F0ADAD">
+          args.length.!=(1)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          455
+        </td>
+        <td>
+          1346
+          -
+          1346
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  scala.Predef.println(&quot;The first arg should be an input file path of Korean tweets.&quot;);
+  return ()
+}
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          453
+        </td>
+        <td>
+          1361
+          -
+          1361
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(&quot;The first arg should be an input file path of Korean tweets.&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          454
+        </td>
+        <td>
+          1432
+          -
+          1432
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          459
+        </td>
+        <td>
+          1539
+          -
+          1539
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          458
+        </td>
+        <td>
+          1494
+          -
+          1494
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Array.apply
+        </td>
+        <td style="background: #F0ADAD">
+          args.apply(0)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          460
+        </td>
+        <td>
+          1616
+          -
+          1617
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          line.trim().length().&gt;(5)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          461
+        </td>
+        <td>
+          1860
+          -
+          1863
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.:::
+        </td>
+        <td style="background: #F0ADAD">
+          l.:::[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet](x$2)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          462
+        </td>
+        <td>
+          1928
+          -
+          1928
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          scala.io.Source.fromFile(args.apply(0))(io.this.Codec.fallbackSystemCodec).getLines().foldLeft[List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet]](scala.collection.immutable.Nil)(((x0$1: List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet], x1$1: String) =&gt; scala.Tuple2.apply[List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet], String](x0$1, x1$1) match {
+  case (_1: List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet], _2: String)(List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet], String)((l @ (_: List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet])), (line @ (_: String))) if line.trim().length().&gt;(5) =&gt; {
+    &lt;synthetic&gt; &lt;artifact&gt; val x$2: List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet] = org.openkoreantext.processor.tokenizer.KoreanChunker.chunk(line).flatMap[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet, Seq[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet]](((x0$2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x0$2 match {
+  case (t @ (_: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)) if t.pos.==(org.openkoreantext.processor.util.KoreanPos.Korean).&amp;&amp;(org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize(t.text, org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize$default$2).exists(((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.unknown))) =&gt; scala.this.Option.option2Iterable[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet](scala.Some.apply[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet](BatchGetUnknownNouns.this.ChunkWithTweet.apply(t.text, line.trim())))
+  case (t @ (_: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)) =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet]).toList;
+    l.:::[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet](x$2)
+  }
+  case (_1: List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet], _2: String)(List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet], String)((l @ (_: List[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet])), (line @ (_: String))) =&gt; l
+})).toSet[org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet]
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          463
+        </td>
+        <td>
+          1973
+          -
+          1973
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet.chunk
+        </td>
+        <td style="background: #F0ADAD">
+          x$3.chunk
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          474
+        </td>
+        <td>
+          1988
+          -
+          1988
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          chunksWithUnknowns.toSeq.sortBy[String](((x$3: org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet) =&gt; x$3.chunk))(math.this.Ordering.String).foreach[Unit](((chunkWithTweet: org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet) =&gt; {
+  scala.Predef.println(chunkWithTweet.tweet);
+  scala.Predef.println(org.openkoreantext.processor.OpenKoreanTextProcessor.tokenize(chunkWithTweet.tweet).mkString(&quot; &quot;));
+  scala.Predef.println(chunkWithTweet.chunk.+(&quot;: &quot;).+(org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize(chunkWithTweet.chunk, org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize$default$2).mkString(&quot; &quot;)));
+  scala.Predef.println()
+}))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          464
+        </td>
+        <td>
+          1970
+          -
+          1970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.String
+        </td>
+        <td style="background: #F0ADAD">
+          math.this.Ordering.String
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          465
+        </td>
+        <td>
+          2061
+          -
+          2061
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.qa.BatchGetUnknownNouns.ChunkWithTweet.tweet
+        </td>
+        <td style="background: #F0ADAD">
+          chunkWithTweet.tweet
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          466
+        </td>
+        <td>
+          2045
+          -
+          2045
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(chunkWithTweet.tweet)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          468
+        </td>
+        <td>
+          2083
+          -
+          2083
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(org.openkoreantext.processor.OpenKoreanTextProcessor.tokenize(chunkWithTweet.tweet).mkString(&quot; &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          467
+        </td>
+        <td>
+          2173
+          -
+          2173
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.OpenKoreanTextProcessor.tokenize(chunkWithTweet.tweet).mkString(&quot; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          469
+        </td>
+        <td>
+          2220
+          -
+          2220
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          472
+        </td>
+        <td>
+          2196
+          -
+          2196
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(chunkWithTweet.chunk.+(&quot;: &quot;).+(org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize(chunkWithTweet.chunk, org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize$default$2).mkString(&quot; &quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          471
+        </td>
+        <td>
+          2218
+          -
+          2226
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          chunkWithTweet.chunk.+(&quot;: &quot;).+(org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize(chunkWithTweet.chunk, org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize$default$2).mkString(&quot; &quot;))
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          470
+        </td>
+        <td>
+          2278
+          -
+          2278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize(chunkWithTweet.chunk, org.openkoreantext.processor.tokenizer.KoreanTokenizer.tokenize$default$2).mkString(&quot; &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          473
+        </td>
+        <td>
+          2300
+          -
+          2300
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

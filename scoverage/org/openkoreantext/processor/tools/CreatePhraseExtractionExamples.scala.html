@@ -1,0 +1,813 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/tools/CreatePhraseExtractionExamples.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
+</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>3 <span style=''> *
+</span>4 <span style=''> * Copyright 2014 Twitter, Inc.
+</span>5 <span style=''> *
+</span>6 <span style=''> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>7 <span style=''> * you may not use this file except in compliance with the License.
+</span>8 <span style=''> * You may obtain a copy of the License at
+</span>9 <span style=''> *
+</span>10 <span style=''> *   http://www.apache.org/licenses/LICENSE-2.0
+</span>11 <span style=''> *
+</span>12 <span style=''> * Unless required by applicable law or agreed to in writing, software
+</span>13 <span style=''> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>14 <span style=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>15 <span style=''> * See the License for the specific language governing permissions and
+</span>16 <span style=''> * limitations under the License.
+</span>17 <span style=''> */
+</span>18 <span style=''>
+</span>19 <span style=''>package org.openkoreantext.processor.tools
+</span>20 <span style=''>
+</span>21 <span style=''>import java.io.FileOutputStream
+</span>22 <span style=''>
+</span>23 <span style=''>import org.openkoreantext.processor.normalizer.KoreanNormalizer
+</span>24 <span style=''>import org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase
+</span>25 <span style=''>import org.openkoreantext.processor.util.KoreanDictionaryProvider._
+</span>26 <span style=''>import org.openkoreantext.processor.OpenKoreanTextProcessor._
+</span>27 <span style=''>
+</span>28 <span style=''>/**
+</span>29 <span style=''> * Create Korean Phrase Extraction Examples.
+</span>30 <span style=''> */
+</span>31 <span style=''>object CreatePhraseExtractionExamples extends Runnable {
+</span>32 <span style=''>
+</span>33 <span style=''>  case class PhraseExample(text: String, phrases: Seq[KoreanPhrase])
+</span>34 <span style=''>
+</span>35 <span style=''>  def run {
+</span>36 <span style=''>    System.err.println(&quot;Reading the sample tweets..&quot;)
+</span>37 <span style=''>
+</span>38 <span style=''>    val phrasePairs = readFileByLineFromResources(&quot;example_tweets.txt&quot;).flatMap {
+</span>39 <span style=''>      case line if line.length </span><span style='background: #F0ADAD'>&gt;</span><span style=''> 0 =&gt;
+</span>40 <span style=''>        val chunk = line.trim
+</span>41 <span style=''>        val normalized = KoreanNormalizer.normalize(chunk)
+</span>42 <span style=''>        val tokens = tokenize(normalized)
+</span>43 <span style=''>        val phrases = extractPhrases(tokens)
+</span>44 <span style=''>        Some(PhraseExample(chunk, phrases))
+</span>45 <span style=''>      case line =&gt; None
+</span>46 <span style=''>    }.toSet
+</span>47 <span style=''>
+</span>48 <span style=''>
+</span>49 <span style=''>    val outputFile: String = &quot;src/test/resources/org/openkoreantext/processor/util/current_phrases.txt&quot;
+</span>50 <span style=''>
+</span>51 <span style=''>    System.err.println(&quot;Writing the new phrases to &quot; </span><span style='background: #F0ADAD'>+</span><span style=''> outputFile)
+</span>52 <span style=''>
+</span>53 <span style=''>    val out = new FileOutputStream(outputFile)
+</span>54 <span style=''>    phrasePairs.toSeq.sortBy(_.text).foreach {
+</span>55 <span style=''>      p =&gt;
+</span>56 <span style=''>        out.write(p.text.getBytes)
+</span>57 <span style=''>        out.write(&quot;\t&quot;.getBytes)
+</span>58 <span style=''>        out.write(p.phrases.mkString(&quot;/&quot;).getBytes)
+</span>59 <span style=''>        out.write(&quot;\n&quot;.getBytes)
+</span>60 <span style=''>    }
+</span>61 <span style=''>    out.close()
+</span>62 <span style=''>
+</span>63 <span style=''>    System.err.println(&quot;Testing the new phrases &quot; </span><span style='background: #F0ADAD'>+</span><span style=''> outputFile)
+</span>64 <span style=''>  }
+</span>65 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1189
+        </td>
+        <td>
+          1236
+          -
+          1236
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintStream.println
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.System.err.println(&quot;Reading the sample tweets..&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1190
+        </td>
+        <td>
+          1319
+          -
+          1319
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;example_tweets.txt&quot;
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1191
+        </td>
+        <td>
+          1382
+          -
+          1383
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          line.length().&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1192
+        </td>
+        <td>
+          1414
+          -
+          1414
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.trim
+        </td>
+        <td style="background: #F0ADAD">
+          line.trim()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1193
+        </td>
+        <td>
+          1470
+          -
+          1470
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.normalizer.KoreanNormalizer.normalize
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.normalizer.KoreanNormalizer.normalize(chunk)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1194
+        </td>
+        <td>
+          1507
+          -
+          1507
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.OpenKoreanTextProcessor.tokenize
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.OpenKoreanTextProcessor.tokenize(normalized)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1196
+        </td>
+        <td>
+          1542
+          -
+          1542
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases$default$3
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1195
+        </td>
+        <td>
+          1542
+          -
+          1542
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases$default$2
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1197
+        </td>
+        <td>
+          1556
+          -
+          1556
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases(tokens, org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases$default$2, org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1198
+        </td>
+        <td>
+          1591
+          -
+          1591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample.apply
+        </td>
+        <td style="background: #F0ADAD">
+          CreatePhraseExtractionExamples.this.PhraseExample.apply(chunk, phrases)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1200
+        </td>
+        <td>
+          1577
+          -
+          1577
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample](scala.Some.apply[org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample](CreatePhraseExtractionExamples.this.PhraseExample.apply(chunk, phrases)))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1199
+        </td>
+        <td>
+          1577
+          -
+          1577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample](CreatePhraseExtractionExamples.this.PhraseExample.apply(chunk, phrases))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1201
+        </td>
+        <td>
+          1628
+          -
+          1628
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1202
+        </td>
+        <td>
+          1628
+          -
+          1628
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1203
+        </td>
+        <td>
+          1639
+          -
+          1639
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.readFileByLineFromResources(&quot;example_tweets.txt&quot;).flatMap[org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample](((x0$1: String) =&gt; x0$1 match {
+  case (line @ _) if line.length().&gt;(0) =&gt; {
+    val chunk: String = line.trim();
+    val normalized: CharSequence = org.openkoreantext.processor.normalizer.KoreanNormalizer.normalize(chunk);
+    val tokens: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken] = org.openkoreantext.processor.OpenKoreanTextProcessor.tokenize(normalized);
+    val phrases: Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase] = org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases(tokens, org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases$default$2, org.openkoreantext.processor.OpenKoreanTextProcessor.extractPhrases$default$3);
+    scala.this.Option.option2Iterable[org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample](scala.Some.apply[org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample](CreatePhraseExtractionExamples.this.PhraseExample.apply(chunk, phrases)))
+  }
+  case (line @ _) =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+})).toSet[org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample]
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1204
+        </td>
+        <td>
+          1676
+          -
+          1676
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;src/test/resources/org/openkoreantext/processor/util/current_phrases.txt&quot;
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1205
+        </td>
+        <td>
+          1805
+          -
+          1806
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Writing the new phrases to &quot;.+(outputFile)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1206
+        </td>
+        <td>
+          1774
+          -
+          1774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintStream.println
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.System.err.println(&quot;Writing the new phrases to &quot;.+(outputFile))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1207
+        </td>
+        <td>
+          1834
+          -
+          1834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.io.FileOutputStream(outputFile)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1218
+        </td>
+        <td>
+          1912
+          -
+          1912
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          phrasePairs.toSeq.sortBy[String](((x$1: org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample) =&gt; x$1.text))(math.this.Ordering.String).foreach[Unit](((p: org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample) =&gt; {
+  out.write(p.text.getBytes());
+  out.write(&quot;\t&quot;.getBytes());
+  out.write(p.phrases.mkString(&quot;/&quot;).getBytes());
+  out.write(&quot;\n&quot;.getBytes())
+}))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1209
+        </td>
+        <td>
+          1895
+          -
+          1895
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.String
+        </td>
+        <td style="background: #F0ADAD">
+          math.this.Ordering.String
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1208
+        </td>
+        <td>
+          1898
+          -
+          1898
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tools.CreatePhraseExtractionExamples.PhraseExample.text
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.text
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1210
+        </td>
+        <td>
+          1950
+          -
+          1950
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.getBytes
+        </td>
+        <td style="background: #F0ADAD">
+          p.text.getBytes()
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1211
+        </td>
+        <td>
+          1942
+          -
+          1942
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.write
+        </td>
+        <td style="background: #F0ADAD">
+          out.write(p.text.getBytes())
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1213
+        </td>
+        <td>
+          1977
+          -
+          1977
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.write
+        </td>
+        <td style="background: #F0ADAD">
+          out.write(&quot;\t&quot;.getBytes())
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1212
+        </td>
+        <td>
+          1983
+          -
+          1983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.getBytes
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\t&quot;.getBytes()
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1214
+        </td>
+        <td>
+          2035
+          -
+          2035
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.getBytes
+        </td>
+        <td style="background: #F0ADAD">
+          p.phrases.mkString(&quot;/&quot;).getBytes()
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1215
+        </td>
+        <td>
+          2010
+          -
+          2010
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.write
+        </td>
+        <td style="background: #F0ADAD">
+          out.write(p.phrases.mkString(&quot;/&quot;).getBytes())
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1216
+        </td>
+        <td>
+          2068
+          -
+          2068
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.getBytes
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\n&quot;.getBytes()
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1217
+        </td>
+        <td>
+          2062
+          -
+          2062
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.write
+        </td>
+        <td style="background: #F0ADAD">
+          out.write(&quot;\n&quot;.getBytes())
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          1219
+        </td>
+        <td>
+          2097
+          -
+          2097
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.close
+        </td>
+        <td style="background: #F0ADAD">
+          out.close()
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1221
+        </td>
+        <td>
+          2123
+          -
+          2123
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintStream.println
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.System.err.println(&quot;Testing the new phrases &quot;.+(outputFile))
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1220
+        </td>
+        <td>
+          2151
+          -
+          2152
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Testing the new phrases &quot;.+(outputFile)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

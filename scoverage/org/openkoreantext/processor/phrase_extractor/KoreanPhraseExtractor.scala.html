@@ -1,0 +1,6832 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/phrase_extractor/KoreanPhraseExtractor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package org.openkoreantext.processor.phrase_extractor
+</span>2 <span style=''>
+</span>3 <span style=''>import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken
+</span>4 <span style=''>import org.openkoreantext.processor.util.KoreanPos._
+</span>5 <span style=''>import org.openkoreantext.processor.util.{Hangul, KoreanDictionaryProvider, KoreanPos}
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''> * KoreanPhraseExtractor extracts suitable phrases for trending topics.
+</span>9 <span style=''> *
+</span>10 <span style=''> * 1. Collapse sequence of POSes to phrase candidates (초 + 거대 + 기업 + 의 -&gt; 초거대기업 + 의)
+</span>11 <span style=''> * 2. Find suitable phrases
+</span>12 <span style=''> */
+</span>13 <span style=''>object KoreanPhraseExtractor {
+</span>14 <span style=''>  private val MinCharsPerPhraseChunkWithoutSpaces = 2
+</span>15 <span style=''>  private val MinPhrasesPerPhraseChunk = 3
+</span>16 <span style=''>
+</span>17 <span style=''>  private val MaxCharsPerPhraseChunkWithoutSpaces = 30
+</span>18 <span style=''>  private val MaxPhrasesPerPhraseChunk = 8
+</span>19 <span style=''>
+</span>20 <span style=''>  private val ModifyingPredicateEndings: Set[Char] = Set('ㄹ', 'ㄴ')
+</span>21 <span style=''>  private val ModifyingPredicateExceptions: Set[Char] = Set('만')
+</span>22 <span style=''>
+</span>23 <span style=''>  private val PhraseTokens = Set(Noun, ProperNoun, Space)
+</span>24 <span style=''>  private val ConjunctionJosa = Set(&quot;와&quot;, &quot;과&quot;, &quot;의&quot;)
+</span>25 <span style=''>  type KoreanPhraseChunk = Seq[KoreanPhrase]
+</span>26 <span style=''>
+</span>27 <span style=''>  private val PhraseHeadPoses = Set(Adjective, Noun, ProperNoun, Alpha, Number)
+</span>28 <span style=''>  private val PhrasTailPoses = Set(Noun, ProperNoun, Alpha, Number)
+</span>29 <span style=''>
+</span>30 <span style=''>  /**
+</span>31 <span style=''>   * 0 for optional, 1 for required
+</span>32 <span style=''>   * * for optional repeatable, + for required repeatable
+</span>33 <span style=''>   *
+</span>34 <span style=''>   * Substantive: 체언 (초거대기업의)
+</span>35 <span style=''>   * Predicate: 용언 (하였었습니다, 개예뻤었다)
+</span>36 <span style=''>   * Modifier: 수식언 (모르는 할수도있는 보이기도하는 예뻐 예쁜 완전 레알 초인간적인 잘 잘한)
+</span>37 <span style=''>   * Standalone: 독립언
+</span>38 <span style=''>   * Functional: 관계언 (조사)
+</span>39 <span style=''>   *
+</span>40 <span style=''>   * N Noun: 명사 (Nouns, Pronouns, Company Names, Proper Noun, Person Names, Numerals, Standalone, Dependent)
+</span>41 <span style=''>   * V Verb: 동사 (하, 먹, 자, 차)
+</span>42 <span style=''>   * J Adjective: 형용사 (예쁘다, 크다, 작다)
+</span>43 <span style=''>   * A Adverb: 부사 (잘, 매우, 빨리, 반드시, 과연)
+</span>44 <span style=''>   * D Determiner: 관형사 (새, 헌, 참, 첫, 이, 그, 저)
+</span>45 <span style=''>   * E Exclamation: 감탄사 (헐, ㅋㅋㅋ, 어머나, 얼씨구)
+</span>46 <span style=''>   *
+</span>47 <span style=''>   * C Conjunction: 접속사
+</span>48 <span style=''>   *
+</span>49 <span style=''>   * j SubstantiveJosa: 조사 (의, 에, 에서)
+</span>50 <span style=''>   * l AdverbialJosa: 부사격 조사 (~인, ~의, ~일)
+</span>51 <span style=''>   * e Eomi: 어말어미 (다, 요, 여, 하댘ㅋㅋ)
+</span>52 <span style=''>   * r PreEomi: 선어말어미 (었)
+</span>53 <span style=''>   *
+</span>54 <span style=''>   * p NounPrefix: 접두사 ('초'대박)
+</span>55 <span style=''>   * v VerbPrefix: 동사 접두어 ('쳐'먹어)
+</span>56 <span style=''>   * s Suffix: 접미사 (~적)
+</span>57 <span style=''>   *
+</span>58 <span style=''>   * a Alpha,
+</span>59 <span style=''>   * n Number
+</span>60 <span style=''>   * o Others
+</span>61 <span style=''>   */
+</span>62 <span style=''>  private val COLLAPSING_RULES = Map(
+</span>63 <span style=''>    // Substantive
+</span>64 <span style=''>    &quot;D0p*N1s0&quot; </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Noun,
+</span>65 <span style=''>    &quot;n*a+n*&quot; </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Noun,
+</span>66 <span style=''>    &quot;n+&quot; </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Noun,
+</span>67 <span style=''>
+</span>68 <span style=''>    // Predicate 초기뻐하다, 와주세요, 초기뻤었고, 추첨하다, 구경하기힘들다, 기뻐하는, 기쁜, 추첨해서, 좋아하다, 걸려있을
+</span>69 <span style=''>    &quot;v*V1r*e0&quot; </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Verb,
+</span>70 <span style=''>    &quot;v*J1r*e0&quot; </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> Adjective
+</span>71 <span style=''>  )
+</span>72 <span style=''>  private val CollapseTrie = KoreanPos.getTrie(COLLAPSING_RULES)
+</span>73 <span style=''>
+</span>74 <span style=''>  private def trimPhraseChunk(phrases: KoreanPhraseChunk): KoreanPhraseChunk = {
+</span>75 <span style=''>    def trimNonNouns: Seq[KoreanPhrase] = {
+</span>76 <span style=''>      phrases
+</span>77 <span style=''>        .dropWhile(t =&gt; !PhraseHeadPoses.contains(t.pos))
+</span>78 <span style=''>        .reverse
+</span>79 <span style=''>        .dropWhile(t =&gt; !PhrasTailPoses.contains(t.pos))
+</span>80 <span style=''>        .reverse
+</span>81 <span style=''>    }
+</span>82 <span style=''>
+</span>83 <span style=''>    def trimSpacesFromPhrase(phrases: Seq[KoreanPhrase]): Seq[KoreanPhrase] = {
+</span>84 <span style=''>      phrases.zipWithIndex.map {
+</span>85 <span style=''>        case (phrase, i) if phrases.length </span><span style='background: #AEF1AE'>==</span><span style=''> 1 =&gt;
+</span>86 <span style=''>          KoreanPhrase(phrase.tokens
+</span>87 <span style=''>            .dropWhile(_.pos </span><span style='background: #AEF1AE'>==</span><span style=''> Space)
+</span>88 <span style=''>            .reverse.dropWhile(_.pos </span><span style='background: #AEF1AE'>==</span><span style=''> Space).reverse, phrase.pos)
+</span>89 <span style=''>        case (phrase, i) if i </span><span style='background: #AEF1AE'>==</span><span style=''> 0 =&gt;
+</span>90 <span style=''>          KoreanPhrase(phrase.tokens.dropWhile(_.pos </span><span style='background: #AEF1AE'>==</span><span style=''> Space), phrase.pos)
+</span>91 <span style=''>        case (phrase, i) if i </span><span style='background: #AEF1AE'>== phrases.length -</span><span style=''> 1 =&gt;
+</span>92 <span style=''>          KoreanPhrase(phrase.tokens.reverse.dropWhile(_.pos </span><span style='background: #AEF1AE'>==</span><span style=''> Space).reverse, phrase.pos)
+</span>93 <span style=''>        case (phrase, i) =&gt; phrase
+</span>94 <span style=''>      }
+</span>95 <span style=''>    }
+</span>96 <span style=''>
+</span>97 <span style=''>    trimSpacesFromPhrase(trimNonNouns)
+</span>98 <span style=''>  }
+</span>99 <span style=''>
+</span>100 <span style=''>  private def trimPhrase(phrase: KoreanPhrase): KoreanPhrase = {
+</span>101 <span style=''>    KoreanPhrase(phrase.tokens.dropWhile(_.pos </span><span style='background: #AEF1AE'>==</span><span style=''> Space)
+</span>102 <span style=''>      .reverse.dropWhile(_.pos </span><span style='background: #AEF1AE'>==</span><span style=''> Space).reverse, phrase.pos)
+</span>103 <span style=''>  }
+</span>104 <span style=''>
+</span>105 <span style=''>
+</span>106 <span style=''>  private def isProperPhraseChunk(phraseChunk: KoreanPhraseChunk): Boolean = {
+</span>107 <span style=''>    def notEndingInNonPhraseSuffix: Boolean = {
+</span>108 <span style=''>      val lastToken = phraseChunk.last.tokens.last
+</span>109 <span style=''>      !(lastToken.pos == Suffix &amp;&amp; lastToken.text </span><span style='background: #AEF1AE'>==</span><span style=''> &quot;적&quot;)
+</span>110 <span style=''>    }
+</span>111 <span style=''>
+</span>112 <span style=''>    def isRightLength: Boolean = {
+</span>113 <span style=''>      val phraseChunkWithoutSpaces: Seq[KoreanPhrase] = phraseChunk.filter(_.pos </span><span style='background: #AEF1AE'>!=</span><span style=''> Space)
+</span>114 <span style=''>
+</span>115 <span style=''>      def checkMaxLength: Boolean = {
+</span>116 <span style=''>        phraseChunkWithoutSpaces.length </span><span style='background: #AEF1AE'>&lt;= MaxPhrasesPerPhraseChunk &amp;&amp;
+</span>117 <span style=''></span><span style='background: #AEF1AE'>          phraseChunkWithoutSpaces.map(_.length).sum &lt;=</span><span style=''> MaxCharsPerPhraseChunkWithoutSpaces
+</span>118 <span style=''>      }
+</span>119 <span style=''>
+</span>120 <span style=''>      def checkMinLength: Boolean = {
+</span>121 <span style=''>        phraseChunkWithoutSpaces.length </span><span style='background: #AEF1AE'>&gt;= MinPhrasesPerPhraseChunk ||</span><span style=''>
+</span>122 <span style=''>          (phraseChunkWithoutSpaces.length </span><span style='background: #AEF1AE'>&lt; MinPhrasesPerPhraseChunk &amp;&amp;
+</span>123 <span style=''></span><span style='background: #AEF1AE'>            phraseChunkWithoutSpaces.map(_.length).sum &gt;=</span><span style=''> MinCharsPerPhraseChunkWithoutSpaces)
+</span>124 <span style=''>      }
+</span>125 <span style=''>
+</span>126 <span style=''>      def checkMinLengthPerToken: Boolean = {
+</span>127 <span style=''>        phraseChunkWithoutSpaces.exists(_.length </span><span style='background: #AEF1AE'>&gt;</span><span style=''> 1)
+</span>128 <span style=''>      }
+</span>129 <span style=''>
+</span>130 <span style=''>      checkMaxLength </span><span style='background: #AEF1AE'>&amp;&amp; checkMinLength &amp;&amp;</span><span style=''> checkMinLengthPerToken
+</span>131 <span style=''>    }
+</span>132 <span style=''>
+</span>133 <span style=''>    isRightLength </span><span style='background: #AEF1AE'>&amp;&amp;</span><span style=''> notEndingInNonPhraseSuffix
+</span>134 <span style=''>  }
+</span>135 <span style=''>
+</span>136 <span style=''>  case class KoreanPhrase(tokens: Seq[KoreanToken], pos: KoreanPos = Noun) {
+</span>137 <span style=''>    override def toString(): String = {
+</span>138 <span style=''>      s&quot;${this.text}($pos: ${this.offset}, ${this.length})&quot;
+</span>139 <span style=''>    }
+</span>140 <span style=''>
+</span>141 <span style=''>    def offset = this.tokens.head.offset
+</span>142 <span style=''>
+</span>143 <span style=''>    def text = this.tokens.map(_.text).mkString(&quot;&quot;)
+</span>144 <span style=''>
+</span>145 <span style=''>    def length = this.tokens.map(_.text.length).sum
+</span>146 <span style=''>
+</span>147 <span style=''>  }
+</span>148 <span style=''>
+</span>149 <span style=''>  case class PhraseBuffer(phrases: List[KoreanPhrase], curTrie: List[KoreanPosTrie], ending: Option[KoreanPos])
+</span>150 <span style=''>
+</span>151 <span style=''>
+</span>152 <span style=''>  protected[processor] def collapsePos(tokens: Seq[KoreanToken]): Seq[KoreanPhrase] = {
+</span>153 <span style=''>    def getTries(token: KoreanToken, trie: List[KoreanPosTrie]): (KoreanPosTrie, List[KoreanPosTrie]) = {
+</span>154 <span style=''>      val curTrie = trie.filter(_.curPos </span><span style='background: #AEF1AE'>==</span><span style=''> token.pos).head
+</span>155 <span style=''>      val nextTrie = curTrie.nextTrie.map {
+</span>156 <span style=''>        case nt: KoreanPosTrie if nt </span><span style='background: #AEF1AE'>==</span><span style=''> selfNode =&gt; curTrie
+</span>157 <span style=''>        case nt: KoreanPosTrie =&gt; nt
+</span>158 <span style=''>      }
+</span>159 <span style=''>      (curTrie, nextTrie)
+</span>160 <span style=''>    }
+</span>161 <span style=''>
+</span>162 <span style=''>    def getInit(phraseBuffer: PhraseBuffer): List[KoreanPhrase] = {
+</span>163 <span style=''>      if (phraseBuffer.phrases.isEmpty) {
+</span>164 <span style=''>        List()
+</span>165 <span style=''>      } else {
+</span>166 <span style=''>        phraseBuffer.phrases.init
+</span>167 <span style=''>      }
+</span>168 <span style=''>    }
+</span>169 <span style=''>
+</span>170 <span style=''>    tokens.foldLeft(PhraseBuffer(List[KoreanPhrase](), CollapseTrie, None)) {
+</span>171 <span style=''>      case (output, token) if output.curTrie.exists(_.curPos </span><span style='background: #AEF1AE'>==</span><span style=''> token.pos) =&gt;
+</span>172 <span style=''>        // Extend the current phrase
+</span>173 <span style=''>        val (ct, nt) = getTries(token, output.curTrie)
+</span>174 <span style=''>
+</span>175 <span style=''>        if (output.phrases.isEmpty </span><span style='background: #AEF1AE'>|| output.curTrie ==</span><span style=''> CollapseTrie) {
+</span>176 <span style=''>          PhraseBuffer(
+</span>177 <span style=''>            output.phrases </span><span style='background: #AEF1AE'>:+</span><span style=''> KoreanPhrase(List(token), ct.ending.getOrElse(Noun)),
+</span>178 <span style=''>            nt, ct.ending
+</span>179 <span style=''>          )
+</span>180 <span style=''>        } else {
+</span>181 <span style=''>          PhraseBuffer(
+</span>182 <span style=''>            getInit(output) </span><span style='background: #AEF1AE'>:+</span><span style=''>
+</span>183 <span style=''>              KoreanPhrase(output.phrases.last.tokens </span><span style='background: #AEF1AE'>:+</span><span style=''> token, ct.ending.getOrElse(Noun)),
+</span>184 <span style=''>            nt, ct.ending
+</span>185 <span style=''>          )
+</span>186 <span style=''>        }
+</span>187 <span style=''>      case (output, token) if CollapseTrie.exists(_.curPos </span><span style='background: #AEF1AE'>==</span><span style=''> token.pos) =&gt;
+</span>188 <span style=''>        // Start a new phrase
+</span>189 <span style=''>        val (ct, nt) = getTries(token, CollapseTrie)
+</span>190 <span style=''>
+</span>191 <span style=''>        PhraseBuffer(
+</span>192 <span style=''>          output.phrases </span><span style='background: #AEF1AE'>:+</span><span style=''> KoreanPhrase(List(token), ct.ending.getOrElse(Noun)),
+</span>193 <span style=''>          nt, ct.ending
+</span>194 <span style=''>        )
+</span>195 <span style=''>      case (output, token) =&gt;
+</span>196 <span style=''>        // Add a single word
+</span>197 <span style=''>        PhraseBuffer(
+</span>198 <span style=''>          output.phrases </span><span style='background: #AEF1AE'>:+</span><span style=''> KoreanPhrase(List(token), token.pos),
+</span>199 <span style=''>          CollapseTrie, output.ending
+</span>200 <span style=''>        )
+</span>201 <span style=''>    }.phrases
+</span>202 <span style=''>  }
+</span>203 <span style=''>
+</span>204 <span style=''>  private def distinctPhrases(chunks: Seq[KoreanPhraseChunk]): Seq[KoreanPhraseChunk] = {
+</span>205 <span style=''>    val (l, buffer) = chunks.foldLeft((List[KoreanPhraseChunk](), Set[String]())) {
+</span>206 <span style=''>      case ((l: List[KoreanPhraseChunk], buffer: Set[String]), chunk: KoreanPhraseChunk) =&gt;
+</span>207 <span style=''>        val phraseText = chunk.map(_.tokens.map(_.text).mkString(&quot;&quot;)).mkString(&quot;&quot;)
+</span>208 <span style=''>        if (buffer.contains(phraseText)) {
+</span>209 <span style=''>          (l, buffer)
+</span>210 <span style=''>        } else {
+</span>211 <span style=''>          (chunk :: l, buffer + phraseText)
+</span>212 <span style=''>        }
+</span>213 <span style=''>    }
+</span>214 <span style=''>    l.reverse
+</span>215 <span style=''>  }
+</span>216 <span style=''>
+</span>217 <span style=''>  protected def getCandidatePhraseChunks(phrases: KoreanPhraseChunk,
+</span>218 <span style=''>                                         filterSpam: Boolean = false): Seq[KoreanPhraseChunk] = {
+</span>219 <span style=''>    def isNotSpam(phrase: KoreanPhrase): Boolean =
+</span>220 <span style=''>      !filterSpam </span><span style='background: #AEF1AE'>||</span><span style=''> !phrase.tokens.exists(
+</span>221 <span style=''>        t =&gt; KoreanDictionaryProvider.spamNouns.contains(t.text)
+</span>222 <span style=''>      )
+</span>223 <span style=''>
+</span>224 <span style=''>    def isNonNounPhraseCandidate(phrase: KoreanPhrase): Boolean = {
+</span>225 <span style=''>      val trimmed = trimPhrase(phrase)
+</span>226 <span style=''>
+</span>227 <span style=''>      // 하는, 할인된, 할인될, exclude: 하지만
+</span>228 <span style=''>      def isModifyingPredicate: Boolean = {
+</span>229 <span style=''>        val lastChar: Char = trimmed.tokens.last.text.last
+</span>230 <span style=''>        (trimmed.pos == Verb || trimmed.pos </span><span style='background: #AEF1AE'>==</span><span style=''> Adjective) </span><span style='background: #AEF1AE'>&amp;&amp;
+</span>231 <span style=''></span><span style='background: #AEF1AE'>          ModifyingPredicateEndings.contains(Hangul.decomposeHangul(lastChar).coda) &amp;&amp;</span><span style=''>
+</span>232 <span style=''>          !ModifyingPredicateExceptions.contains(lastChar)
+</span>233 <span style=''>      }
+</span>234 <span style=''>
+</span>235 <span style=''>      // 과, 와, 의
+</span>236 <span style=''>      def isConjuction: Boolean =
+</span>237 <span style=''>        trimmed.pos </span><span style='background: #AEF1AE'>== Josa &amp;&amp;</span><span style=''> ConjunctionJosa.contains(trimmed.tokens.last.text)
+</span>238 <span style=''>
+</span>239 <span style=''>      def isAlphaNumeric: Boolean =
+</span>240 <span style=''>        trimmed.pos </span><span style='background: #AEF1AE'>== Alpha || trimmed.pos ==</span><span style=''> Number
+</span>241 <span style=''>
+</span>242 <span style=''>      isAlphaNumeric </span><span style='background: #AEF1AE'>|| isModifyingPredicate ||</span><span style=''> isConjuction
+</span>243 <span style=''>    }
+</span>244 <span style=''>
+</span>245 <span style=''>    def collapseNounPhrases(phrases: KoreanPhraseChunk): KoreanPhraseChunk = {
+</span>246 <span style=''>      val (output, buffer) = phrases.foldLeft((Seq[KoreanPhrase](), Seq[KoreanPhrase]())) {
+</span>247 <span style=''>        case ((output, buffer), phrase) if phrase.pos == Noun || phrase.pos == ProperNoun =&gt;
+</span>248 <span style=''>          (output, buffer :+ phrase)
+</span>249 <span style=''>        case ((output, buffer), phrase) =&gt;
+</span>250 <span style=''>          val tempPhrases = if (buffer.length &gt; 0) {
+</span>251 <span style=''>            Seq(KoreanPhrase(buffer.flatMap(_.tokens)), phrase)
+</span>252 <span style=''>          } else {
+</span>253 <span style=''>            Seq(phrase)
+</span>254 <span style=''>          }
+</span>255 <span style=''>          (output ++ tempPhrases, Seq[KoreanPhrase]())
+</span>256 <span style=''>      }
+</span>257 <span style=''>      if (buffer.length </span><span style='background: #AEF1AE'>&gt;</span><span style=''> 0) output </span><span style='background: #AEF1AE'>:+</span><span style=''> KoreanPhrase(buffer.flatMap(_.tokens)) else output
+</span>258 <span style=''>    }
+</span>259 <span style=''>
+</span>260 <span style=''>    def collapsePhrases(phrases: KoreanPhraseChunk): Seq[KoreanPhraseChunk] = {
+</span>261 <span style=''>      def addPhraseToBuffer(phrase: KoreanPhrase, buffer: Seq[KoreanPhraseChunk]): Seq[KoreanPhraseChunk] = {
+</span>262 <span style=''>        buffer.map(b =&gt; b </span><span style='background: #AEF1AE'>:+</span><span style=''> phrase)
+</span>263 <span style=''>      }
+</span>264 <span style=''>
+</span>265 <span style=''>      def newBuffer: Seq[Seq[KoreanPhrase]] = Seq(Seq[KoreanPhrase]())
+</span>266 <span style=''>
+</span>267 <span style=''>      val (output, buffer) = phrases.foldLeft((Seq[KoreanPhraseChunk](), newBuffer)) {
+</span>268 <span style=''>        case ((output, buffer), phrase) if PhraseTokens.contains(phrase.pos) &amp;&amp; isNotSpam(phrase) =&gt;
+</span>269 <span style=''>          val bufferWithThisPhrase = addPhraseToBuffer(phrase, buffer)
+</span>270 <span style=''>          if (phrase.pos == Noun || phrase.pos == ProperNoun) {
+</span>271 <span style=''>            (output ++ bufferWithThisPhrase, bufferWithThisPhrase)
+</span>272 <span style=''>          } else {
+</span>273 <span style=''>            (output, bufferWithThisPhrase)
+</span>274 <span style=''>          }
+</span>275 <span style=''>        case ((output, buffer), phrase) if isNonNounPhraseCandidate(phrase) =&gt;
+</span>276 <span style=''>          (output, addPhraseToBuffer(phrase, buffer))
+</span>277 <span style=''>        case ((output, buffer), phrase) =&gt;
+</span>278 <span style=''>          (output ++ buffer, newBuffer)
+</span>279 <span style=''>      }
+</span>280 <span style=''>      if (buffer.length </span><span style='background: #AEF1AE'>&gt;</span><span style=''> 0) output </span><span style='background: #AEF1AE'>++</span><span style=''> buffer else output
+</span>281 <span style=''>    }
+</span>282 <span style=''>
+</span>283 <span style=''>    def getSingleTokenNouns: Seq[KoreanPhraseChunk] = {
+</span>284 <span style=''>      phrases.filter {
+</span>285 <span style=''>        phrase =&gt;
+</span>286 <span style=''>          val trimmed = trimPhrase(phrase)
+</span>287 <span style=''>          (phrase.pos == Noun || phrase.pos </span><span style='background: #AEF1AE'>==</span><span style=''> ProperNoun) </span><span style='background: #AEF1AE'>&amp;&amp; isNotSpam(phrase) &amp;&amp;</span><span style=''>
+</span>288 <span style=''>            (trimmed.length </span><span style='background: #AEF1AE'>&gt;= MinCharsPerPhraseChunkWithoutSpaces ||
+</span>289 <span style=''></span><span style='background: #AEF1AE'>              trimmed.tokens.length &gt;=</span><span style=''> MinPhrasesPerPhraseChunk)
+</span>290 <span style=''>      }.map(phrase =&gt; Seq(trimPhrase(phrase)))
+</span>291 <span style=''>    }
+</span>292 <span style=''>
+</span>293 <span style=''>    val nounPhrases: KoreanPhraseChunk = collapseNounPhrases(phrases)
+</span>294 <span style=''>    val phraseCollapsed = collapsePhrases(nounPhrases)
+</span>295 <span style=''>
+</span>296 <span style=''>    distinctPhrases(phraseCollapsed.map(trimPhraseChunk) </span><span style='background: #AEF1AE'>++</span><span style=''> getSingleTokenNouns)
+</span>297 <span style=''>  }
+</span>298 <span style=''>
+</span>299 <span style=''>  /**
+</span>300 <span style=''>   * Find suitable phrases
+</span>301 <span style=''>   *
+</span>302 <span style=''>   * @param tokens A sequence of tokens
+</span>303 <span style=''>   * @param filterSpam true if spam words and slangs to be filtered out
+</span>304 <span style=''>   * @param addHashtags true if #hashtags to be included
+</span>305 <span style=''>   * @return A list of KoreanPhrase
+</span>306 <span style=''>   */
+</span>307 <span style=''>  def extractPhrases(tokens: Seq[KoreanToken],
+</span>308 <span style=''>                     filterSpam: Boolean = false,
+</span>309 <span style=''>                     addHashtags: Boolean = true): Seq[KoreanPhrase] = {
+</span>310 <span style=''>    val hashtags = tokens.flatMap {
+</span>311 <span style=''>      case t: KoreanToken if t.pos </span><span style='background: #AEF1AE'>==</span><span style=''> KoreanPos.Hashtag =&gt; Some(KoreanPhrase(Seq(t), KoreanPos.Hashtag))
+</span>312 <span style=''>      case t: KoreanToken if t.pos </span><span style='background: #AEF1AE'>==</span><span style=''> KoreanPos.CashTag =&gt; Some(KoreanPhrase(Seq(t), KoreanPos.CashTag))
+</span>313 <span style=''>      case _ =&gt; None
+</span>314 <span style=''>    }
+</span>315 <span style=''>
+</span>316 <span style=''>    val collapsed = collapsePos(tokens)
+</span>317 <span style=''>    val candidates = getCandidatePhraseChunks(collapsed, filterSpam)
+</span>318 <span style=''>    val permutatedCandidates = permutateCadidates(candidates)
+</span>319 <span style=''>
+</span>320 <span style=''>    val phrases = permutatedCandidates.map {
+</span>321 <span style=''>      phraseChunk: KoreanPhraseChunk =&gt; KoreanPhrase(trimPhraseChunk(phraseChunk).flatMap(_.tokens))
+</span>322 <span style=''>    }
+</span>323 <span style=''>
+</span>324 <span style=''>    if (addHashtags) {
+</span>325 <span style=''>      phrases </span><span style='background: #AEF1AE'>++</span><span style=''> hashtags
+</span>326 <span style=''>    } else {
+</span>327 <span style=''>      phrases
+</span>328 <span style=''>    }
+</span>329 <span style=''>  }
+</span>330 <span style=''>
+</span>331 <span style=''>
+</span>332 <span style=''>  private def permutateCadidates(candidates: Seq[KoreanPhraseChunk]): Seq[KoreanPhraseChunk] = {
+</span>333 <span style=''>    val permutated = candidates.flatMap {
+</span>334 <span style=''>      case phrases if phrases.length </span><span style='background: #AEF1AE'>&gt;</span><span style=''> MinPhrasesPerPhraseChunk =&gt;
+</span>335 <span style=''>        (0 to phrases.length </span><span style='background: #AEF1AE'>-</span><span style=''> MinPhrasesPerPhraseChunk).map {
+</span>336 <span style=''>          i =&gt; trimPhraseChunk(phrases.slice(i, phrases.length))
+</span>337 <span style=''>        }
+</span>338 <span style=''>      case phrases =&gt; Seq(phrases)
+</span>339 <span style=''>    }.filter { phraseChunk: KoreanPhraseChunk =&gt; isProperPhraseChunk(phraseChunk)
+</span>340 <span style=''>    }
+</span>341 <span style=''>    distinctPhrases(permutated)
+</span>342 <span style=''>  }
+</span>343 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          144
+        </td>
+        <td>
+          549
+          -
+          549
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          2
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          145
+        </td>
+        <td>
+          592
+          -
+          592
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          3
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          146
+        </td>
+        <td>
+          647
+          -
+          647
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          30
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          147
+        </td>
+        <td>
+          691
+          -
+          691
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          8
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          148
+        </td>
+        <td>
+          750
+          -
+          750
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[Char]('ㄹ', 'ㄴ')
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          149
+        </td>
+        <td>
+          820
+          -
+          820
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[Char]('만')
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          151
+        </td>
+        <td>
+          866
+          -
+          866
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          150
+        </td>
+        <td>
+          860
+          -
+          860
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          153
+        </td>
+        <td>
+          859
+          -
+          859
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun, org.openkoreantext.processor.util.KoreanPos.ProperNoun, org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          152
+        </td>
+        <td>
+          878
+          -
+          878
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          154
+        </td>
+        <td>
+          920
+          -
+          920
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[String](&quot;와&quot;, &quot;과&quot;, &quot;의&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          155
+        </td>
+        <td>
+          1018
+          -
+          1018
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Adjective
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Adjective
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          158
+        </td>
+        <td>
+          1047
+          -
+          1047
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          160
+        </td>
+        <td>
+          1017
+          -
+          1017
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Adjective, org.openkoreantext.processor.util.KoreanPos.Noun, org.openkoreantext.processor.util.KoreanPos.ProperNoun, org.openkoreantext.processor.util.KoreanPos.Alpha, org.openkoreantext.processor.util.KoreanPos.Number)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          157
+        </td>
+        <td>
+          1035
+          -
+          1035
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          156
+        </td>
+        <td>
+          1029
+          -
+          1029
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          159
+        </td>
+        <td>
+          1054
+          -
+          1054
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          164
+        </td>
+        <td>
+          1122
+          -
+          1122
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          163
+        </td>
+        <td>
+          1115
+          -
+          1115
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          165
+        </td>
+        <td>
+          1096
+          -
+          1096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.apply[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun, org.openkoreantext.processor.util.KoreanPos.ProperNoun, org.openkoreantext.processor.util.KoreanPos.Alpha, org.openkoreantext.processor.util.KoreanPos.Number)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          162
+        </td>
+        <td>
+          1103
+          -
+          1103
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          161
+        </td>
+        <td>
+          1097
+          -
+          1097
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          181
+        </td>
+        <td>
+          2072
+          -
+          2072
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Map.apply[String, org.openkoreantext.processor.util.KoreanPos.Value](scala.Predef.ArrowAssoc[String](&quot;D0p*N1s0&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun), scala.Predef.ArrowAssoc[String](&quot;n*a+n*&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun), scala.Predef.ArrowAssoc[String](&quot;n+&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun), scala.Predef.ArrowAssoc[String](&quot;v*V1r*e0&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Verb), scala.Predef.ArrowAssoc[String](&quot;v*J1r*e0&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Adjective))
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          167
+        </td>
+        <td>
+          2111
+          -
+          2111
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          166
+        </td>
+        <td>
+          2097
+          -
+          2097
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;D0p*N1s0&quot;
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          168
+        </td>
+        <td>
+          2108
+          -
+          2110
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;D0p*N1s0&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          169
+        </td>
+        <td>
+          2121
+          -
+          2121
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;n*a+n*&quot;
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          171
+        </td>
+        <td>
+          2130
+          -
+          2132
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;n*a+n*&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          170
+        </td>
+        <td>
+          2133
+          -
+          2133
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          173
+        </td>
+        <td>
+          2151
+          -
+          2151
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          172
+        </td>
+        <td>
+          2143
+          -
+          2143
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;n+&quot;
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          174
+        </td>
+        <td>
+          2148
+          -
+          2150
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;n+&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          176
+        </td>
+        <td>
+          2255
+          -
+          2255
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Verb
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Verb
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          175
+        </td>
+        <td>
+          2241
+          -
+          2241
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;v*V1r*e0&quot;
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          177
+        </td>
+        <td>
+          2252
+          -
+          2254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;v*V1r*e0&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Verb)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          178
+        </td>
+        <td>
+          2265
+          -
+          2265
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;v*J1r*e0&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          180
+        </td>
+        <td>
+          2276
+          -
+          2278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](&quot;v*J1r*e0&quot;).-&gt;[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Adjective)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          179
+        </td>
+        <td>
+          2279
+          -
+          2279
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Adjective
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Adjective
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          182
+        </td>
+        <td>
+          2340
+          -
+          2340
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.COLLAPSING_RULES
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.COLLAPSING_RULES
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          183
+        </td>
+        <td>
+          2339
+          -
+          2339
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.getTrie
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.getTrie(KoreanPhraseExtractor.this.COLLAPSING_RULES)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          185
+        </td>
+        <td>
+          2522
+          -
+          2522
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhraseHeadPoses.contains(t.pos).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          184
+        </td>
+        <td>
+          2550
+          -
+          2550
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.pos
+        </td>
+        <td style="background: #AEF1AE">
+          t.pos
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          187
+        </td>
+        <td>
+          2597
+          -
+          2597
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhrasTailPoses.contains(t.pos).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          186
+        </td>
+        <td>
+          2624
+          -
+          2624
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.pos
+        </td>
+        <td style="background: #AEF1AE">
+          t.pos
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          188
+        </td>
+        <td>
+          2639
+          -
+          2639
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.dropWhile(((t: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; KoreanPhraseExtractor.this.PhraseHeadPoses.contains(t.pos).unary_!)).reverse.dropWhile(((t: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; KoreanPhraseExtractor.this.PhrasTailPoses.contains(t.pos).unary_!)).reverse
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          211
+        </td>
+        <td>
+          2765
+          -
+          2765
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          189
+        </td>
+        <td>
+          2748
+          -
+          2748
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Int)]
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          212
+        </td>
+        <td>
+          2765
+          -
+          2765
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.zipWithIndex[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Seq[(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Int)]](collection.this.Seq.canBuildFrom[(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Int)]).map[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](((x0$1: (org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Int)) =&gt; x0$1 match {
+  case (_1: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, _2: Int)(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Int)((phrase @ _), (i @ _)) if phrases.length.==(1) =&gt; KoreanPhraseExtractor.this.KoreanPhrase.apply(phrase.tokens.dropWhile(((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse.dropWhile(((x$2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$2.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse, phrase.pos)
+  case (_1: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, _2: Int)(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Int)((phrase @ _), (i @ _)) if i.==(0) =&gt; KoreanPhraseExtractor.this.KoreanPhrase.apply(phrase.tokens.dropWhile(((x$3: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$3.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))), phrase.pos)
+  case (_1: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, _2: Int)(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Int)((phrase @ _), (i @ _)) if i.==(phrases.length.-(1)) =&gt; KoreanPhraseExtractor.this.KoreanPhrase.apply(phrase.tokens.reverse.dropWhile(((x$4: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$4.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse, phrase.pos)
+  case (_1: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, _2: Int)(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Int)((phrase @ _), (i @ _)) =&gt; phrase
+}))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          190
+        </td>
+        <td>
+          2810
+          -
+          2812
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.length.==(1)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          197
+        </td>
+        <td>
+          2840
+          -
+          2840
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(phrase.tokens.dropWhile(((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse.dropWhile(((x$2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$2.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse, phrase.pos)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          191
+        </td>
+        <td>
+          2887
+          -
+          2887
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          192
+        </td>
+        <td>
+          2884
+          -
+          2886
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          194
+        </td>
+        <td>
+          2931
+          -
+          2933
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$2.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          193
+        </td>
+        <td>
+          2934
+          -
+          2934
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          196
+        </td>
+        <td>
+          2957
+          -
+          2957
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.pos
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.pos
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          195
+        </td>
+        <td>
+          2941
+          -
+          2941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.tokens.dropWhile(((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse.dropWhile(((x$2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$2.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          198
+        </td>
+        <td>
+          2992
+          -
+          2994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          i.==(0)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          200
+        </td>
+        <td>
+          3053
+          -
+          3055
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$3.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          202
+        </td>
+        <td>
+          3071
+          -
+          3071
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.pos
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.pos
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          199
+        </td>
+        <td>
+          3056
+          -
+          3056
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          201
+        </td>
+        <td>
+          3046
+          -
+          3046
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.dropWhile
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.tokens.dropWhile(((x$3: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$3.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          203
+        </td>
+        <td>
+          3022
+          -
+          3022
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(phrase.tokens.dropWhile(((x$3: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$3.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))), phrase.pos)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          205
+        </td>
+        <td>
+          3106
+          -
+          3125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          i.==(phrases.length.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          204
+        </td>
+        <td>
+          3124
+          -
+          3125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.length.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          209
+        </td>
+        <td>
+          3218
+          -
+          3218
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.pos
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.pos
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          208
+        </td>
+        <td>
+          3202
+          -
+          3202
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.tokens.reverse.dropWhile(((x$4: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$4.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          207
+        </td>
+        <td>
+          3192
+          -
+          3194
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$4.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          210
+        </td>
+        <td>
+          3153
+          -
+          3153
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(phrase.tokens.reverse.dropWhile(((x$4: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$4.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse, phrase.pos)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          206
+        </td>
+        <td>
+          3195
+          -
+          3195
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          213
+        </td>
+        <td>
+          3297
+          -
+          3297
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.trimSpacesFromPhrase
+        </td>
+        <td style="background: #AEF1AE">
+          trimSpacesFromPhrase(trimNonNouns)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          220
+        </td>
+        <td>
+          3398
+          -
+          3398
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(phrase.tokens.dropWhile(((x$5: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$5.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse.dropWhile(((x$6: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$6.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse, phrase.pos)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          214
+        </td>
+        <td>
+          3432
+          -
+          3432
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          215
+        </td>
+        <td>
+          3429
+          -
+          3431
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$5.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          218
+        </td>
+        <td>
+          3480
+          -
+          3480
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.tokens.dropWhile(((x$5: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$5.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse.dropWhile(((x$6: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$6.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).reverse
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          217
+        </td>
+        <td>
+          3470
+          -
+          3472
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$6.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          216
+        </td>
+        <td>
+          3473
+          -
+          3473
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          219
+        </td>
+        <td>
+          3496
+          -
+          3496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.pos
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.pos
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          221
+        </td>
+        <td>
+          3680
+          -
+          3680
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.last
+        </td>
+        <td style="background: #AEF1AE">
+          phraseChunk.last.tokens.last
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          223
+        </td>
+        <td>
+          3735
+          -
+          3737
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          lastToken.text.==(&quot;적&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          222
+        </td>
+        <td>
+          3710
+          -
+          3710
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Suffix
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Suffix
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          224
+        </td>
+        <td>
+          3691
+          -
+          3691
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          lastToken.pos.==(org.openkoreantext.processor.util.KoreanPos.Suffix).&amp;&amp;(lastToken.text.==(&quot;적&quot;)).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          227
+        </td>
+        <td>
+          3859
+          -
+          3859
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          phraseChunk.filter(((x$7: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$7.pos.!=(org.openkoreantext.processor.util.KoreanPos.Space)))
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          226
+        </td>
+        <td>
+          3866
+          -
+          3868
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          x$7.pos.!=(org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          225
+        </td>
+        <td>
+          3869
+          -
+          3869
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          234
+        </td>
+        <td>
+          3955
+          -
+          4041
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          phraseChunkWithoutSpaces.length.&lt;=(KoreanPhraseExtractor.this.MaxPhrasesPerPhraseChunk).&amp;&amp;(phraseChunkWithoutSpaces.map[Int, Seq[Int]](((x$8: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$8.length))(collection.this.Seq.canBuildFrom[Int]).sum[Int](math.this.Numeric.IntIsIntegral).&lt;=(KoreanPhraseExtractor.this.MaxCharsPerPhraseChunkWithoutSpaces))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          228
+        </td>
+        <td>
+          3958
+          -
+          3958
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MaxPhrasesPerPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MaxPhrasesPerPhraseChunk
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          229
+        </td>
+        <td>
+          4027
+          -
+          4027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.length
+        </td>
+        <td style="background: #AEF1AE">
+          x$8.length
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          232
+        </td>
+        <td>
+          4042
+          -
+          4042
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MaxCharsPerPhraseChunkWithoutSpaces
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MaxCharsPerPhraseChunkWithoutSpaces
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          231
+        </td>
+        <td>
+          4035
+          -
+          4035
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Numeric.IntIsIntegral
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Numeric.IntIsIntegral
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          230
+        </td>
+        <td>
+          4024
+          -
+          4024
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Int]
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          233
+        </td>
+        <td>
+          4039
+          -
+          4041
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;=
+        </td>
+        <td style="background: #AEF1AE">
+          phraseChunkWithoutSpaces.map[Int, Seq[Int]](((x$8: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$8.length))(collection.this.Seq.canBuildFrom[Int]).sum[Int](math.this.Numeric.IntIsIntegral).&lt;=(KoreanPhraseExtractor.this.MaxCharsPerPhraseChunkWithoutSpaces)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          235
+        </td>
+        <td>
+          4168
+          -
+          4168
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MinPhrasesPerPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          243
+        </td>
+        <td>
+          4165
+          -
+          4195
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          phraseChunkWithoutSpaces.length.&gt;=(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk).||(phraseChunkWithoutSpaces.length.&lt;(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk).&amp;&amp;(phraseChunkWithoutSpaces.map[Int, Seq[Int]](((x$9: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$9.length))(collection.this.Seq.canBuildFrom[Int]).sum[Int](math.this.Numeric.IntIsIntegral).&gt;=(KoreanPhraseExtractor.this.MinCharsPerPhraseChunkWithoutSpaces)))
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          236
+        </td>
+        <td>
+          4241
+          -
+          4241
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MinPhrasesPerPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          242
+        </td>
+        <td>
+          4239
+          -
+          4326
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          phraseChunkWithoutSpaces.length.&lt;(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk).&amp;&amp;(phraseChunkWithoutSpaces.map[Int, Seq[Int]](((x$9: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$9.length))(collection.this.Seq.canBuildFrom[Int]).sum[Int](math.this.Numeric.IntIsIntegral).&gt;=(KoreanPhraseExtractor.this.MinCharsPerPhraseChunkWithoutSpaces))
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          238
+        </td>
+        <td>
+          4309
+          -
+          4309
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Int]
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          241
+        </td>
+        <td>
+          4324
+          -
+          4326
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          phraseChunkWithoutSpaces.map[Int, Seq[Int]](((x$9: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$9.length))(collection.this.Seq.canBuildFrom[Int]).sum[Int](math.this.Numeric.IntIsIntegral).&gt;=(KoreanPhraseExtractor.this.MinCharsPerPhraseChunkWithoutSpaces)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          240
+        </td>
+        <td>
+          4327
+          -
+          4327
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MinCharsPerPhraseChunkWithoutSpaces
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MinCharsPerPhraseChunkWithoutSpaces
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          237
+        </td>
+        <td>
+          4312
+          -
+          4312
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.length
+        </td>
+        <td style="background: #AEF1AE">
+          x$9.length
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          239
+        </td>
+        <td>
+          4320
+          -
+          4320
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Numeric.IntIsIntegral
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Numeric.IntIsIntegral
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          245
+        </td>
+        <td>
+          4458
+          -
+          4458
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          phraseChunkWithoutSpaces.exists(((x$10: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$10.length.&gt;(1)))
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          244
+        </td>
+        <td>
+          4468
+          -
+          4469
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          x$10.length.&gt;(1)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          246
+        </td>
+        <td>
+          4503
+          -
+          4523
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          checkMaxLength.&amp;&amp;(checkMinLength).&amp;&amp;(checkMinLengthPerToken)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          247
+        </td>
+        <td>
+          4572
+          -
+          4574
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          isRightLength.&amp;&amp;(notEndingInNonPhraseSuffix)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          254
+        </td>
+        <td>
+          4746
+          -
+          4746
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.pos
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhrase.this.pos
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          253
+        </td>
+        <td>
+          4739
+          -
+          4739
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.text
+        </td>
+        <td style="background: #AEF1AE">
+          this.text
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          256
+        </td>
+        <td>
+          4774
+          -
+          4774
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.length
+        </td>
+        <td style="background: #AEF1AE">
+          this.length
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          250
+        </td>
+        <td>
+          4749
+          -
+          4749
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          249
+        </td>
+        <td>
+          4744
+          -
+          4744
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;(&quot;
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          252
+        </td>
+        <td>
+          4781
+          -
+          4781
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;)&quot;
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          255
+        </td>
+        <td>
+          4758
+          -
+          4758
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.offset
+        </td>
+        <td style="background: #AEF1AE">
+          this.offset
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          257
+        </td>
+        <td>
+          4730
+          -
+          4730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;&quot;, &quot;(&quot;, &quot;: &quot;, &quot;, &quot;, &quot;)&quot;).s(this.text, KoreanPhrase.this.pos, this.offset, this.length)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          248
+        </td>
+        <td>
+          4732
+          -
+          4732
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          251
+        </td>
+        <td>
+          4765
+          -
+          4765
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;, &quot;
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          258
+        </td>
+        <td>
+          4825
+          -
+          4825
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.offset
+        </td>
+        <td style="background: #AEF1AE">
+          this.tokens.head.offset
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          259
+        </td>
+        <td>
+          4880
+          -
+          4880
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          this.tokens.map[String, Seq[String]](((x$11: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$11.text))(collection.this.Seq.canBuildFrom[String]).mkString(&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          262
+        </td>
+        <td>
+          4934
+          -
+          4934
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Numeric.IntIsIntegral
+        </td>
+        <td style="background: #AEF1AE">
+          math.this.Numeric.IntIsIntegral
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          261
+        </td>
+        <td>
+          4918
+          -
+          4918
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Int]
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          263
+        </td>
+        <td>
+          4934
+          -
+          4934
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.sum
+        </td>
+        <td style="background: #AEF1AE">
+          this.tokens.map[Int, Seq[Int]](((x$12: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$12.text.length()))(collection.this.Seq.canBuildFrom[Int]).sum[Int](math.this.Numeric.IntIsIntegral)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          260
+        </td>
+        <td>
+          4926
+          -
+          4926
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.length
+        </td>
+        <td style="background: #AEF1AE">
+          x$12.text.length()
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          265
+        </td>
+        <td>
+          5293
+          -
+          5295
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$13.curPos.==(token.pos)
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          264
+        </td>
+        <td>
+          5302
+          -
+          5302
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
+        </td>
+        <td style="background: #AEF1AE">
+          token.pos
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          266
+        </td>
+        <td>
+          5307
+          -
+          5307
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #AEF1AE">
+          trie.filter(((x$13: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie) =&gt; x$13.curPos.==(token.pos))).head
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          270
+        </td>
+        <td>
+          5354
+          -
+          5354
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.map
+        </td>
+        <td style="background: #AEF1AE">
+          curTrie.nextTrie.map[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]](((x0$2: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie) =&gt; x0$2 match {
+  case (nt @ (_: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie)) if nt.==(org.openkoreantext.processor.util.KoreanPos.selfNode) =&gt; curTrie
+  case (nt @ (_: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie)) =&gt; nt
+}))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie])
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          269
+        </td>
+        <td>
+          5354
+          -
+          5354
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          268
+        </td>
+        <td>
+          5393
+          -
+          5395
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          nt.==(org.openkoreantext.processor.util.KoreanPos.selfNode)
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          267
+        </td>
+        <td>
+          5396
+          -
+          5396
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.selfNode
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.selfNode
+        </td>
+      </tr><tr>
+        <td>
+          159
+        </td>
+        <td>
+          271
+        </td>
+        <td>
+          5467
+          -
+          5467
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]](curTrie, nextTrie)
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          272
+        </td>
+        <td>
+          5593
+          -
+          5593
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          phraseBuffer.phrases.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          274
+        </td>
+        <td>
+          5616
+          -
+          5616
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          273
+        </td>
+        <td>
+          5616
+          -
+          5616
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          276
+        </td>
+        <td>
+          5663
+          -
+          5663
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableLike.init
+        </td>
+        <td style="background: #AEF1AE">
+          phraseBuffer.phrases.init
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          275
+        </td>
+        <td>
+          5663
+          -
+          5663
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.init
+        </td>
+        <td style="background: #AEF1AE">
+          phraseBuffer.phrases.init
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          280
+        </td>
+        <td>
+          5715
+          -
+          5715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhraseBuffer.apply(scala.collection.immutable.Nil, KoreanPhraseExtractor.this.CollapseTrie, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          277
+        </td>
+        <td>
+          5734
+          -
+          5734
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          279
+        </td>
+        <td>
+          5752
+          -
+          5752
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          278
+        </td>
+        <td>
+          5738
+          -
+          5738
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.CollapseTrie
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.CollapseTrie
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          283
+        </td>
+        <td>
+          5812
+          -
+          5812
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.exists
+        </td>
+        <td style="background: #AEF1AE">
+          output.curTrie.exists(((x$14: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie) =&gt; x$14.curPos.==(token.pos)))
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          282
+        </td>
+        <td>
+          5822
+          -
+          5824
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$14.curPos.==(token.pos)
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          281
+        </td>
+        <td>
+          5831
+          -
+          5831
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
+        </td>
+        <td style="background: #AEF1AE">
+          token.pos
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          285
+        </td>
+        <td>
+          5893
+          -
+          5893
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$15._2
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          284
+        </td>
+        <td>
+          5889
+          -
+          5889
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$15._1
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          286
+        </td>
+        <td>
+          5988
+          -
+          5988
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.CollapseTrie
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.CollapseTrie
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          288
+        </td>
+        <td>
+          5967
+          -
+          5987
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          output.phrases.isEmpty.||(output.curTrie.==(KoreanPhraseExtractor.this.CollapseTrie))
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          287
+        </td>
+        <td>
+          5985
+          -
+          5987
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          output.curTrie.==(KoreanPhraseExtractor.this.CollapseTrie)
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          297
+        </td>
+        <td>
+          6026
+          -
+          6026
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhraseBuffer.apply(output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), nt, ct.ending)
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          296
+        </td>
+        <td>
+          6026
+          -
+          6026
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhraseBuffer.apply(output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), nt, ct.ending)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          289
+        </td>
+        <td>
+          6075
+          -
+          6075
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          292
+        </td>
+        <td>
+          6070
+          -
+          6070
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun))
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          294
+        </td>
+        <td>
+          6055
+          -
+          6057
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          291
+        </td>
+        <td>
+          6103
+          -
+          6103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          290
+        </td>
+        <td>
+          6104
+          -
+          6104
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          293
+        </td>
+        <td>
+          6055
+          -
+          6055
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          295
+        </td>
+        <td>
+          6131
+          -
+          6131
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.ending
+        </td>
+        <td style="background: #AEF1AE">
+          ct.ending
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          307
+        </td>
+        <td>
+          6189
+          -
+          6189
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhraseBuffer.apply(getInit(output).:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(output.phrases.last.tokens.:+[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](token)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), nt, ct.ending)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          306
+        </td>
+        <td>
+          6189
+          -
+          6189
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhraseBuffer.apply(getInit(output).:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(output.phrases.last.tokens.:+[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](token)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), nt, ct.ending)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          304
+        </td>
+        <td>
+          6219
+          -
+          6221
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          getInit(output).:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(output.phrases.last.tokens.:+[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](token)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          303
+        </td>
+        <td>
+          6219
+          -
+          6219
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          298
+        </td>
+        <td>
+          6276
+          -
+          6276
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          301
+        </td>
+        <td>
+          6305
+          -
+          6305
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          300
+        </td>
+        <td>
+          6306
+          -
+          6306
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          299
+        </td>
+        <td>
+          6276
+          -
+          6278
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          output.phrases.last.tokens.:+[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](token)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          302
+        </td>
+        <td>
+          6248
+          -
+          6248
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(output.phrases.last.tokens.:+[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](token)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun))
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          305
+        </td>
+        <td>
+          6333
+          -
+          6333
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.ending
+        </td>
+        <td style="background: #AEF1AE">
+          ct.ending
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          310
+        </td>
+        <td>
+          6411
+          -
+          6411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.LinearSeqOptimized.exists
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.CollapseTrie.exists(((x$16: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie) =&gt; x$16.curPos.==(token.pos)))
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          309
+        </td>
+        <td>
+          6421
+          -
+          6423
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$16.curPos.==(token.pos)
+        </td>
+      </tr><tr>
+        <td>
+          187
+        </td>
+        <td>
+          308
+        </td>
+        <td>
+          6430
+          -
+          6430
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
+        </td>
+        <td style="background: #AEF1AE">
+          token.pos
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          312
+        </td>
+        <td>
+          6485
+          -
+          6485
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$17._2
+        </td>
+      </tr><tr>
+        <td>
+          189
+        </td>
+        <td>
+          311
+        </td>
+        <td>
+          6481
+          -
+          6481
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$17._1
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          320
+        </td>
+        <td>
+          6542
+          -
+          6542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhraseBuffer.apply(output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), nt, ct.ending)
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          313
+        </td>
+        <td>
+          6589
+          -
+          6589
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token)
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          316
+        </td>
+        <td>
+          6584
+          -
+          6584
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun))
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          318
+        </td>
+        <td>
+          6569
+          -
+          6571
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          315
+        </td>
+        <td>
+          6617
+          -
+          6617
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          317
+        </td>
+        <td>
+          6569
+          -
+          6569
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          314
+        </td>
+        <td>
+          6618
+          -
+          6618
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          319
+        </td>
+        <td>
+          6643
+          -
+          6643
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.ending
+        </td>
+        <td style="background: #AEF1AE">
+          ct.ending
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          328
+        </td>
+        <td>
+          6739
+          -
+          6739
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.PhraseBuffer.apply(output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), token.pos))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), KoreanPhraseExtractor.this.CollapseTrie, output.ending)
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          322
+        </td>
+        <td>
+          6801
+          -
+          6801
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
+        </td>
+        <td style="background: #AEF1AE">
+          token.pos
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          325
+        </td>
+        <td>
+          6766
+          -
+          6768
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), token.pos))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          321
+        </td>
+        <td>
+          6786
+          -
+          6786
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token)
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          324
+        </td>
+        <td>
+          6766
+          -
+          6766
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          323
+        </td>
+        <td>
+          6781
+          -
+          6781
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), token.pos)
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          327
+        </td>
+        <td>
+          6838
+          -
+          6838
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.ending
+        </td>
+        <td style="background: #AEF1AE">
+          output.ending
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          326
+        </td>
+        <td>
+          6817
+          -
+          6817
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.CollapseTrie
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.CollapseTrie
+        </td>
+      </tr><tr>
+        <td>
+          201
+        </td>
+        <td>
+          329
+        </td>
+        <td>
+          6861
+          -
+          6861
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer.phrases
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.foldLeft[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer](KoreanPhraseExtractor.this.PhraseBuffer.apply(scala.collection.immutable.Nil, KoreanPhraseExtractor.this.CollapseTrie, scala.None))(((x0$3: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer, x1$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; scala.Tuple2.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x0$3, x1$1) match {
+  case (_1: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer, _2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)((output @ _), (token @ _)) if output.curTrie.exists(((x$14: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie) =&gt; x$14.curPos.==(token.pos))) =&gt; {
+    &lt;synthetic&gt; &lt;artifact&gt; private[this] val x$15: (org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]) = (getTries(token, output.curTrie): (org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]) @unchecked) match {
+      case (_1: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, _2: List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie])(org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie])((ct @ _), (nt @ _)) =&gt; scala.Tuple2.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]](ct, nt)
+    };
+    val ct: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie = x$15._1;
+    val nt: List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie] = x$15._2;
+    if (output.phrases.isEmpty.||(output.curTrie.==(KoreanPhraseExtractor.this.CollapseTrie)))
+      KoreanPhraseExtractor.this.PhraseBuffer.apply(output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), nt, ct.ending)
+    else
+      KoreanPhraseExtractor.this.PhraseBuffer.apply(getInit(output).:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(output.phrases.last.tokens.:+[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](token)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), nt, ct.ending)
+  }
+  case (_1: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer, _2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)((output @ _), (token @ _)) if KoreanPhraseExtractor.this.CollapseTrie.exists(((x$16: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie) =&gt; x$16.curPos.==(token.pos))) =&gt; {
+    &lt;synthetic&gt; &lt;artifact&gt; private[this] val x$17: (org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]) = (getTries(token, KoreanPhraseExtractor.this.CollapseTrie): (org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]) @unchecked) match {
+      case (_1: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, _2: List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie])(org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie])((ct @ _), (nt @ _)) =&gt; scala.Tuple2.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]](ct, nt)
+    };
+    val ct: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie = x$17._1;
+    val nt: List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie] = x$17._2;
+    KoreanPhraseExtractor.this.PhraseBuffer.apply(output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), ct.ending.getOrElse[org.openkoreantext.processor.util.KoreanPos.KoreanPos](org.openkoreantext.processor.util.KoreanPos.Noun)))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), nt, ct.ending)
+  }
+  case (_1: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer, _2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)(org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.PhraseBuffer, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)((output @ _), (token @ _)) =&gt; KoreanPhraseExtractor.this.PhraseBuffer.apply(output.phrases.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, List[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.immutable.List.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token), token.pos))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]), KoreanPhraseExtractor.this.CollapseTrie, output.ending)
+})).phrases
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          331
+        </td>
+        <td>
+          6976
+          -
+          6976
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$21._2
+        </td>
+      </tr><tr>
+        <td>
+          205
+        </td>
+        <td>
+          330
+        </td>
+        <td>
+          6973
+          -
+          6973
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$21._1
+        </td>
+      </tr><tr>
+        <td>
+          214
+        </td>
+        <td>
+          332
+        </td>
+        <td>
+          7371
+          -
+          7371
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.List.reverse
+        </td>
+        <td style="background: #AEF1AE">
+          l.reverse
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          336
+        </td>
+        <td>
+          7620
+          -
+          7622
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          filterSpam.unary_!.||(phrase.tokens.exists(((t: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.util.KoreanDictionaryProvider.spamNouns.contains(t.text))).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          220
+        </td>
+        <td>
+          335
+        </td>
+        <td>
+          7623
+          -
+          7623
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.tokens.exists(((t: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.util.KoreanDictionaryProvider.spamNouns.contains(t.text))).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          334
+        </td>
+        <td>
+          7702
+          -
+          7702
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.CharArraySet.contains
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.spamNouns.contains(t.text)
+        </td>
+      </tr><tr>
+        <td>
+          221
+        </td>
+        <td>
+          333
+        </td>
+        <td>
+          7705
+          -
+          7705
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+        </td>
+        <td style="background: #AEF1AE">
+          t.text
+        </td>
+      </tr><tr>
+        <td>
+          225
+        </td>
+        <td>
+          337
+        </td>
+        <td>
+          7818
+          -
+          7818
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.trimPhrase
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.trimPhrase(phrase)
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          339
+        </td>
+        <td>
+          7962
+          -
+          7962
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IndexedSeqOptimized.last
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(trimmed.tokens.last.text).last
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          338
+        </td>
+        <td>
+          7957
+          -
+          7957
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.tokens.last.text
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          340
+        </td>
+        <td>
+          7991
+          -
+          7991
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Verb
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Verb
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          342
+        </td>
+        <td>
+          8011
+          -
+          8013
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.pos.==(org.openkoreantext.processor.util.KoreanPos.Adjective)
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          341
+        </td>
+        <td>
+          8014
+          -
+          8014
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Adjective
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Adjective
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          346
+        </td>
+        <td>
+          8025
+          -
+          8114
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.pos.==(org.openkoreantext.processor.util.KoreanPos.Verb).||(trimmed.pos.==(org.openkoreantext.processor.util.KoreanPos.Adjective)).&amp;&amp;(KoreanPhraseExtractor.this.ModifyingPredicateEndings.contains(org.openkoreantext.processor.util.Hangul.decomposeHangul(lastChar).coda)).&amp;&amp;(KoreanPhraseExtractor.this.ModifyingPredicateExceptions.contains(lastChar).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          343
+        </td>
+        <td>
+          8106
+          -
+          8106
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.Hangul.HangulChar.coda
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.Hangul.decomposeHangul(lastChar).coda
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          344
+        </td>
+        <td>
+          8072
+          -
+          8072
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.ModifyingPredicateEndings.contains(org.openkoreantext.processor.util.Hangul.decomposeHangul(lastChar).coda)
+        </td>
+      </tr><tr>
+        <td>
+          232
+        </td>
+        <td>
+          345
+        </td>
+        <td>
+          8125
+          -
+          8125
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.ModifyingPredicateExceptions.contains(lastChar).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          349
+        </td>
+        <td>
+          8289
+          -
+          8289
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.ConjunctionJosa.contains(trimmed.tokens.last.text)
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          348
+        </td>
+        <td>
+          8310
+          -
+          8310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.tokens.last.text
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          350
+        </td>
+        <td>
+          8254
+          -
+          8264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.pos.==(org.openkoreantext.processor.util.KoreanPos.Josa).&amp;&amp;(KoreanPhraseExtractor.this.ConjunctionJosa.contains(trimmed.tokens.last.text))
+        </td>
+      </tr><tr>
+        <td>
+          237
+        </td>
+        <td>
+          347
+        </td>
+        <td>
+          8257
+          -
+          8257
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Josa
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Josa
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          352
+        </td>
+        <td>
+          8400
+          -
+          8400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Number
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          354
+        </td>
+        <td>
+          8373
+          -
+          8399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.pos.==(org.openkoreantext.processor.util.KoreanPos.Alpha).||(trimmed.pos.==(org.openkoreantext.processor.util.KoreanPos.Number))
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          351
+        </td>
+        <td>
+          8376
+          -
+          8376
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+      </tr><tr>
+        <td>
+          240
+        </td>
+        <td>
+          353
+        </td>
+        <td>
+          8397
+          -
+          8399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.pos.==(org.openkoreantext.processor.util.KoreanPos.Number)
+        </td>
+      </tr><tr>
+        <td>
+          242
+        </td>
+        <td>
+          355
+        </td>
+        <td>
+          8429
+          -
+          8455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          isAlphaNumeric.||(isModifyingPredicate).||(isConjuction)
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          357
+        </td>
+        <td>
+          8574
+          -
+          8574
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$23._2
+        </td>
+      </tr><tr>
+        <td>
+          246
+        </td>
+        <td>
+          356
+        </td>
+        <td>
+          8566
+          -
+          8566
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$23._1
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          364
+        </td>
+        <td>
+          9091
+          -
+          9091
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          367
+        </td>
+        <td>
+          9138
+          -
+          9138
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.output
+        </td>
+        <td style="background: #AEF1AE">
+          output
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          358
+        </td>
+        <td>
+          9079
+          -
+          9080
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          buffer.length.&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          361
+        </td>
+        <td>
+          9121
+          -
+          9121
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          buffer.flatMap[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((x$24: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$24.tokens))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          360
+        </td>
+        <td>
+          9121
+          -
+          9121
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          363
+        </td>
+        <td>
+          9106
+          -
+          9106
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(buffer.flatMap[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((x$24: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$24.tokens))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), KoreanPhraseExtractor.this.KoreanPhrase.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          366
+        </td>
+        <td>
+          9091
+          -
+          9093
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          output.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk](KoreanPhraseExtractor.this.KoreanPhrase.apply(buffer.flatMap[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((x$24: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$24.tokens))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), KoreanPhraseExtractor.this.KoreanPhrase.apply$default$2))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          359
+        </td>
+        <td>
+          9124
+          -
+          9124
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.tokens
+        </td>
+        <td style="background: #AEF1AE">
+          x$24.tokens
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          362
+        </td>
+        <td>
+          9094
+          -
+          9094
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          257
+        </td>
+        <td>
+          365
+        </td>
+        <td>
+          9091
+          -
+          9093
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          output.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk](KoreanPhraseExtractor.this.KoreanPhrase.apply(buffer.flatMap[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((x$24: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$24.tokens))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), KoreanPhraseExtractor.this.KoreanPhrase.apply$default$2))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          262
+        </td>
+        <td>
+          370
+        </td>
+        <td>
+          9360
+          -
+          9360
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]]
+        </td>
+      </tr><tr>
+        <td>
+          262
+        </td>
+        <td>
+          369
+        </td>
+        <td>
+          9368
+          -
+          9370
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          b.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](phrase)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          262
+        </td>
+        <td>
+          368
+        </td>
+        <td>
+          9368
+          -
+          9368
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          262
+        </td>
+        <td>
+          371
+        </td>
+        <td>
+          9360
+          -
+          9360
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          buffer.map[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase], Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](((b: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk) =&gt; b.:+[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](phrase)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])))(collection.this.Seq.canBuildFrom[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]])
+        </td>
+      </tr><tr>
+        <td>
+          265
+        </td>
+        <td>
+          373
+        </td>
+        <td>
+          9437
+          -
+          9437
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](scala.collection.Seq.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]())
+        </td>
+      </tr><tr>
+        <td>
+          265
+        </td>
+        <td>
+          372
+        </td>
+        <td>
+          9455
+          -
+          9455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]()
+        </td>
+      </tr><tr>
+        <td>
+          267
+        </td>
+        <td>
+          375
+        </td>
+        <td>
+          9479
+          -
+          9479
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$25._2
+        </td>
+      </tr><tr>
+        <td>
+          267
+        </td>
+        <td>
+          374
+        </td>
+        <td>
+          9471
+          -
+          9471
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$25._1
+        </td>
+      </tr><tr>
+        <td>
+          280
+        </td>
+        <td>
+          376
+        </td>
+        <td>
+          10172
+          -
+          10173
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          buffer.length.&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          280
+        </td>
+        <td>
+          379
+        </td>
+        <td>
+          10184
+          -
+          10186
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          output.++[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase], Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](buffer)(collection.this.Seq.canBuildFrom[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]])
+        </td>
+      </tr><tr>
+        <td>
+          280
+        </td>
+        <td>
+          378
+        </td>
+        <td>
+          10184
+          -
+          10186
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          output.++[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase], Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](buffer)(collection.this.Seq.canBuildFrom[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]])
+        </td>
+      </tr><tr>
+        <td>
+          280
+        </td>
+        <td>
+          377
+        </td>
+        <td>
+          10184
+          -
+          10184
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]]
+        </td>
+      </tr><tr>
+        <td>
+          280
+        </td>
+        <td>
+          380
+        </td>
+        <td>
+          10199
+          -
+          10199
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.output
+        </td>
+        <td style="background: #F0ADAD">
+          output
+        </td>
+      </tr><tr>
+        <td>
+          286
+        </td>
+        <td>
+          381
+        </td>
+        <td>
+          10344
+          -
+          10344
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.trimPhrase
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.trimPhrase(phrase)
+        </td>
+      </tr><tr>
+        <td>
+          287
+        </td>
+        <td>
+          382
+        </td>
+        <td>
+          10378
+          -
+          10378
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Noun
+        </td>
+      </tr><tr>
+        <td>
+          287
+        </td>
+        <td>
+          385
+        </td>
+        <td>
+          10424
+          -
+          10424
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.isNotSpam
+        </td>
+        <td style="background: #AEF1AE">
+          isNotSpam(phrase)
+        </td>
+      </tr><tr>
+        <td>
+          287
+        </td>
+        <td>
+          390
+        </td>
+        <td>
+          10412
+          -
+          10435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.pos.==(org.openkoreantext.processor.util.KoreanPos.Noun).||(phrase.pos.==(org.openkoreantext.processor.util.KoreanPos.ProperNoun)).&amp;&amp;(isNotSpam(phrase)).&amp;&amp;(trimmed.length.&gt;=(KoreanPhraseExtractor.this.MinCharsPerPhraseChunkWithoutSpaces).||(trimmed.tokens.length.&gt;=(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk)))
+        </td>
+      </tr><tr>
+        <td>
+          287
+        </td>
+        <td>
+          384
+        </td>
+        <td>
+          10397
+          -
+          10399
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          phrase.pos.==(org.openkoreantext.processor.util.KoreanPos.ProperNoun)
+        </td>
+      </tr><tr>
+        <td>
+          287
+        </td>
+        <td>
+          383
+        </td>
+        <td>
+          10400
+          -
+          10400
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+        </td>
+      </tr><tr>
+        <td>
+          288
+        </td>
+        <td>
+          386
+        </td>
+        <td>
+          10467
+          -
+          10467
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MinCharsPerPhraseChunkWithoutSpaces
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MinCharsPerPhraseChunkWithoutSpaces
+        </td>
+      </tr><tr>
+        <td>
+          288
+        </td>
+        <td>
+          389
+        </td>
+        <td>
+          10464
+          -
+          10544
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.length.&gt;=(KoreanPhraseExtractor.this.MinCharsPerPhraseChunkWithoutSpaces).||(trimmed.tokens.length.&gt;=(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk))
+        </td>
+      </tr><tr>
+        <td>
+          289
+        </td>
+        <td>
+          388
+        </td>
+        <td>
+          10542
+          -
+          10544
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;=
+        </td>
+        <td style="background: #AEF1AE">
+          trimmed.tokens.length.&gt;=(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk)
+        </td>
+      </tr><tr>
+        <td>
+          289
+        </td>
+        <td>
+          387
+        </td>
+        <td>
+          10545
+          -
+          10545
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MinPhrasesPerPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk
+        </td>
+      </tr><tr>
+        <td>
+          290
+        </td>
+        <td>
+          391
+        </td>
+        <td>
+          10607
+          -
+          10607
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.trimPhrase
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.trimPhrase(phrase)
+        </td>
+      </tr><tr>
+        <td>
+          290
+        </td>
+        <td>
+          394
+        </td>
+        <td>
+          10582
+          -
+          10582
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.filter(((phrase: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; {
+  val trimmed: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase = KoreanPhraseExtractor.this.trimPhrase(phrase);
+  phrase.pos.==(org.openkoreantext.processor.util.KoreanPos.Noun).||(phrase.pos.==(org.openkoreantext.processor.util.KoreanPos.ProperNoun)).&amp;&amp;(isNotSpam(phrase)).&amp;&amp;(trimmed.length.&gt;=(KoreanPhraseExtractor.this.MinCharsPerPhraseChunkWithoutSpaces).||(trimmed.tokens.length.&gt;=(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk)))
+})).map[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase], Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](((phrase: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; scala.collection.Seq.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](KoreanPhraseExtractor.this.trimPhrase(phrase))))(collection.this.Seq.canBuildFrom[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]])
+        </td>
+      </tr><tr>
+        <td>
+          290
+        </td>
+        <td>
+          393
+        </td>
+        <td>
+          10582
+          -
+          10582
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]]
+        </td>
+      </tr><tr>
+        <td>
+          290
+        </td>
+        <td>
+          392
+        </td>
+        <td>
+          10596
+          -
+          10596
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](KoreanPhraseExtractor.this.trimPhrase(phrase))
+        </td>
+      </tr><tr>
+        <td>
+          293
+        </td>
+        <td>
+          395
+        </td>
+        <td>
+          10685
+          -
+          10685
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.collapseNounPhrases
+        </td>
+        <td style="background: #AEF1AE">
+          collapseNounPhrases(phrases)
+        </td>
+      </tr><tr>
+        <td>
+          294
+        </td>
+        <td>
+          396
+        </td>
+        <td>
+          10736
+          -
+          10736
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.collapsePhrases
+        </td>
+        <td style="background: #AEF1AE">
+          collapsePhrases(nounPhrases)
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          400
+        </td>
+        <td>
+          10808
+          -
+          10810
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          phraseCollapsed.map[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]]({
+  ((phrases: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk) =&gt; KoreanPhraseExtractor.this.trimPhraseChunk(phrases))
+})(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]).++[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](getSingleTokenNouns)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk])
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          397
+        </td>
+        <td>
+          10791
+          -
+          10791
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.trimPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.trimPhraseChunk(phrases)
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          399
+        </td>
+        <td>
+          10808
+          -
+          10808
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          401
+        </td>
+        <td>
+          10770
+          -
+          10770
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.distinctPhrases
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.distinctPhrases(phraseCollapsed.map[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]]({
+  ((phrases: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk) =&gt; KoreanPhraseExtractor.this.trimPhraseChunk(phrases))
+})(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]).++[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](getSingleTokenNouns)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]))
+        </td>
+      </tr><tr>
+        <td>
+          296
+        </td>
+        <td>
+          398
+        </td>
+        <td>
+          10790
+          -
+          10790
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]
+        </td>
+      </tr><tr>
+        <td>
+          310
+        </td>
+        <td>
+          418
+        </td>
+        <td>
+          11290
+          -
+          11290
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          310
+        </td>
+        <td>
+          419
+        </td>
+        <td>
+          11290
+          -
+          11290
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.flatMap[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](((x0$7: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x0$7 match {
+  case (t @ (_: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)) if t.pos.==(org.openkoreantext.processor.util.KoreanPos.Hashtag) =&gt; scala.this.Option.option2Iterable[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](scala.Some.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t), org.openkoreantext.processor.util.KoreanPos.Hashtag)))
+  case (t @ (_: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)) if t.pos.==(org.openkoreantext.processor.util.KoreanPos.CashTag) =&gt; scala.this.Option.option2Iterable[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](scala.Some.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t), org.openkoreantext.processor.util.KoreanPos.CashTag)))
+  case _ =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          406
+        </td>
+        <td>
+          11368
+          -
+          11368
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t), org.openkoreantext.processor.util.KoreanPos.Hashtag)
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          403
+        </td>
+        <td>
+          11327
+          -
+          11329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          t.pos.==(org.openkoreantext.processor.util.KoreanPos.Hashtag)
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          405
+        </td>
+        <td>
+          11387
+          -
+          11387
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Hashtag
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Hashtag
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          408
+        </td>
+        <td>
+          11355
+          -
+          11355
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](scala.Some.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t), org.openkoreantext.processor.util.KoreanPos.Hashtag)))
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          402
+        </td>
+        <td>
+          11340
+          -
+          11340
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Hashtag
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Hashtag
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          404
+        </td>
+        <td>
+          11372
+          -
+          11372
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t)
+        </td>
+      </tr><tr>
+        <td>
+          311
+        </td>
+        <td>
+          407
+        </td>
+        <td>
+          11355
+          -
+          11355
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t), org.openkoreantext.processor.util.KoreanPos.Hashtag))
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          415
+        </td>
+        <td>
+          11460
+          -
+          11460
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](scala.Some.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t), org.openkoreantext.processor.util.KoreanPos.CashTag)))
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          409
+        </td>
+        <td>
+          11445
+          -
+          11445
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.CashTag
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.CashTag
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          412
+        </td>
+        <td>
+          11492
+          -
+          11492
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.CashTag
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.util.KoreanPos.CashTag
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          414
+        </td>
+        <td>
+          11460
+          -
+          11460
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase](KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t), org.openkoreantext.processor.util.KoreanPos.CashTag))
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          411
+        </td>
+        <td>
+          11477
+          -
+          11477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t)
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          410
+        </td>
+        <td>
+          11432
+          -
+          11434
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          t.pos.==(org.openkoreantext.processor.util.KoreanPos.CashTag)
+        </td>
+      </tr><tr>
+        <td>
+          312
+        </td>
+        <td>
+          413
+        </td>
+        <td>
+          11473
+          -
+          11473
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #F0ADAD">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](t), org.openkoreantext.processor.util.KoreanPos.CashTag)
+        </td>
+      </tr><tr>
+        <td>
+          313
+        </td>
+        <td>
+          417
+        </td>
+        <td>
+          11518
+          -
+          11518
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #AEF1AE">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          313
+        </td>
+        <td>
+          416
+        </td>
+        <td>
+          11518
+          -
+          11518
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          316
+        </td>
+        <td>
+          420
+        </td>
+        <td>
+          11561
+          -
+          11561
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.collapsePos
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.collapsePos(tokens)
+        </td>
+      </tr><tr>
+        <td>
+          317
+        </td>
+        <td>
+          421
+        </td>
+        <td>
+          11615
+          -
+          11615
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.getCandidatePhraseChunks
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.getCandidatePhraseChunks(collapsed, filterSpam)
+        </td>
+      </tr><tr>
+        <td>
+          318
+        </td>
+        <td>
+          422
+        </td>
+        <td>
+          11688
+          -
+          11688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.permutateCadidates
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.permutateCadidates(candidates)
+        </td>
+      </tr><tr>
+        <td>
+          320
+        </td>
+        <td>
+          429
+        </td>
+        <td>
+          11745
+          -
+          11745
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          permutatedCandidates.map[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](((phraseChunk: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk) =&gt; KoreanPhraseExtractor.this.KoreanPhrase.apply(KoreanPhraseExtractor.this.trimPhraseChunk(phraseChunk).flatMap[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((x$26: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$26.tokens))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), KoreanPhraseExtractor.this.KoreanPhrase.apply$default$2)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          320
+        </td>
+        <td>
+          428
+        </td>
+        <td>
+          11745
+          -
+          11745
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          424
+        </td>
+        <td>
+          11836
+          -
+          11836
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          427
+        </td>
+        <td>
+          11799
+          -
+          11799
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply(KoreanPhraseExtractor.this.trimPhraseChunk(phraseChunk).flatMap[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((x$26: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$26.tokens))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), KoreanPhraseExtractor.this.KoreanPhrase.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          423
+        </td>
+        <td>
+          11839
+          -
+          11839
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.tokens
+        </td>
+        <td style="background: #AEF1AE">
+          x$26.tokens
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          426
+        </td>
+        <td>
+          11787
+          -
+          11787
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.KoreanPhrase.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          321
+        </td>
+        <td>
+          425
+        </td>
+        <td>
+          11836
+          -
+          11836
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.trimPhraseChunk(phraseChunk).flatMap[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((x$26: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase) =&gt; x$26.tokens))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
+        </td>
+      </tr><tr>
+        <td>
+          325
+        </td>
+        <td>
+          430
+        </td>
+        <td>
+          11892
+          -
+          11892
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]
+        </td>
+      </tr><tr>
+        <td>
+          325
+        </td>
+        <td>
+          432
+        </td>
+        <td>
+          11892
+          -
+          11894
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.++[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](hashtags)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          325
+        </td>
+        <td>
+          431
+        </td>
+        <td>
+          11892
+          -
+          11894
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.++[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase]](hashtags)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhrase])
+        </td>
+      </tr><tr>
+        <td>
+          327
+        </td>
+        <td>
+          433
+        </td>
+        <td>
+          11923
+          -
+          11923
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.phrases
+        </td>
+        <td style="background: #AEF1AE">
+          phrases
+        </td>
+      </tr><tr>
+        <td>
+          333
+        </td>
+        <td>
+          445
+        </td>
+        <td>
+          12080
+          -
+          12080
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]
+        </td>
+      </tr><tr>
+        <td>
+          334
+        </td>
+        <td>
+          435
+        </td>
+        <td>
+          12119
+          -
+          12120
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.length.&gt;(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk)
+        </td>
+      </tr><tr>
+        <td>
+          334
+        </td>
+        <td>
+          434
+        </td>
+        <td>
+          12121
+          -
+          12121
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MinPhrasesPerPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          442
+        </td>
+        <td>
+          12210
+          -
+          12210
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.IndexedSeq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.IndexedSeq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          436
+        </td>
+        <td>
+          12158
+          -
+          12158
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          438
+        </td>
+        <td>
+          12178
+          -
+          12179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.length.-(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk)
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          443
+        </td>
+        <td>
+          12210
+          -
+          12210
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.intWrapper(0).to(phrases.length.-(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk)).map[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk, scala.collection.immutable.IndexedSeq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](((i: Int) =&gt; KoreanPhraseExtractor.this.trimPhraseChunk(phrases.slice(i, phrases.length))))(immutable.this.IndexedSeq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk])
+        </td>
+      </tr><tr>
+        <td>
+          335
+        </td>
+        <td>
+          437
+        </td>
+        <td>
+          12180
+          -
+          12180
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.MinPhrasesPerPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk
+        </td>
+      </tr><tr>
+        <td>
+          336
+        </td>
+        <td>
+          439
+        </td>
+        <td>
+          12268
+          -
+          12268
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.length
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.length
+        </td>
+      </tr><tr>
+        <td>
+          336
+        </td>
+        <td>
+          441
+        </td>
+        <td>
+          12242
+          -
+          12242
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.trimPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.trimPhraseChunk(phrases.slice(i, phrases.length))
+        </td>
+      </tr><tr>
+        <td>
+          336
+        </td>
+        <td>
+          440
+        </td>
+        <td>
+          12256
+          -
+          12256
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.slice
+        </td>
+        <td style="background: #AEF1AE">
+          phrases.slice(i, phrases.length)
+        </td>
+      </tr><tr>
+        <td>
+          338
+        </td>
+        <td>
+          444
+        </td>
+        <td>
+          12312
+          -
+          12312
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk](phrases)
+        </td>
+      </tr><tr>
+        <td>
+          339
+        </td>
+        <td>
+          447
+        </td>
+        <td>
+          12335
+          -
+          12335
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filter
+        </td>
+        <td style="background: #AEF1AE">
+          candidates.flatMap[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk, Seq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](((x0$8: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk) =&gt; x0$8 match {
+  case (phrases @ _) if phrases.length.&gt;(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk) =&gt; scala.Predef.intWrapper(0).to(phrases.length.-(KoreanPhraseExtractor.this.MinPhrasesPerPhraseChunk)).map[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk, scala.collection.immutable.IndexedSeq[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]](((i: Int) =&gt; KoreanPhraseExtractor.this.trimPhraseChunk(phrases.slice(i, phrases.length))))(immutable.this.IndexedSeq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk])
+  case (phrases @ _) =&gt; scala.collection.Seq.apply[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk](phrases)
+}))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk]).filter(((phraseChunk: org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.KoreanPhraseChunk) =&gt; KoreanPhraseExtractor.this.isProperPhraseChunk(phraseChunk)))
+        </td>
+      </tr><tr>
+        <td>
+          339
+        </td>
+        <td>
+          446
+        </td>
+        <td>
+          12390
+          -
+          12390
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.isProperPhraseChunk
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.isProperPhraseChunk(phraseChunk)
+        </td>
+      </tr><tr>
+        <td>
+          341
+        </td>
+        <td>
+          448
+        </td>
+        <td>
+          12429
+          -
+          12429
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.distinctPhrases
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPhraseExtractor.this.distinctPhrases(permutated)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

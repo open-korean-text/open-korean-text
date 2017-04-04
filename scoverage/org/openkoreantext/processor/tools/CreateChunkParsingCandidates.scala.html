@@ -1,0 +1,649 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/tools/CreateChunkParsingCandidates.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
+</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>3 <span style=''> *
+</span>4 <span style=''> * Copyright 2014 Twitter, Inc.
+</span>5 <span style=''> *
+</span>6 <span style=''> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>7 <span style=''> * you may not use this file except in compliance with the License.
+</span>8 <span style=''> * You may obtain a copy of the License at
+</span>9 <span style=''> *
+</span>10 <span style=''> *   http://www.apache.org/licenses/LICENSE-2.0
+</span>11 <span style=''> *
+</span>12 <span style=''> * Unless required by applicable law or agreed to in writing, software
+</span>13 <span style=''> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>14 <span style=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>15 <span style=''> * See the License for the specific language governing permissions and
+</span>16 <span style=''> * limitations under the License.
+</span>17 <span style=''> */
+</span>18 <span style=''>
+</span>19 <span style=''>package org.openkoreantext.processor.tools
+</span>20 <span style=''>
+</span>21 <span style=''>import org.openkoreantext.processor.OpenKoreanTextProcessor._
+</span>22 <span style=''>import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken
+</span>23 <span style=''>import org.openkoreantext.processor.util.KoreanDictionaryProvider._
+</span>24 <span style=''>
+</span>25 <span style=''>/**
+</span>26 <span style=''>  * Create Korean Parsing examples.
+</span>27 <span style=''>  */
+</span>28 <span style=''>object CreateChunkParsingCandidates extends Runnable {
+</span>29 <span style=''>
+</span>30 <span style=''>  def run {
+</span>31 <span style=''>    val parsedPairs = readFileByLineFromResources(&quot;example_chunks.txt&quot;).flatMap {
+</span>32 <span style=''>      case line if line.length </span><span style='background: #F0ADAD'>&gt;</span><span style=''> 0 =&gt;
+</span>33 <span style=''>        val chunk = line.trim
+</span>34 <span style=''>        val parsed = tokenizeTopN(chunk, 5).head
+</span>35 <span style=''>        val parsedString: Seq[String] = parsed.map { p =&gt;
+</span>36 <span style=''>          val tokens = p.map{
+</span>37 <span style=''>            token =&gt; KoreanToken(token.text, token.pos, token.offset, token.length)}
+</span>38 <span style=''>          tokens.mkString(&quot;/&quot;)
+</span>39 <span style=''>        }.distinct
+</span>40 <span style=''>        Some(Seq(chunk) </span><span style='background: #F0ADAD'>++</span><span style=''> parsedString)
+</span>41 <span style=''>      case line =&gt; None
+</span>42 <span style=''>    }
+</span>43 <span style=''>
+</span>44 <span style=''>    parsedPairs.foreach {
+</span>45 <span style=''>      p =&gt; println(p.mkString(&quot;\t&quot;))
+</span>46 <span style=''>    }
+</span>47 <span style=''>  }
+</span>48 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1138
+        </td>
+        <td>
+          1103
+          -
+          1103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.Iterator.flatMap
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.readFileByLineFromResources(&quot;example_chunks.txt&quot;).flatMap[Seq[String]](((x0$1: String) =&gt; x0$1 match {
+  case (line @ _) if line.length().&gt;(0) =&gt; {
+    val chunk: String = line.trim();
+    val parsed: Seq[Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]] = org.openkoreantext.processor.OpenKoreanTextProcessor.tokenizeTopN(chunk, 5).head;
+    val parsedString: Seq[String] = parsed.map[String, Seq[String]](((p: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]) =&gt; {
+  val tokens: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken] = p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]);
+  tokens.mkString(&quot;/&quot;)
+}))(collection.this.Seq.canBuildFrom[String]).distinct;
+    scala.this.Option.option2Iterable[Seq[String]](scala.Some.apply[Seq[String]](scala.collection.Seq.apply[String](chunk).++[String, Seq[String]](parsedString)(collection.this.Seq.canBuildFrom[String])))
+  }
+  case (line @ _) =&gt; scala.this.Option.option2Iterable[Nothing](scala.None)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1116
+        </td>
+        <td>
+          1073
+          -
+          1073
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;example_chunks.txt&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1117
+        </td>
+        <td>
+          1136
+          -
+          1137
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          line.length().&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1118
+        </td>
+        <td>
+          1168
+          -
+          1168
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.trim
+        </td>
+        <td style="background: #F0ADAD">
+          line.trim()
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1120
+        </td>
+        <td>
+          1217
+          -
+          1217
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.IterableLike.head
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.OpenKoreanTextProcessor.tokenizeTopN(chunk, 5).head
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1119
+        </td>
+        <td>
+          1214
+          -
+          1214
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          5
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1130
+        </td>
+        <td>
+          1273
+          -
+          1273
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1127
+        </td>
+        <td>
+          1308
+          -
+          1308
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1128
+        </td>
+        <td>
+          1308
+          -
+          1308
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1124
+        </td>
+        <td>
+          1386
+          -
+          1386
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.length
+        </td>
+        <td style="background: #F0ADAD">
+          token.length
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1126
+        </td>
+        <td>
+          1342
+          -
+          1342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1123
+        </td>
+        <td>
+          1372
+          -
+          1372
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.offset
+        </td>
+        <td style="background: #F0ADAD">
+          token.offset
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1125
+        </td>
+        <td>
+          1331
+          -
+          1331
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1122
+        </td>
+        <td>
+          1361
+          -
+          1361
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
+        </td>
+        <td style="background: #F0ADAD">
+          token.pos
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1121
+        </td>
+        <td>
+          1349
+          -
+          1349
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+        </td>
+        <td style="background: #F0ADAD">
+          token.text
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1129
+        </td>
+        <td>
+          1420
+          -
+          1420
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          tokens.mkString(&quot;/&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1131
+        </td>
+        <td>
+          1436
+          -
+          1436
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.distinct
+        </td>
+        <td style="background: #F0ADAD">
+          parsed.map[String, Seq[String]](((p: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]) =&gt; {
+  val tokens: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken] = p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]);
+  tokens.mkString(&quot;/&quot;)
+}))(collection.this.Seq.canBuildFrom[String]).distinct
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1133
+        </td>
+        <td>
+          1469
+          -
+          1471
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.Seq.apply[String](chunk).++[String, Seq[String]](parsedString)(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1135
+        </td>
+        <td>
+          1457
+          -
+          1457
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[Seq[String]](scala.Some.apply[Seq[String]](scala.collection.Seq.apply[String](chunk).++[String, Seq[String]](parsedString)(collection.this.Seq.canBuildFrom[String])))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1132
+        </td>
+        <td>
+          1469
+          -
+          1469
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1134
+        </td>
+        <td>
+          1457
+          -
+          1457
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[Seq[String]](scala.collection.Seq.apply[String](chunk).++[String, Seq[String]](parsedString)(collection.this.Seq.canBuildFrom[String]))
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1136
+        </td>
+        <td>
+          1505
+          -
+          1505
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1137
+        </td>
+        <td>
+          1505
+          -
+          1505
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          scala.Option.option2Iterable
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Option.option2Iterable[Nothing](scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1141
+        </td>
+        <td>
+          1541
+          -
+          1541
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.Iterator.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          parsedPairs.foreach[Unit](((p: Seq[String]) =&gt; scala.Predef.println(p.mkString(&quot;\t&quot;))))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1140
+        </td>
+        <td>
+          1561
+          -
+          1561
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(p.mkString(&quot;\t&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1139
+        </td>
+        <td>
+          1572
+          -
+          1572
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.mkString
+        </td>
+        <td style="background: #F0ADAD">
+          p.mkString(&quot;\t&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

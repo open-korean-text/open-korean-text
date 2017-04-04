@@ -1,0 +1,478 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          org/openkoreantext/processor/tools/CreateConjugationExamples.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
+</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>3 <span style=''> *
+</span>4 <span style=''> * Copyright 2014 Twitter, Inc.
+</span>5 <span style=''> *
+</span>6 <span style=''> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</span>7 <span style=''> * you may not use this file except in compliance with the License.
+</span>8 <span style=''> * You may obtain a copy of the License at
+</span>9 <span style=''> *
+</span>10 <span style=''> *   http://www.apache.org/licenses/LICENSE-2.0
+</span>11 <span style=''> *
+</span>12 <span style=''> * Unless required by applicable law or agreed to in writing, software
+</span>13 <span style=''> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</span>14 <span style=''> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span>15 <span style=''> * See the License for the specific language governing permissions and
+</span>16 <span style=''> * limitations under the License.
+</span>17 <span style=''> */
+</span>18 <span style=''>
+</span>19 <span style=''>package org.openkoreantext.processor.tools
+</span>20 <span style=''>
+</span>21 <span style=''>import java.io.FileOutputStream
+</span>22 <span style=''>
+</span>23 <span style=''>import org.openkoreantext.processor.util.KoreanConjugation._
+</span>24 <span style=''>import org.openkoreantext.processor.util.KoreanDictionaryProvider._
+</span>25 <span style=''>
+</span>26 <span style=''>/**
+</span>27 <span style=''> * Create Korean predicate expansion goldenset from adjective and verb resources.
+</span>28 <span style=''> * The first argument is the test resource directory.
+</span>29 <span style=''> */
+</span>30 <span style=''>object CreateConjugationExamples extends Runnable  {
+</span>31 <span style=''>  case class ConjugationExample(word: String, conjugations: Seq[String])
+</span>32 <span style=''>
+</span>33 <span style=''>  def run {
+</span>34 <span style=''>    System.err.println(&quot;Reading the verbs and adjectives..&quot;)
+</span>35 <span style=''>
+</span>36 <span style=''>    def updateConjugateExamples(file: String, isAdj: Boolean, outputFileName: String) {
+</span>37 <span style=''>      System.err.println(&quot;Writing the expansion goldenset in &quot; </span><span style='background: #F0ADAD'>+</span><span style=''> outputFileName)
+</span>38 <span style=''>
+</span>39 <span style=''>      val outputPath = &quot;src/test/resources/org/openkoreantext/processor/util/&quot; </span><span style='background: #F0ADAD'>+</span><span style=''> outputFileName
+</span>40 <span style=''>      val out = new FileOutputStream(outputPath)
+</span>41 <span style=''>
+</span>42 <span style=''>      val words = readWordsAsSeq(file)
+</span>43 <span style=''>      val goldenset = words.map(word =&gt;
+</span>44 <span style=''>        ConjugationExample(word, conjugatePredicated(Set(word), isAdj).toSeq.sorted)
+</span>45 <span style=''>      )
+</span>46 <span style=''>
+</span>47 <span style=''>      goldenset.foreach {
+</span>48 <span style=''>        c =&gt; out.write(
+</span>49 <span style=''>          &quot;%s\t%s\n&quot;.format(c.word, c.conjugations.mkString(&quot;, &quot;)).getBytes
+</span>50 <span style=''>        )
+</span>51 <span style=''>      }
+</span>52 <span style=''>
+</span>53 <span style=''>      out.close()
+</span>54 <span style=''>    }
+</span>55 <span style=''>
+</span>56 <span style=''>    updateConjugateExamples(&quot;adjective/adjective.txt&quot;, isAdj = true, &quot;adj_conjugate.txt&quot;)
+</span>57 <span style=''>    updateConjugateExamples(&quot;verb/verb.txt&quot;, isAdj = false, &quot;verb_conjugate.txt&quot;)
+</span>58 <span style=''>  }
+</span>59 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          1142
+        </td>
+        <td>
+          1173
+          -
+          1173
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintStream.println
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.System.err.println(&quot;Reading the verbs and adjectives..&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1144
+        </td>
+        <td>
+          1325
+          -
+          1325
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.PrintStream.println
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.System.err.println(&quot;Writing the expansion goldenset in &quot;.+(outputFileName))
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1143
+        </td>
+        <td>
+          1364
+          -
+          1365
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Writing the expansion goldenset in &quot;.+(outputFileName)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1145
+        </td>
+        <td>
+          1462
+          -
+          1463
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;src/test/resources/org/openkoreantext/processor/util/&quot;.+(outputFileName)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1146
+        </td>
+        <td>
+          1495
+          -
+          1495
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new java.io.FileOutputStream(outputPath)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1147
+        </td>
+        <td>
+          1561
+          -
+          1561
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.readWordsAsSeq
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.readWordsAsSeq(file)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1153
+        </td>
+        <td>
+          1599
+          -
+          1599
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          words.map[org.openkoreantext.processor.tools.CreateConjugationExamples.ConjugationExample, Seq[org.openkoreantext.processor.tools.CreateConjugationExamples.ConjugationExample]](((word: String) =&gt; CreateConjugationExamples.this.ConjugationExample.apply(word, org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicated(scala.Predef.Set.apply[String](word), isAdj).toSeq.sorted[String](math.this.Ordering.String))))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tools.CreateConjugationExamples.ConjugationExample])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1152
+        </td>
+        <td>
+          1599
+          -
+          1599
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tools.CreateConjugationExamples.ConjugationExample]
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1151
+        </td>
+        <td>
+          1634
+          -
+          1634
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tools.CreateConjugationExamples.ConjugationExample.apply
+        </td>
+        <td style="background: #F0ADAD">
+          CreateConjugationExamples.this.ConjugationExample.apply(word, org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicated(scala.Predef.Set.apply[String](word), isAdj).toSeq.sorted[String](math.this.Ordering.String))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1150
+        </td>
+        <td>
+          1685
+          -
+          1685
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.sorted
+        </td>
+        <td style="background: #F0ADAD">
+          org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicated(scala.Predef.Set.apply[String](word), isAdj).toSeq.sorted[String](math.this.Ordering.String)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1149
+        </td>
+        <td>
+          1685
+          -
+          1685
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.math.Ordering.String
+        </td>
+        <td style="background: #F0ADAD">
+          math.this.Ordering.String
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1148
+        </td>
+        <td>
+          1664
+          -
+          1664
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.Set.apply[String](word)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1156
+        </td>
+        <td>
+          1726
+          -
+          1726
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          goldenset.foreach[Unit](((c: org.openkoreantext.processor.tools.CreateConjugationExamples.ConjugationExample) =&gt; out.write(scala.Predef.augmentString(&quot;%s\t%s\n&quot;).format(c.word, c.conjugations.mkString(&quot;, &quot;)).getBytes())))
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1155
+        </td>
+        <td>
+          1750
+          -
+          1750
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.write
+        </td>
+        <td style="background: #F0ADAD">
+          out.write(scala.Predef.augmentString(&quot;%s\t%s\n&quot;).format(c.word, c.conjugations.mkString(&quot;, &quot;)).getBytes())
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1154
+        </td>
+        <td>
+          1819
+          -
+          1819
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.getBytes
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(&quot;%s\t%s\n&quot;).format(c.word, c.conjugations.mkString(&quot;, &quot;)).getBytes()
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1157
+        </td>
+        <td>
+          1862
+          -
+          1862
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.io.FileOutputStream.close
+        </td>
+        <td style="background: #F0ADAD">
+          out.close()
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1158
+        </td>
+        <td>
+          1899
+          -
+          1899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tools.CreateConjugationExamples.updateConjugateExamples
+        </td>
+        <td style="background: #F0ADAD">
+          updateConjugateExamples(&quot;adjective/adjective.txt&quot;, true, &quot;adj_conjugate.txt&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1159
+        </td>
+        <td>
+          1989
+          -
+          1989
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tools.CreateConjugationExamples.updateConjugateExamples
+        </td>
+        <td style="background: #F0ADAD">
+          updateConjugateExamples(&quot;verb/verb.txt&quot;, false, &quot;verb_conjugate.txt&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

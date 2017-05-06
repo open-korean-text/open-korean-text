@@ -43,153 +43,155 @@
 </span>19 <span style=''>package org.openkoreantext.processor.util
 </span>20 <span style=''>
 </span>21 <span style=''>import java.io.InputStream
-</span>22 <span style=''>import java.util.zip.GZIPInputStream
-</span>23 <span style=''>
-</span>24 <span style=''>import org.openkoreantext.processor.util.KoreanConjugation._
-</span>25 <span style=''>import org.openkoreantext.processor.util.KoreanPos._
-</span>26 <span style=''>
-</span>27 <span style=''>import scala.collection.JavaConversions._
-</span>28 <span style=''>import scala.io.Source
-</span>29 <span style=''>
-</span>30 <span style=''>/**
-</span>31 <span style=''> * Provides a singleton Korean dictionary
-</span>32 <span style=''> */
-</span>33 <span style=''>object KoreanDictionaryProvider {
-</span>34 <span style=''>  private[this] def readStreamByLine(stream: InputStream, filename: String): Iterator[String] = {
-</span>35 <span style=''>    require(stream </span><span style='background: #AEF1AE'>!=</span><span style=''> null, &quot;Resource not loaded: &quot; </span><span style='background: #F0ADAD'>+</span><span style=''> filename)
-</span>36 <span style=''>    Source.fromInputStream(stream)(io.Codec(&quot;UTF-8&quot;))
-</span>37 <span style=''>        .getLines()
-</span>38 <span style=''>        .map(_.trim)
-</span>39 <span style=''>        .filter(_.length </span><span style='background: #AEF1AE'>&gt;</span><span style=''> 0)
-</span>40 <span style=''>  }
-</span>41 <span style=''>
-</span>42 <span style=''>  private[this] def readWordFreqs(filename: String): collection.mutable.Map[CharSequence, Float] = {
-</span>43 <span style=''>    var freqMap: collection.mutable.Map[CharSequence, Float] =
-</span>44 <span style=''>      new java.util.HashMap[CharSequence, Float]
-</span>45 <span style=''>
-</span>46 <span style=''>    readFileByLineFromResources(filename).foreach {
-</span>47 <span style=''>      case line =&gt; if (line.contains(&quot;\t&quot;)) {
-</span>48 <span style=''>        val data = line.split(&quot;\t&quot;)
-</span>49 <span style=''>        freqMap </span><span style='background: #AEF1AE'>+=</span><span style=''> (data(0) </span><span style='background: #AEF1AE'>-&gt;</span><span style=''> data(1).slice(0, 6).toFloat)
-</span>50 <span style=''>      }
-</span>51 <span style=''>    }
-</span>52 <span style=''>    freqMap
-</span>53 <span style=''>  }
-</span>54 <span style=''>
-</span>55 <span style=''>  private[this] def readWordMap(filename: String): Map[String, String] = {
-</span>56 <span style=''>    readFileByLineFromResources(filename).filter {
-</span>57 <span style=''>      case line: String =&gt; line.contains(&quot; &quot;)
-</span>58 <span style=''>    }.map {
-</span>59 <span style=''>      case line =&gt;
-</span>60 <span style=''>        val data = line.split(&quot; &quot;)
-</span>61 <span style=''>        (data(0), data(1))
-</span>62 <span style=''>    }.toMap
-</span>63 <span style=''>  }
-</span>64 <span style=''>
+</span>22 <span style=''>import java.util
+</span>23 <span style=''>import java.util.zip.GZIPInputStream
+</span>24 <span style=''>
+</span>25 <span style=''>import org.openkoreantext.processor.util.KoreanConjugation._
+</span>26 <span style=''>import org.openkoreantext.processor.util.KoreanPos._
+</span>27 <span style=''>
+</span>28 <span style=''>import scala.collection.JavaConverters._
+</span>29 <span style=''>import scala.io.Source
+</span>30 <span style=''>
+</span>31 <span style=''>/**
+</span>32 <span style=''>  * Provides a singleton Korean dictionary
+</span>33 <span style=''>  */
+</span>34 <span style=''>object KoreanDictionaryProvider {
+</span>35 <span style=''>  private[this] def readStreamByLine(stream: InputStream, filename: String): Iterator[String] = {
+</span>36 <span style=''>    require(stream </span><span style='background: #AEF1AE'>!=</span><span style=''> null, &quot;Resource not loaded: &quot; </span><span style='background: #F0ADAD'>+</span><span style=''> filename)
+</span>37 <span style=''>    Source.fromInputStream(stream)(io.Codec(&quot;UTF-8&quot;))
+</span>38 <span style=''>      .getLines()
+</span>39 <span style=''>      .map(_.trim)
+</span>40 <span style=''>      .filter(_.length </span><span style='background: #AEF1AE'>&gt;</span><span style=''> 0)
+</span>41 <span style=''>  }
+</span>42 <span style=''>
+</span>43 <span style=''>  private[this] def readWordFreqs(filename: String): util.HashMap[CharSequence, Float] = {
+</span>44 <span style=''>    var freqMap: util.HashMap[CharSequence, Float] =
+</span>45 <span style=''>      new java.util.HashMap[CharSequence, Float]
+</span>46 <span style=''>
+</span>47 <span style=''>    readFileByLineFromResources(filename).foreach {
+</span>48 <span style=''>      case line =&gt; if (line.contains(&quot;\t&quot;)) {
+</span>49 <span style=''>        val data = line.split(&quot;\t&quot;)
+</span>50 <span style=''>        freqMap.put(data(0), data(1).slice(0, 6).toFloat)
+</span>51 <span style=''>      }
+</span>52 <span style=''>    }
+</span>53 <span style=''>    freqMap
+</span>54 <span style=''>  }
+</span>55 <span style=''>
+</span>56 <span style=''>  private[this] def readWordMap(filename: String): Map[String, String] = {
+</span>57 <span style=''>    readFileByLineFromResources(filename).filter {
+</span>58 <span style=''>      case line: String =&gt; line.contains(&quot; &quot;)
+</span>59 <span style=''>    }.map {
+</span>60 <span style=''>      case line =&gt;
+</span>61 <span style=''>        val data = line.split(&quot; &quot;)
+</span>62 <span style=''>        (data(0), data(1))
+</span>63 <span style=''>    }.toMap
+</span>64 <span style=''>  }
 </span>65 <span style=''>
-</span>66 <span style=''>  protected[processor] def readWordsAsSeq(filename: String): Seq[String] =
-</span>67 <span style=''>    readFileByLineFromResources(filename).toSeq
-</span>68 <span style=''>
+</span>66 <span style=''>
+</span>67 <span style=''>  protected[processor] def readWordsAsSeq(filename: String): Seq[String] =
+</span>68 <span style=''>    readFileByLineFromResources(filename).toSeq
 </span>69 <span style=''>
-</span>70 <span style=''>  protected[processor] def readWordsAsSet(filenames: String*): Set[String] = {
-</span>71 <span style=''>    filenames.foldLeft(Set[String]()) {
-</span>72 <span style=''>      case (output: Set[String], filename: String) =&gt;
-</span>73 <span style=''>        output.union(
-</span>74 <span style=''>          readFileByLineFromResources(filename).toSet
-</span>75 <span style=''>        )
-</span>76 <span style=''>    }
-</span>77 <span style=''>  }
-</span>78 <span style=''>
-</span>79 <span style=''>  protected[processor] def readWords(filenames: String*): CharArraySet = {
-</span>80 <span style=''>    val set = newCharArraySet
-</span>81 <span style=''>    filenames.foreach(
-</span>82 <span style=''>      filename =&gt; readFileByLineFromResources(filename).foreach(set.add)
-</span>83 <span style=''>    )
-</span>84 <span style=''>    set
-</span>85 <span style=''>  }
-</span>86 <span style=''>
-</span>87 <span style=''>  protected[processor] def readFileByLineFromResources(filename: String): Iterator[String] = {
-</span>88 <span style=''>    readStreamByLine(
-</span>89 <span style=''>      if (filename.endsWith(&quot;.gz&quot;)) {
-</span>90 <span style=''>        new GZIPInputStream(getClass.getResourceAsStream(filename))
-</span>91 <span style=''>      } else {
-</span>92 <span style=''>        getClass.getResourceAsStream(filename)
-</span>93 <span style=''>      }
-</span>94 <span style=''>      , filename
-</span>95 <span style=''>    )
-</span>96 <span style=''>  }
-</span>97 <span style=''>
-</span>98 <span style=''>  protected[processor] def newCharArraySet: CharArraySet = {
-</span>99 <span style=''>    new CharArraySet(10000, false)
-</span>100 <span style=''>  }
-</span>101 <span style=''>
-</span>102 <span style=''>  lazy val koreanEntityFreq: collection.mutable.Map[CharSequence, Float] =
-</span>103 <span style=''>    readWordFreqs(&quot;freq/entity-freq.txt.gz&quot;)
-</span>104 <span style=''>
-</span>105 <span style=''>  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]): Unit = {
-</span>106 <span style=''>    koreanDictionary(pos).addAll(words)
-</span>107 <span style=''>  }
-</span>108 <span style=''>
-</span>109 <span style=''>  val koreanDictionary: collection.mutable.Map[KoreanPos, CharArraySet] = {
-</span>110 <span style=''>    val map: collection.mutable.Map[KoreanPos, CharArraySet] =
-</span>111 <span style=''>      new java.util.HashMap[KoreanPos, CharArraySet]
-</span>112 <span style=''>
-</span>113 <span style=''>    map </span><span style='background: #AEF1AE'>+= Noun -&gt;</span><span style=''> readWords(
-</span>114 <span style=''>      &quot;noun/nouns.txt&quot;, &quot;noun/entities.txt&quot;, &quot;noun/spam.txt&quot;,
-</span>115 <span style=''>      &quot;noun/names.txt&quot;, &quot;noun/twitter.txt&quot;, &quot;noun/lol.txt&quot;,
-</span>116 <span style=''>      &quot;noun/slangs.txt&quot;, &quot;noun/company_names.txt&quot;,
-</span>117 <span style=''>      &quot;noun/foreign.txt&quot;, &quot;noun/geolocations.txt&quot;, &quot;noun/profane.txt&quot;,
-</span>118 <span style=''>      &quot;substantives/given_names.txt&quot;, &quot;noun/kpop.txt&quot;, &quot;noun/bible.txt&quot;,
-</span>119 <span style=''>      &quot;noun/pokemon.txt&quot;, &quot;noun/congress.txt&quot;, &quot;noun/wikipedia_title_nouns.txt&quot;
-</span>120 <span style=''>    )
-</span>121 <span style=''>    map </span><span style='background: #AEF1AE'>+= Verb -&gt;</span><span style=''> conjugatePredicatesToCharArraySet(readWordsAsSet(&quot;verb/verb.txt&quot;))
-</span>122 <span style=''>    map </span><span style='background: #AEF1AE'>+= Adjective -&gt;</span><span style=''> conjugatePredicatesToCharArraySet(readWordsAsSet(&quot;adjective/adjective.txt&quot;), isAdjective = true)
-</span>123 <span style=''>    map </span><span style='background: #AEF1AE'>+= Adverb -&gt;</span><span style=''> readWords(&quot;adverb/adverb.txt&quot;)
-</span>124 <span style=''>    map </span><span style='background: #AEF1AE'>+= Determiner -&gt;</span><span style=''> readWords(&quot;auxiliary/determiner.txt&quot;)
-</span>125 <span style=''>    map </span><span style='background: #AEF1AE'>+= Exclamation -&gt;</span><span style=''> readWords(&quot;auxiliary/exclamation.txt&quot;)
-</span>126 <span style=''>    map </span><span style='background: #AEF1AE'>+= Josa -&gt;</span><span style=''> readWords(&quot;josa/josa.txt&quot;)
-</span>127 <span style=''>    map </span><span style='background: #AEF1AE'>+= Eomi -&gt;</span><span style=''> readWords(&quot;verb/eomi.txt&quot;)
-</span>128 <span style=''>    map </span><span style='background: #AEF1AE'>+= PreEomi -&gt;</span><span style=''> readWords(&quot;verb/pre_eomi.txt&quot;)
-</span>129 <span style=''>    map </span><span style='background: #AEF1AE'>+= Conjunction -&gt;</span><span style=''> readWords(&quot;auxiliary/conjunctions.txt&quot;)
-</span>130 <span style=''>    map </span><span style='background: #AEF1AE'>+= NounPrefix -&gt;</span><span style=''> readWords(&quot;substantives/noun_prefix.txt&quot;)
-</span>131 <span style=''>    map </span><span style='background: #AEF1AE'>+= VerbPrefix -&gt;</span><span style=''> readWords(&quot;verb/verb_prefix.txt&quot;)
-</span>132 <span style=''>    map </span><span style='background: #AEF1AE'>+= Suffix -&gt;</span><span style=''> readWords(&quot;substantives/suffix.txt&quot;)
-</span>133 <span style=''>    map
-</span>134 <span style=''>  }
-</span>135 <span style=''>
-</span>136 <span style=''>  lazy val spamNouns = readWords(&quot;noun/spam.txt&quot;, &quot;noun/profane.txt&quot;)
-</span>137 <span style=''>
-</span>138 <span style=''>  val properNouns: CharArraySet = readWords(&quot;noun/entities.txt&quot;,
-</span>139 <span style=''>    &quot;noun/names.txt&quot;, &quot;noun/twitter.txt&quot;, &quot;noun/lol.txt&quot;, &quot;noun/company_names.txt&quot;,
-</span>140 <span style=''>    &quot;noun/foreign.txt&quot;, &quot;noun/geolocations.txt&quot;,
-</span>141 <span style=''>    &quot;substantives/given_names.txt&quot;, &quot;noun/kpop.txt&quot;, &quot;noun/bible.txt&quot;,
-</span>142 <span style=''>    &quot;noun/pokemon.txt&quot;, &quot;noun/congress.txt&quot;, &quot;noun/wikipedia_title_nouns.txt&quot;)
-</span>143 <span style=''>
-</span>144 <span style=''>  lazy val nameDictionary = Map(
-</span>145 <span style=''>    'family_name -&gt; readWords(&quot;substantives/family_names.txt&quot;),
-</span>146 <span style=''>    'given_name -&gt; readWords(&quot;substantives/given_names.txt&quot;),
-</span>147 <span style=''>    'full_name -&gt; readWords(&quot;noun/kpop.txt&quot;, &quot;noun/foreign.txt&quot;, &quot;noun/names.txt&quot;)
-</span>148 <span style=''>  )
-</span>149 <span style=''>
-</span>150 <span style=''>  lazy val typoDictionaryByLength = readWordMap(&quot;typos/typos.txt&quot;).groupBy {
-</span>151 <span style=''>    case (key: String, value: String) =&gt; key.length
-</span>152 <span style=''>  }
-</span>153 <span style=''>
-</span>154 <span style=''>  lazy val predicateStems = {
-</span>155 <span style=''>    def getConjugationMap(words: Set[String], isAdjective: Boolean): Map[String, String] = {
-</span>156 <span style=''>      words.flatMap {
-</span>157 <span style=''>        word: String =&gt; conjugatePredicated(Set(word), isAdjective).map {
-</span>158 <span style=''>          conjugated =&gt; (conjugated.toString, word + &quot;다&quot;)
-</span>159 <span style=''>        }
-</span>160 <span style=''>      }.toMap
-</span>161 <span style=''>    }
-</span>162 <span style=''>
-</span>163 <span style=''>    Map(
-</span>164 <span style=''>      Verb -&gt; getConjugationMap(readWordsAsSet(&quot;verb/verb.txt&quot;), isAdjective = false),
-</span>165 <span style=''>      Adjective -&gt; getConjugationMap(readWordsAsSet(&quot;adjective/adjective.txt&quot;), isAdjective = true)
-</span>166 <span style=''>    )
-</span>167 <span style=''>  }
-</span>168 <span style=''>}
+</span>70 <span style=''>
+</span>71 <span style=''>  protected[processor] def readWordsAsSet(filenames: String*): Set[String] = {
+</span>72 <span style=''>    filenames.foldLeft(Set[String]()) {
+</span>73 <span style=''>      case (output: Set[String], filename: String) =&gt;
+</span>74 <span style=''>        output.union(
+</span>75 <span style=''>          readFileByLineFromResources(filename).toSet
+</span>76 <span style=''>        )
+</span>77 <span style=''>    }
+</span>78 <span style=''>  }
+</span>79 <span style=''>
+</span>80 <span style=''>  protected[processor] def readWords(filenames: String*): CharArraySet = {
+</span>81 <span style=''>    val set = newCharArraySet
+</span>82 <span style=''>    filenames.foreach(
+</span>83 <span style=''>      filename =&gt; readFileByLineFromResources(filename).foreach(set.add)
+</span>84 <span style=''>    )
+</span>85 <span style=''>    set
+</span>86 <span style=''>  }
+</span>87 <span style=''>
+</span>88 <span style=''>  protected[processor] def readFileByLineFromResources(filename: String): Iterator[String] = {
+</span>89 <span style=''>    readStreamByLine(
+</span>90 <span style=''>      if (filename.endsWith(&quot;.gz&quot;)) {
+</span>91 <span style=''>        new GZIPInputStream(getClass.getResourceAsStream(filename))
+</span>92 <span style=''>      } else {
+</span>93 <span style=''>        getClass.getResourceAsStream(filename)
+</span>94 <span style=''>      }
+</span>95 <span style=''>      , filename
+</span>96 <span style=''>    )
+</span>97 <span style=''>  }
+</span>98 <span style=''>
+</span>99 <span style=''>  protected[processor] def newCharArraySet: CharArraySet = {
+</span>100 <span style=''>    new CharArraySet(10000, false)
+</span>101 <span style=''>  }
+</span>102 <span style=''>
+</span>103 <span style=''>  lazy val koreanEntityFreq: util.HashMap[CharSequence, Float] =
+</span>104 <span style=''>    readWordFreqs(&quot;freq/entity-freq.txt.gz&quot;)
+</span>105 <span style=''>
+</span>106 <span style=''>  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]): Unit = {
+</span>107 <span style=''>    koreanDictionary.get(pos).addAll(words.asJava)
+</span>108 <span style=''>  }
+</span>109 <span style=''>
+</span>110 <span style=''>  val koreanDictionary: util.HashMap[KoreanPos, CharArraySet] = {
+</span>111 <span style=''>    val map: util.HashMap[KoreanPos, CharArraySet] =
+</span>112 <span style=''>      new java.util.HashMap[KoreanPos, CharArraySet]
+</span>113 <span style=''>
+</span>114 <span style=''>    map.put(Noun, readWords(
+</span>115 <span style=''>      &quot;noun/nouns.txt&quot;, &quot;noun/entities.txt&quot;, &quot;noun/spam.txt&quot;,
+</span>116 <span style=''>      &quot;noun/names.txt&quot;, &quot;noun/twitter.txt&quot;, &quot;noun/lol.txt&quot;,
+</span>117 <span style=''>      &quot;noun/slangs.txt&quot;, &quot;noun/company_names.txt&quot;,
+</span>118 <span style=''>      &quot;noun/foreign.txt&quot;, &quot;noun/geolocations.txt&quot;, &quot;noun/profane.txt&quot;,
+</span>119 <span style=''>      &quot;substantives/given_names.txt&quot;, &quot;noun/kpop.txt&quot;, &quot;noun/bible.txt&quot;,
+</span>120 <span style=''>      &quot;noun/pokemon.txt&quot;, &quot;noun/congress.txt&quot;, &quot;noun/wikipedia_title_nouns.txt&quot;
+</span>121 <span style=''>    ))
+</span>122 <span style=''>    map.put(Verb, conjugatePredicatesToCharArraySet(readWordsAsSet(&quot;verb/verb.txt&quot;)))
+</span>123 <span style=''>    map.put(Adjective, conjugatePredicatesToCharArraySet(readWordsAsSet(&quot;adjective/adjective.txt&quot;), isAdjective = true))
+</span>124 <span style=''>    map.put(Adverb, readWords(&quot;adverb/adverb.txt&quot;))
+</span>125 <span style=''>    map.put(Determiner, readWords(&quot;auxiliary/determiner.txt&quot;))
+</span>126 <span style=''>    map.put(Exclamation, readWords(&quot;auxiliary/exclamation.txt&quot;))
+</span>127 <span style=''>    map.put(Josa, readWords(&quot;josa/josa.txt&quot;))
+</span>128 <span style=''>    map.put(Eomi, readWords(&quot;verb/eomi.txt&quot;))
+</span>129 <span style=''>    map.put(PreEomi, readWords(&quot;verb/pre_eomi.txt&quot;))
+</span>130 <span style=''>    map.put(Conjunction, readWords(&quot;auxiliary/conjunctions.txt&quot;))
+</span>131 <span style=''>    map.put(Modifier, readWords(&quot;substantives/modifier.txt&quot;))
+</span>132 <span style=''>    map.put(VerbPrefix, readWords(&quot;verb/verb_prefix.txt&quot;))
+</span>133 <span style=''>    map.put(Suffix, readWords(&quot;substantives/suffix.txt&quot;))
+</span>134 <span style=''>    map
+</span>135 <span style=''>  }
+</span>136 <span style=''>
+</span>137 <span style=''>  lazy val spamNouns = readWords(&quot;noun/spam.txt&quot;, &quot;noun/profane.txt&quot;)
+</span>138 <span style=''>
+</span>139 <span style=''>  val properNouns: CharArraySet = readWords(&quot;noun/entities.txt&quot;,
+</span>140 <span style=''>    &quot;noun/names.txt&quot;, &quot;noun/twitter.txt&quot;, &quot;noun/lol.txt&quot;, &quot;noun/company_names.txt&quot;,
+</span>141 <span style=''>    &quot;noun/foreign.txt&quot;, &quot;noun/geolocations.txt&quot;,
+</span>142 <span style=''>    &quot;substantives/given_names.txt&quot;, &quot;noun/kpop.txt&quot;, &quot;noun/bible.txt&quot;,
+</span>143 <span style=''>    &quot;noun/pokemon.txt&quot;, &quot;noun/congress.txt&quot;, &quot;noun/wikipedia_title_nouns.txt&quot;)
+</span>144 <span style=''>
+</span>145 <span style=''>  lazy val nameDictionary = Map(
+</span>146 <span style=''>    'family_name -&gt; readWords(&quot;substantives/family_names.txt&quot;),
+</span>147 <span style=''>    'given_name -&gt; readWords(&quot;substantives/given_names.txt&quot;),
+</span>148 <span style=''>    'full_name -&gt; readWords(&quot;noun/kpop.txt&quot;, &quot;noun/foreign.txt&quot;, &quot;noun/names.txt&quot;)
+</span>149 <span style=''>  )
+</span>150 <span style=''>
+</span>151 <span style=''>  lazy val typoDictionaryByLength = readWordMap(&quot;typos/typos.txt&quot;).groupBy {
+</span>152 <span style=''>    case (key: String, value: String) =&gt; key.length
+</span>153 <span style=''>  }
+</span>154 <span style=''>
+</span>155 <span style=''>  lazy val predicateStems = {
+</span>156 <span style=''>    def getConjugationMap(words: Set[String], isAdjective: Boolean): Map[String, String] = {
+</span>157 <span style=''>      words.flatMap {
+</span>158 <span style=''>        word: String =&gt;
+</span>159 <span style=''>          conjugatePredicated(Set(word), isAdjective).map {
+</span>160 <span style=''>            conjugated =&gt; (conjugated.toString, word + &quot;다&quot;)
+</span>161 <span style=''>          }
+</span>162 <span style=''>      }.toMap
+</span>163 <span style=''>    }
+</span>164 <span style=''>
+</span>165 <span style=''>    Map(
+</span>166 <span style=''>      Verb -&gt; getConjugationMap(readWordsAsSet(&quot;verb/verb.txt&quot;), isAdjective = false),
+</span>167 <span style=''>      Adjective -&gt; getConjugationMap(readWordsAsSet(&quot;adjective/adjective.txt&quot;), isAdjective = true)
+</span>168 <span style=''>    )
+</span>169 <span style=''>  }
+</span>170 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -203,36 +205,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          35
+          36
         </td>
         <td>
-          1387
+          1384
         </td>
         <td>
-          1184
+          1169
           -
-          1185
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.+
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;Resource not loaded: &quot;.+(filename)
-        </td>
-      </tr><tr>
-        <td>
-          35
-        </td>
-        <td>
-          1386
-        </td>
-        <td>
-          1151
-          -
-          1153
+          1171
         </td>
         <td>
           Apply
@@ -245,15 +226,15 @@
         </td>
       </tr><tr>
         <td>
-          35
+          36
         </td>
         <td>
-          1388
+          1386
         </td>
         <td>
-          1143
+          1161
           -
-          1143
+          1161
         </td>
         <td>
           Apply
@@ -269,12 +250,33 @@
           36
         </td>
         <td>
-          1389
+          1385
         </td>
         <td>
-          1239
+          1202
           -
-          1239
+          1203
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Resource not loaded: &quot;.+(filename)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1387
+        </td>
+        <td>
+          1257
+          -
+          1257
         </td>
         <td>
           Apply
@@ -287,15 +289,15 @@
         </td>
       </tr><tr>
         <td>
-          38
+          39
         </td>
         <td>
-          1390
+          1388
         </td>
         <td>
-          1285
+          1299
           -
-          1285
+          1299
         </td>
         <td>
           Apply
@@ -308,15 +310,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
-          1392
+          1390
         </td>
         <td>
-          1306
+          1318
           -
-          1306
+          1318
         </td>
         <td>
           Apply
@@ -329,15 +331,15 @@
         </td>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
-          1391
+          1389
         </td>
         <td>
-          1316
+          1328
           -
-          1317
+          1329
         </td>
         <td>
           Apply
@@ -350,15 +352,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          45
         </td>
         <td>
-          1393
+          1391
         </td>
         <td>
-          1496
+          1488
           -
-          1496
+          1488
         </td>
         <td>
           Apply
@@ -371,36 +373,15 @@
         </td>
       </tr><tr>
         <td>
-          44
+          47
         </td>
         <td>
-          1394
+          1401
         </td>
         <td>
-          1496
+          1582
           -
-          1496
-        </td>
-        <td>
-          ApplyImplicitView
-        </td>
-        <td>
-          scala.collection.convert.WrapAsScala.deprecated mapAsScalaMap
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.JavaConversions.deprecated mapAsScalaMap[CharSequence, Float](new java.util.HashMap[CharSequence,Float]())
-        </td>
-      </tr><tr>
-        <td>
-          46
-        </td>
-        <td>
-          1405
-        </td>
-        <td>
-          1590
-          -
-          1590
+          1582
         </td>
         <td>
           Apply
@@ -409,11 +390,11 @@
           scala.collection.Iterator.foreach
         </td>
         <td style="background: #AEF1AE">
-          KoreanDictionaryProvider.this.readFileByLineFromResources(filename).foreach[Any](((x0$2: String) =&gt; x0$2 match {
+          KoreanDictionaryProvider.this.readFileByLineFromResources(filename).foreach[AnyVal](((x0$2: String) =&gt; x0$2 match {
   case (line @ _) =&gt; if (line.contains(&quot;\t&quot;))
     {
       val data: Array[String] = line.split(&quot;\t&quot;);
-      freqMap.+=(scala.Predef.ArrowAssoc[String](data.apply(0)).-&gt;[Float](scala.Predef.augmentString(scala.Predef.augmentString(data.apply(1)).slice(0, 6)).toFloat))
+      freqMap.put(data.apply(0), scala.Predef.augmentString(scala.Predef.augmentString(data.apply(1)).slice(0, 6)).toFloat)
     }
   else
     ()
@@ -421,81 +402,15 @@
         </td>
       </tr><tr>
         <td>
-          47
+          48
         </td>
         <td>
-          1402
+          1399
         </td>
         <td>
-          1636
+          1603
           -
-          1636
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          {
-  val data: Array[String] = line.split(&quot;\t&quot;);
-  freqMap.+=(scala.Predef.ArrowAssoc[String](data.apply(0)).-&gt;[Float](scala.Predef.augmentString(scala.Predef.augmentString(data.apply(1)).slice(0, 6)).toFloat))
-}
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          1395
-        </td>
-        <td>
-          1628
-          -
-          1628
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.contains
-        </td>
-        <td style="background: #AEF1AE">
-          line.contains(&quot;\t&quot;)
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          1404
-        </td>
-        <td>
-          1611
-          -
-          1611
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          1403
-        </td>
-        <td>
-          1611
-          -
-          1611
+          1603
         </td>
         <td>
           Literal
@@ -511,12 +426,78 @@
           48
         </td>
         <td>
-          1396
+          1398
         </td>
         <td>
-          1667
+          1628
           -
-          1667
+          1628
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val data: Array[String] = line.split(&quot;\t&quot;);
+  freqMap.put(data.apply(0), scala.Predef.augmentString(scala.Predef.augmentString(data.apply(1)).slice(0, 6)).toFloat)
+}
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1392
+        </td>
+        <td>
+          1620
+          -
+          1620
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.contains
+        </td>
+        <td style="background: #AEF1AE">
+          line.contains(&quot;\t&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1400
+        </td>
+        <td>
+          1603
+          -
+          1603
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1393
+        </td>
+        <td>
+          1659
+          -
+          1659
         </td>
         <td>
           Apply
@@ -529,15 +510,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          50
         </td>
         <td>
-          1399
+          1396
         </td>
         <td>
-          1725
+          1715
           -
-          1725
+          1715
         </td>
         <td>
           Select
@@ -550,15 +531,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          50
         </td>
         <td>
-          1398
+          1395
         </td>
         <td>
-          1718
+          1708
           -
-          1718
+          1708
         </td>
         <td>
           Apply
@@ -571,36 +552,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          50
         </td>
         <td>
-          1401
+          1394
         </td>
         <td>
           1690
           -
-          1692
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          freqMap.+=(scala.Predef.ArrowAssoc[String](data.apply(0)).-&gt;[Float](scala.Predef.augmentString(scala.Predef.augmentString(data.apply(1)).slice(0, 6)).toFloat))
-        </td>
-      </tr><tr>
-        <td>
-          49
-        </td>
-        <td>
-          1397
-        </td>
-        <td>
-          1698
-          -
-          1698
+          1690
         </td>
         <td>
           Apply
@@ -613,36 +573,36 @@
         </td>
       </tr><tr>
         <td>
-          49
+          50
         </td>
         <td>
-          1400
+          1397
         </td>
         <td>
-          1702
+          1685
           -
-          1704
+          1685
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[String](data.apply(0)).-&gt;[Float](scala.Predef.augmentString(scala.Predef.augmentString(data.apply(1)).slice(0, 6)).toFloat)
+          freqMap.put(data.apply(0), scala.Predef.augmentString(scala.Predef.augmentString(data.apply(1)).slice(0, 6)).toFloat)
         </td>
       </tr><tr>
         <td>
-          57
+          58
         </td>
         <td>
-          1406
+          1402
         </td>
         <td>
-          1931
+          1921
           -
-          1931
+          1921
         </td>
         <td>
           Apply
@@ -655,15 +615,15 @@
         </td>
       </tr><tr>
         <td>
-          60
+          61
         </td>
         <td>
-          1407
+          1403
         </td>
         <td>
-          1997
+          1987
           -
-          1997
+          1987
         </td>
         <td>
           Apply
@@ -676,57 +636,15 @@
         </td>
       </tr><tr>
         <td>
-          61
+          62
         </td>
         <td>
-          1408
+          1405
         </td>
         <td>
-          2016
+          2015
           -
-          2016
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Array.apply
-        </td>
-        <td style="background: #AEF1AE">
-          data.apply(0)
-        </td>
-      </tr><tr>
-        <td>
-          61
-        </td>
-        <td>
-          1410
-        </td>
-        <td>
-          2011
-          -
-          2011
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Tuple2.apply
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Tuple2.apply[String, String](data.apply(0), data.apply(1))
-        </td>
-      </tr><tr>
-        <td>
-          61
-        </td>
-        <td>
-          1409
-        </td>
-        <td>
-          2025
-          -
-          2025
+          2015
         </td>
         <td>
           Apply
@@ -742,33 +660,54 @@
           62
         </td>
         <td>
-          1411
+          1404
         </td>
         <td>
-          2036
+          2006
           -
-          2036
+          2006
         </td>
         <td>
-          TypeApply
+          Apply
         </td>
         <td>
-          scala.Predef.$conforms
+          scala.Array.apply
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.$conforms[(String, String)]
+          data.apply(0)
         </td>
       </tr><tr>
         <td>
           62
         </td>
         <td>
-          1412
+          1406
         </td>
         <td>
-          2036
+          2001
           -
-          2036
+          2001
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[String, String](data.apply(0), data.apply(1))
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1408
+        </td>
+        <td>
+          2026
+          -
+          2026
         </td>
         <td>
           ApplyToImplicitArgs
@@ -788,15 +727,36 @@
         </td>
       </tr><tr>
         <td>
-          67
+          63
         </td>
         <td>
-          1413
+          1407
         </td>
         <td>
-          2165
+          2026
           -
-          2165
+          2026
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[(String, String)]
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1409
+        </td>
+        <td>
+          2155
+          -
+          2155
         </td>
         <td>
           Select
@@ -809,15 +769,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
-          1414
+          1410
         </td>
         <td>
-          2286
+          2276
           -
-          2286
+          2276
         </td>
         <td>
           Apply
@@ -830,15 +790,15 @@
         </td>
       </tr><tr>
         <td>
-          71
+          72
         </td>
         <td>
-          1417
+          1413
         </td>
         <td>
-          2290
+          2280
           -
-          2290
+          2280
         </td>
         <td>
           Apply
@@ -853,15 +813,15 @@
         </td>
       </tr><tr>
         <td>
-          73
+          74
         </td>
         <td>
-          1416
+          1412
         </td>
         <td>
-          2366
+          2356
           -
-          2366
+          2356
         </td>
         <td>
           Apply
@@ -874,15 +834,15 @@
         </td>
       </tr><tr>
         <td>
-          74
+          75
         </td>
         <td>
-          1415
+          1411
         </td>
         <td>
-          2416
+          2406
           -
-          2416
+          2406
         </td>
         <td>
           TypeApply
@@ -895,15 +855,15 @@
         </td>
       </tr><tr>
         <td>
-          80
+          81
         </td>
         <td>
-          1418
+          1414
         </td>
         <td>
-          2532
+          2522
           -
-          2532
+          2522
         </td>
         <td>
           Select
@@ -916,15 +876,15 @@
         </td>
       </tr><tr>
         <td>
-          81
+          82
         </td>
         <td>
-          1421
+          1417
         </td>
         <td>
-          2569
+          2559
           -
-          2569
+          2559
         </td>
         <td>
           Apply
@@ -939,15 +899,15 @@
         </td>
       </tr><tr>
         <td>
-          82
+          83
         </td>
         <td>
-          1420
+          1416
         </td>
         <td>
-          2634
+          2624
           -
-          2634
+          2624
         </td>
         <td>
           Apply
@@ -962,15 +922,15 @@
         </td>
       </tr><tr>
         <td>
-          82
+          83
         </td>
         <td>
-          1419
+          1415
         </td>
         <td>
-          2639
+          2629
           -
-          2639
+          2629
         </td>
         <td>
           Apply
@@ -983,15 +943,15 @@
         </td>
       </tr><tr>
         <td>
-          88
+          89
         </td>
         <td>
-          1428
+          1424
         </td>
         <td>
-          2778
+          2768
           -
-          2778
+          2768
         </td>
         <td>
           Apply
@@ -1007,15 +967,15 @@ else
         </td>
       </tr><tr>
         <td>
-          89
+          90
         </td>
         <td>
-          1422
+          1418
         </td>
         <td>
-          2807
+          2797
           -
-          2807
+          2797
         </td>
         <td>
           Apply
@@ -1028,15 +988,99 @@ else
         </td>
       </tr><tr>
         <td>
-          90
+          91
+        </td>
+        <td>
+          1420
+        </td>
+        <td>
+          2816
+          -
+          2816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.zip.GZIPInputStream.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.zip.GZIPInputStream(KoreanDictionaryProvider.this.getClass().getResourceAsStream(filename))
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1419
+        </td>
+        <td>
+          2864
+          -
+          2864
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getResourceAsStream
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanDictionaryProvider.this.getClass().getResourceAsStream(filename)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1421
+        </td>
+        <td>
+          2816
+          -
+          2816
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.util.zip.GZIPInputStream.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.zip.GZIPInputStream(KoreanDictionaryProvider.this.getClass().getResourceAsStream(filename))
+        </td>
+      </tr><tr>
+        <td>
+          93
         </td>
         <td>
           1423
         </td>
         <td>
-          2874
+          2927
           -
-          2874
+          2927
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.lang.Class.getResourceAsStream
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanDictionaryProvider.this.getClass().getResourceAsStream(filename)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1422
+        </td>
+        <td>
+          2927
+          -
+          2927
         </td>
         <td>
           Apply
@@ -1049,99 +1093,15 @@ else
         </td>
       </tr><tr>
         <td>
-          90
+          100
         </td>
         <td>
           1425
         </td>
         <td>
-          2826
+          3039
           -
-          2826
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          java.util.zip.GZIPInputStream.&lt;init&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          new java.util.zip.GZIPInputStream(KoreanDictionaryProvider.this.getClass().getResourceAsStream(filename))
-        </td>
-      </tr><tr>
-        <td>
-          90
-        </td>
-        <td>
-          1424
-        </td>
-        <td>
-          2826
-          -
-          2826
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.util.zip.GZIPInputStream.&lt;init&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          new java.util.zip.GZIPInputStream(KoreanDictionaryProvider.this.getClass().getResourceAsStream(filename))
-        </td>
-      </tr><tr>
-        <td>
-          92
-        </td>
-        <td>
-          1427
-        </td>
-        <td>
-          2937
-          -
-          2937
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          java.lang.Class.getResourceAsStream
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanDictionaryProvider.this.getClass().getResourceAsStream(filename)
-        </td>
-      </tr><tr>
-        <td>
-          92
-        </td>
-        <td>
-          1426
-        </td>
-        <td>
-          2937
-          -
-          2937
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.Class.getResourceAsStream
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanDictionaryProvider.this.getClass().getResourceAsStream(filename)
-        </td>
-      </tr><tr>
-        <td>
-          99
-        </td>
-        <td>
-          1429
-        </td>
-        <td>
-          3049
-          -
-          3049
+          3039
         </td>
         <td>
           Apply
@@ -1154,15 +1114,15 @@ else
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
-          1432
+          1428
         </td>
         <td>
-          3311
+          3295
           -
-          3311
+          3295
         </td>
         <td>
           Literal
@@ -1175,15 +1135,15 @@ else
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
-          1431
+          1427
         </td>
         <td>
-          3311
+          3295
           -
-          3311
+          3295
         </td>
         <td>
           Apply
@@ -1192,61 +1152,40 @@ else
           java.util.AbstractCollection.addAll
         </td>
         <td style="background: #AEF1AE">
-          KoreanDictionaryProvider.this.koreanDictionary.apply(pos).addAll(scala.collection.JavaConversions.deprecated seqAsJavaList[String](words))
+          KoreanDictionaryProvider.this.koreanDictionary.get(pos).addAll(scala.collection.JavaConverters.seqAsJavaListConverter[String](words).asJava)
         </td>
       </tr><tr>
         <td>
-          106
+          107
         </td>
         <td>
-          1430
+          1426
         </td>
         <td>
-          3312
+          3302
           -
-          3312
+          3302
         </td>
         <td>
-          ApplyImplicitView
+          Select
         </td>
         <td>
-          scala.collection.convert.WrapAsJava.deprecated seqAsJavaList
+          scala.collection.convert.Decorators.AsJava.asJava
         </td>
         <td style="background: #AEF1AE">
-          scala.collection.JavaConversions.deprecated seqAsJavaList[String](words)
+          scala.collection.JavaConverters.seqAsJavaListConverter[String](words).asJava
         </td>
       </tr><tr>
         <td>
-          111
+          112
         </td>
         <td>
-          1434
+          1429
         </td>
         <td>
-          3469
+          3440
           -
-          3469
-        </td>
-        <td>
-          ApplyImplicitView
-        </td>
-        <td>
-          scala.collection.convert.WrapAsScala.deprecated mapAsScalaMap
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.JavaConversions.deprecated mapAsScalaMap[org.openkoreantext.processor.util.KoreanPos.KoreanPos, org.openkoreantext.processor.util.CharArraySet](new java.util.HashMap[org.openkoreantext.processor.util.KoreanPos.KoreanPos,org.openkoreantext.processor.util.CharArraySet]())
-        </td>
-      </tr><tr>
-        <td>
-          111
-        </td>
-        <td>
-          1433
-        </td>
-        <td>
-          3469
-          -
-          3469
+          3440
         </td>
         <td>
           Apply
@@ -1259,57 +1198,36 @@ else
         </td>
       </tr><tr>
         <td>
-          113
+          114
         </td>
         <td>
-          1438
+          1432
         </td>
         <td>
-          3525
+          3499
           -
-          3535
+          3499
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.collection.mutable.MapLike.+=
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;noun/nouns.txt&quot;, &quot;noun/entities.txt&quot;, &quot;noun/spam.txt&quot;, &quot;noun/names.txt&quot;, &quot;noun/twitter.txt&quot;, &quot;noun/lol.txt&quot;, &quot;noun/slangs.txt&quot;, &quot;noun/company_names.txt&quot;, &quot;noun/foreign.txt&quot;, &quot;noun/geolocations.txt&quot;, &quot;noun/profane.txt&quot;, &quot;substantives/given_names.txt&quot;, &quot;noun/kpop.txt&quot;, &quot;noun/bible.txt&quot;, &quot;noun/pokemon.txt&quot;, &quot;noun/congress.txt&quot;, &quot;noun/wikipedia_title_nouns.txt&quot;)))
+          map.put(org.openkoreantext.processor.util.KoreanPos.Noun, KoreanDictionaryProvider.this.readWords(&quot;noun/nouns.txt&quot;, &quot;noun/entities.txt&quot;, &quot;noun/spam.txt&quot;, &quot;noun/names.txt&quot;, &quot;noun/twitter.txt&quot;, &quot;noun/lol.txt&quot;, &quot;noun/slangs.txt&quot;, &quot;noun/company_names.txt&quot;, &quot;noun/foreign.txt&quot;, &quot;noun/geolocations.txt&quot;, &quot;noun/profane.txt&quot;, &quot;substantives/given_names.txt&quot;, &quot;noun/kpop.txt&quot;, &quot;noun/bible.txt&quot;, &quot;noun/pokemon.txt&quot;, &quot;noun/congress.txt&quot;, &quot;noun/wikipedia_title_nouns.txt&quot;))
         </td>
       </tr><tr>
         <td>
-          113
+          114
         </td>
         <td>
-          1437
+          1431
         </td>
         <td>
-          3533
+          3515
           -
-          3535
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Noun).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;noun/nouns.txt&quot;, &quot;noun/entities.txt&quot;, &quot;noun/spam.txt&quot;, &quot;noun/names.txt&quot;, &quot;noun/twitter.txt&quot;, &quot;noun/lol.txt&quot;, &quot;noun/slangs.txt&quot;, &quot;noun/company_names.txt&quot;, &quot;noun/foreign.txt&quot;, &quot;noun/geolocations.txt&quot;, &quot;noun/profane.txt&quot;, &quot;substantives/given_names.txt&quot;, &quot;noun/kpop.txt&quot;, &quot;noun/bible.txt&quot;, &quot;noun/pokemon.txt&quot;, &quot;noun/congress.txt&quot;, &quot;noun/wikipedia_title_nouns.txt&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          113
-        </td>
-        <td>
-          1436
-        </td>
-        <td>
-          3545
-          -
-          3545
+          3515
         </td>
         <td>
           Apply
@@ -1322,15 +1240,15 @@ else
         </td>
       </tr><tr>
         <td>
-          113
+          114
         </td>
         <td>
-          1435
+          1430
         </td>
         <td>
-          3528
+          3500
           -
-          3528
+          3500
         </td>
         <td>
           Select
@@ -1343,36 +1261,15 @@ else
         </td>
       </tr><tr>
         <td>
-          121
+          122
         </td>
         <td>
-          1441
+          1434
         </td>
         <td>
-          3969
+          3987
           -
-          3969
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet$default$2
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet$default$2
-        </td>
-      </tr><tr>
-        <td>
-          121
-        </td>
-        <td>
-          1440
-        </td>
-        <td>
-          4017
-          -
-          4017
+          3987
         </td>
         <td>
           Apply
@@ -1385,36 +1282,36 @@ else
         </td>
       </tr><tr>
         <td>
-          121
+          122
         </td>
         <td>
-          1443
+          1437
         </td>
         <td>
-          3966
+          3932
           -
-          3968
+          3932
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Verb).-&gt;[org.openkoreantext.processor.util.CharArraySet](org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet(KoreanDictionaryProvider.this.readWordsAsSet(&quot;verb/verb.txt&quot;), org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet$default$2))
+          map.put(org.openkoreantext.processor.util.KoreanPos.Verb, org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet(KoreanDictionaryProvider.this.readWordsAsSet(&quot;verb/verb.txt&quot;), org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet$default$2))
         </td>
       </tr><tr>
         <td>
-          121
+          122
         </td>
         <td>
-          1439
+          1433
         </td>
         <td>
-          3961
+          3933
           -
-          3961
+          3933
         </td>
         <td>
           Select
@@ -1427,15 +1324,15 @@ else
         </td>
       </tr><tr>
         <td>
-          121
+          122
         </td>
         <td>
-          1442
+          1436
         </td>
         <td>
-          4002
+          3972
           -
-          4002
+          3972
         </td>
         <td>
           Apply
@@ -1448,120 +1345,57 @@ else
         </td>
       </tr><tr>
         <td>
-          121
-        </td>
-        <td>
-          1444
-        </td>
-        <td>
-          3958
-          -
-          3968
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Verb).-&gt;[org.openkoreantext.processor.util.CharArraySet](org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet(KoreanDictionaryProvider.this.readWordsAsSet(&quot;verb/verb.txt&quot;), org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet$default$2)))
-        </td>
-      </tr><tr>
-        <td>
           122
         </td>
         <td>
-          1447
+          1435
         </td>
         <td>
-          4151
+          3939
           -
-          4151
+          3939
         </td>
         <td>
-          Literal
+          Select
         </td>
         <td>
-          &lt;nosymbol&gt;
+          org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet$default$2
         </td>
         <td style="background: #AEF1AE">
-          true
+          org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet$default$2
         </td>
       </tr><tr>
         <td>
-          122
+          123
         </td>
         <td>
-          1450
+          1438
         </td>
         <td>
-          4044
+          4019
           -
-          4059
+          4019
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          scala.collection.mutable.MapLike.+=
+          org.openkoreantext.processor.util.KoreanPos.Adjective
         </td>
         <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Adjective).-&gt;[org.openkoreantext.processor.util.CharArraySet](org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet(KoreanDictionaryProvider.this.readWordsAsSet(&quot;adjective/adjective.txt&quot;), true)))
+          org.openkoreantext.processor.util.KoreanPos.Adjective
         </td>
       </tr><tr>
         <td>
-          122
+          123
         </td>
         <td>
-          1449
+          1441
         </td>
         <td>
-          4057
+          4063
           -
-          4059
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Adjective).-&gt;[org.openkoreantext.processor.util.CharArraySet](org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet(KoreanDictionaryProvider.this.readWordsAsSet(&quot;adjective/adjective.txt&quot;), true))
-        </td>
-      </tr><tr>
-        <td>
-          122
-        </td>
-        <td>
-          1446
-        </td>
-        <td>
-          4108
-          -
-          4108
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.readWordsAsSet
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanDictionaryProvider.this.readWordsAsSet(&quot;adjective/adjective.txt&quot;)
-        </td>
-      </tr><tr>
-        <td>
-          122
-        </td>
-        <td>
-          1448
-        </td>
-        <td>
-          4093
-          -
-          4093
+          4063
         </td>
         <td>
           Apply
@@ -1574,36 +1408,120 @@ else
         </td>
       </tr><tr>
         <td>
-          122
+          123
         </td>
         <td>
-          1445
+          1440
         </td>
         <td>
-          4047
+          4121
           -
-          4047
+          4121
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanPos.Adjective
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Adjective
+          true
         </td>
       </tr><tr>
         <td>
           123
         </td>
         <td>
-          1452
+          1439
         </td>
         <td>
-          4187
+          4078
           -
-          4187
+          4078
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.readWordsAsSet
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanDictionaryProvider.this.readWordsAsSet(&quot;adjective/adjective.txt&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          1442
+        </td>
+        <td>
+          4018
+          -
+          4018
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.put
+        </td>
+        <td style="background: #AEF1AE">
+          map.put(org.openkoreantext.processor.util.KoreanPos.Adjective, org.openkoreantext.processor.util.KoreanConjugation.conjugatePredicatesToCharArraySet(KoreanDictionaryProvider.this.readWordsAsSet(&quot;adjective/adjective.txt&quot;), true))
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1443
+        </td>
+        <td>
+          4140
+          -
+          4140
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Adverb
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Adverb
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1445
+        </td>
+        <td>
+          4139
+          -
+          4139
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.put
+        </td>
+        <td style="background: #AEF1AE">
+          map.put(org.openkoreantext.processor.util.KoreanPos.Adverb, KoreanDictionaryProvider.this.readWords(&quot;adverb/adverb.txt&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1444
+        </td>
+        <td>
+          4157
+          -
+          4157
         </td>
         <td>
           Apply
@@ -1616,78 +1534,15 @@ else
         </td>
       </tr><tr>
         <td>
-          123
+          125
         </td>
         <td>
-          1454
+          1447
         </td>
         <td>
-          4165
+          4213
           -
-          4177
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Adverb).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;adverb/adverb.txt&quot;)))
-        </td>
-      </tr><tr>
-        <td>
-          123
-        </td>
-        <td>
-          1451
-        </td>
-        <td>
-          4168
-          -
-          4168
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Adverb
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Adverb
-        </td>
-      </tr><tr>
-        <td>
-          123
-        </td>
-        <td>
-          1453
-        </td>
-        <td>
-          4175
-          -
-          4177
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Adverb).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;adverb/adverb.txt&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          124
-        </td>
-        <td>
-          1456
-        </td>
-        <td>
-          4243
-          -
-          4243
+          4213
         </td>
         <td>
           Apply
@@ -1700,36 +1555,15 @@ else
         </td>
       </tr><tr>
         <td>
-          124
+          125
         </td>
         <td>
-          1458
+          1446
         </td>
         <td>
-          4217
+          4192
           -
-          4233
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Determiner).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;auxiliary/determiner.txt&quot;)))
-        </td>
-      </tr><tr>
-        <td>
-          124
-        </td>
-        <td>
-          1455
-        </td>
-        <td>
-          4220
-          -
-          4220
+          4192
         </td>
         <td>
           Select
@@ -1742,78 +1576,36 @@ else
         </td>
       </tr><tr>
         <td>
-          124
+          125
         </td>
         <td>
-          1457
+          1448
         </td>
         <td>
-          4231
+          4191
           -
-          4233
+          4191
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Determiner).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;auxiliary/determiner.txt&quot;))
+          map.put(org.openkoreantext.processor.util.KoreanPos.Determiner, KoreanDictionaryProvider.this.readWords(&quot;auxiliary/determiner.txt&quot;))
         </td>
       </tr><tr>
         <td>
-          125
+          126
         </td>
         <td>
-          1459
+          1450
         </td>
         <td>
-          4283
+          4277
           -
-          4283
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Exclamation
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Exclamation
-        </td>
-      </tr><tr>
-        <td>
-          125
-        </td>
-        <td>
-          1461
-        </td>
-        <td>
-          4295
-          -
-          4297
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Exclamation).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;auxiliary/exclamation.txt&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          125
-        </td>
-        <td>
-          1460
-        </td>
-        <td>
-          4307
-          -
-          4307
+          4277
         </td>
         <td>
           Apply
@@ -1826,57 +1618,99 @@ else
         </td>
       </tr><tr>
         <td>
-          125
+          126
         </td>
         <td>
-          1462
+          1449
         </td>
         <td>
-          4280
+          4255
           -
-          4297
+          4255
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          scala.collection.mutable.MapLike.+=
+          org.openkoreantext.processor.util.KoreanPos.Exclamation
         </td>
         <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Exclamation).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;auxiliary/exclamation.txt&quot;)))
+          org.openkoreantext.processor.util.KoreanPos.Exclamation
         </td>
       </tr><tr>
         <td>
           126
         </td>
         <td>
-          1465
+          1451
         </td>
         <td>
-          4353
+          4254
           -
-          4355
+          4254
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Josa).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;josa/josa.txt&quot;))
+          map.put(org.openkoreantext.processor.util.KoreanPos.Exclamation, KoreanDictionaryProvider.this.readWords(&quot;auxiliary/exclamation.txt&quot;))
         </td>
       </tr><tr>
         <td>
-          126
+          127
         </td>
         <td>
-          1464
+          1452
         </td>
         <td>
-          4365
+          4320
           -
-          4365
+          4320
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Josa
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Josa
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          1454
+        </td>
+        <td>
+          4319
+          -
+          4319
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.put
+        </td>
+        <td style="background: #AEF1AE">
+          map.put(org.openkoreantext.processor.util.KoreanPos.Josa, KoreanDictionaryProvider.this.readWords(&quot;josa/josa.txt&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          1453
+        </td>
+        <td>
+          4335
+          -
+          4335
         </td>
         <td>
           Apply
@@ -1889,57 +1723,15 @@ else
         </td>
       </tr><tr>
         <td>
-          126
+          128
         </td>
         <td>
-          1463
+          1456
         </td>
         <td>
-          4348
+          4381
           -
-          4348
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Josa
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Josa
-        </td>
-      </tr><tr>
-        <td>
-          126
-        </td>
-        <td>
-          1466
-        </td>
-        <td>
-          4345
-          -
-          4355
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Josa).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;josa/josa.txt&quot;)))
-        </td>
-      </tr><tr>
-        <td>
-          127
-        </td>
-        <td>
-          1468
-        </td>
-        <td>
-          4411
-          -
-          4411
+          4381
         </td>
         <td>
           Apply
@@ -1952,15 +1744,15 @@ else
         </td>
       </tr><tr>
         <td>
-          127
+          128
         </td>
         <td>
-          1467
+          1455
         </td>
         <td>
-          4394
+          4366
           -
-          4394
+          4366
         </td>
         <td>
           Select
@@ -1973,99 +1765,36 @@ else
         </td>
       </tr><tr>
         <td>
-          127
-        </td>
-        <td>
-          1470
-        </td>
-        <td>
-          4391
-          -
-          4401
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Eomi).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;verb/eomi.txt&quot;)))
-        </td>
-      </tr><tr>
-        <td>
-          127
-        </td>
-        <td>
-          1469
-        </td>
-        <td>
-          4399
-          -
-          4401
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Eomi).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;verb/eomi.txt&quot;))
-        </td>
-      </tr><tr>
-        <td>
           128
         </td>
         <td>
-          1474
+          1457
         </td>
         <td>
-          4437
+          4365
           -
-          4450
+          4365
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.collection.mutable.MapLike.+=
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.PreEomi).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;verb/pre_eomi.txt&quot;)))
+          map.put(org.openkoreantext.processor.util.KoreanPos.Eomi, KoreanDictionaryProvider.this.readWords(&quot;verb/eomi.txt&quot;))
         </td>
       </tr><tr>
         <td>
-          128
+          129
         </td>
         <td>
-          1473
+          1459
         </td>
         <td>
-          4448
+          4430
           -
-          4450
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.PreEomi).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;verb/pre_eomi.txt&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          128
-        </td>
-        <td>
-          1472
-        </td>
-        <td>
-          4460
-          -
-          4460
+          4430
         </td>
         <td>
           Apply
@@ -2078,15 +1807,15 @@ else
         </td>
       </tr><tr>
         <td>
-          128
+          129
         </td>
         <td>
-          1471
+          1458
         </td>
         <td>
-          4440
+          4412
           -
-          4440
+          4412
         </td>
         <td>
           Select
@@ -2102,12 +1831,75 @@ else
           129
         </td>
         <td>
-          1476
+          1460
         </td>
         <td>
-          4517
+          4411
           -
-          4517
+          4411
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.put
+        </td>
+        <td style="background: #AEF1AE">
+          map.put(org.openkoreantext.processor.util.KoreanPos.PreEomi, KoreanDictionaryProvider.this.readWords(&quot;verb/pre_eomi.txt&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          1461
+        </td>
+        <td>
+          4465
+          -
+          4465
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Conjunction
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Conjunction
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          1463
+        </td>
+        <td>
+          4464
+          -
+          4464
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.put
+        </td>
+        <td style="background: #AEF1AE">
+          map.put(org.openkoreantext.processor.util.KoreanPos.Conjunction, KoreanDictionaryProvider.this.readWords(&quot;auxiliary/conjunctions.txt&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          1462
+        </td>
+        <td>
+          4487
+          -
+          4487
         </td>
         <td>
           Apply
@@ -2120,141 +1912,15 @@ else
         </td>
       </tr><tr>
         <td>
-          129
+          131
         </td>
         <td>
-          1475
+          1465
         </td>
         <td>
-          4493
+          4550
           -
-          4493
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Conjunction
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Conjunction
-        </td>
-      </tr><tr>
-        <td>
-          129
-        </td>
-        <td>
-          1478
-        </td>
-        <td>
-          4490
-          -
-          4507
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Conjunction).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;auxiliary/conjunctions.txt&quot;)))
-        </td>
-      </tr><tr>
-        <td>
-          129
-        </td>
-        <td>
-          1477
-        </td>
-        <td>
-          4505
-          -
-          4507
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Conjunction).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;auxiliary/conjunctions.txt&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          130
-        </td>
-        <td>
-          1479
-        </td>
-        <td>
-          4559
-          -
-          4559
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.NounPrefix
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.NounPrefix
-        </td>
-      </tr><tr>
-        <td>
-          130
-        </td>
-        <td>
-          1482
-        </td>
-        <td>
-          4556
-          -
-          4572
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.NounPrefix).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;substantives/noun_prefix.txt&quot;)))
-        </td>
-      </tr><tr>
-        <td>
-          130
-        </td>
-        <td>
-          1481
-        </td>
-        <td>
-          4570
-          -
-          4572
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Predef.ArrowAssoc.-&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.NounPrefix).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;substantives/noun_prefix.txt&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          130
-        </td>
-        <td>
-          1480
-        </td>
-        <td>
-          4582
-          -
-          4582
+          4550
         </td>
         <td>
           Apply
@@ -2263,61 +1929,61 @@ else
           org.openkoreantext.processor.util.KoreanDictionaryProvider.readWords
         </td>
         <td style="background: #AEF1AE">
-          KoreanDictionaryProvider.this.readWords(&quot;substantives/noun_prefix.txt&quot;)
+          KoreanDictionaryProvider.this.readWords(&quot;substantives/modifier.txt&quot;)
         </td>
       </tr><tr>
         <td>
           131
         </td>
         <td>
-          1483
+          1464
         </td>
         <td>
-          4626
+          4531
           -
-          4626
+          4531
         </td>
         <td>
           Select
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanPos.VerbPrefix
+          org.openkoreantext.processor.util.KoreanPos.Modifier
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.VerbPrefix
+          org.openkoreantext.processor.util.KoreanPos.Modifier
         </td>
       </tr><tr>
         <td>
           131
         </td>
         <td>
-          1485
+          1466
         </td>
         <td>
-          4637
+          4530
           -
-          4639
+          4530
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.VerbPrefix).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;verb/verb_prefix.txt&quot;))
+          map.put(org.openkoreantext.processor.util.KoreanPos.Modifier, KoreanDictionaryProvider.this.readWords(&quot;substantives/modifier.txt&quot;))
         </td>
       </tr><tr>
         <td>
-          131
+          132
         </td>
         <td>
-          1484
+          1468
         </td>
         <td>
-          4649
+          4614
           -
-          4649
+          4614
         </td>
         <td>
           Apply
@@ -2330,78 +1996,57 @@ else
         </td>
       </tr><tr>
         <td>
-          131
+          132
         </td>
         <td>
-          1486
+          1467
         </td>
         <td>
-          4623
+          4593
           -
-          4639
+          4593
         </td>
         <td>
-          Apply
+          Select
         </td>
         <td>
-          scala.collection.mutable.MapLike.+=
+          org.openkoreantext.processor.util.KoreanPos.VerbPrefix
         </td>
         <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.VerbPrefix).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;verb/verb_prefix.txt&quot;)))
+          org.openkoreantext.processor.util.KoreanPos.VerbPrefix
         </td>
       </tr><tr>
         <td>
           132
         </td>
         <td>
-          1488
+          1469
         </td>
         <td>
-          4704
+          4592
           -
-          4704
+          4592
         </td>
         <td>
           Apply
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.readWords
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          KoreanDictionaryProvider.this.readWords(&quot;substantives/suffix.txt&quot;)
+          map.put(org.openkoreantext.processor.util.KoreanPos.VerbPrefix, KoreanDictionaryProvider.this.readWords(&quot;verb/verb_prefix.txt&quot;))
         </td>
       </tr><tr>
         <td>
-          132
+          133
         </td>
         <td>
-          1490
+          1470
         </td>
         <td>
-          4682
+          4652
           -
-          4694
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.mutable.MapLike.+=
-        </td>
-        <td style="background: #AEF1AE">
-          map.+=(scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Suffix).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;substantives/suffix.txt&quot;)))
-        </td>
-      </tr><tr>
-        <td>
-          132
-        </td>
-        <td>
-          1487
-        </td>
-        <td>
-          4685
-          -
-          4685
+          4652
         </td>
         <td>
           Select
@@ -2414,36 +2059,57 @@ else
         </td>
       </tr><tr>
         <td>
-          132
+          133
         </td>
         <td>
-          1489
+          1472
         </td>
         <td>
-          4692
+          4651
           -
-          4694
+          4651
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Predef.ArrowAssoc.-&gt;
+          java.util.HashMap.put
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.ArrowAssoc[org.openkoreantext.processor.util.KoreanPos.Value](org.openkoreantext.processor.util.KoreanPos.Suffix).-&gt;[org.openkoreantext.processor.util.CharArraySet](KoreanDictionaryProvider.this.readWords(&quot;substantives/suffix.txt&quot;))
+          map.put(org.openkoreantext.processor.util.KoreanPos.Suffix, KoreanDictionaryProvider.this.readWords(&quot;substantives/suffix.txt&quot;))
         </td>
       </tr><tr>
         <td>
-          138
+          133
         </td>
         <td>
-          1491
+          1471
         </td>
         <td>
-          4859
+          4669
           -
-          4859
+          4669
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.readWords
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanDictionaryProvider.this.readWords(&quot;substantives/suffix.txt&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          1473
+        </td>
+        <td>
+          4825
+          -
+          4825
         </td>
         <td>
           Apply

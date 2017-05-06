@@ -86,7 +86,7 @@
           31
         </td>
         <td>
-          1138
+          1136
         </td>
         <td>
           1103
@@ -105,7 +105,7 @@
     val chunk: String = line.trim();
     val parsed: Seq[Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]] = org.openkoreantext.processor.OpenKoreanTextProcessor.tokenizeTopN(chunk, 5).head;
     val parsedString: Seq[String] = parsed.map[String, Seq[String]](((p: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]) =&gt; {
-  val tokens: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken] = p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]);
+  val tokens: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken] = p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]);
   tokens.mkString(&quot;/&quot;)
 }))(collection.this.Seq.canBuildFrom[String]).distinct;
     scala.this.Option.option2Iterable[Seq[String]](scala.Some.apply[Seq[String]](scala.collection.Seq.apply[String](chunk).++[String, Seq[String]](parsedString)(collection.this.Seq.canBuildFrom[String])))
@@ -118,7 +118,7 @@
           31
         </td>
         <td>
-          1116
+          1113
         </td>
         <td>
           1073
@@ -139,7 +139,7 @@
           32
         </td>
         <td>
-          1117
+          1114
         </td>
         <td>
           1136
@@ -160,7 +160,7 @@
           33
         </td>
         <td>
-          1118
+          1115
         </td>
         <td>
           1168
@@ -181,7 +181,7 @@
           34
         </td>
         <td>
-          1120
+          1117
         </td>
         <td>
           1217
@@ -202,7 +202,7 @@
           34
         </td>
         <td>
-          1119
+          1116
         </td>
         <td>
           1214
@@ -223,7 +223,7 @@
           35
         </td>
         <td>
-          1130
+          1128
         </td>
         <td>
           1273
@@ -244,7 +244,28 @@
           36
         </td>
         <td>
-          1127
+          1126
+        </td>
+        <td>
+          1308
+          -
+          1308
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #F0ADAD">
+          p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1125
         </td>
         <td>
           1308
@@ -262,52 +283,10 @@
         </td>
       </tr><tr>
         <td>
-          36
-        </td>
-        <td>
-          1128
-        </td>
-        <td>
-          1308
-          -
-          1308
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.collection.TraversableLike.map
-        </td>
-        <td style="background: #F0ADAD">
-          p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
-        </td>
-      </tr><tr>
-        <td>
           37
         </td>
         <td>
           1124
-        </td>
-        <td>
-          1386
-          -
-          1386
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.length
-        </td>
-        <td style="background: #F0ADAD">
-          token.length
-        </td>
-      </tr><tr>
-        <td>
-          37
-        </td>
-        <td>
-          1126
         </td>
         <td>
           1342
@@ -321,14 +300,35 @@
           org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply
         </td>
         <td style="background: #F0ADAD">
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5)
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6)
         </td>
       </tr><tr>
         <td>
           37
         </td>
         <td>
-          1123
+          1118
+        </td>
+        <td>
+          1349
+          -
+          1349
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+        </td>
+        <td style="background: #F0ADAD">
+          token.text
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1120
         </td>
         <td>
           1372
@@ -349,7 +349,7 @@
           37
         </td>
         <td>
-          1125
+          1123
         </td>
         <td>
           1331
@@ -360,17 +360,17 @@
           Select
         </td>
         <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6
         </td>
         <td style="background: #F0ADAD">
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6
         </td>
       </tr><tr>
         <td>
           37
         </td>
         <td>
-          1122
+          1119
         </td>
         <td>
           1361
@@ -391,28 +391,49 @@
           37
         </td>
         <td>
-          1121
+          1122
         </td>
         <td>
-          1349
+          1331
           -
-          1349
+          1331
         </td>
         <td>
           Select
         </td>
         <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
         </td>
         <td style="background: #F0ADAD">
-          token.text
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1121
+        </td>
+        <td>
+          1386
+          -
+          1386
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.length
+        </td>
+        <td style="background: #F0ADAD">
+          token.length
         </td>
       </tr><tr>
         <td>
           38
         </td>
         <td>
-          1129
+          1127
         </td>
         <td>
           1420
@@ -433,7 +454,7 @@
           39
         </td>
         <td>
-          1131
+          1129
         </td>
         <td>
           1436
@@ -448,7 +469,7 @@
         </td>
         <td style="background: #F0ADAD">
           parsed.map[String, Seq[String]](((p: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]) =&gt; {
-  val tokens: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken] = p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]);
+  val tokens: Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken] = p.map[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((token: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6)))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]);
   tokens.mkString(&quot;/&quot;)
 }))(collection.this.Seq.canBuildFrom[String]).distinct
         </td>
@@ -458,27 +479,6 @@
         </td>
         <td>
           1133
-        </td>
-        <td>
-          1469
-          -
-          1471
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.collection.TraversableLike.++
-        </td>
-        <td style="background: #F0ADAD">
-          scala.collection.Seq.apply[String](chunk).++[String, Seq[String]](parsedString)(collection.this.Seq.canBuildFrom[String])
-        </td>
-      </tr><tr>
-        <td>
-          40
-        </td>
-        <td>
-          1135
         </td>
         <td>
           1457
@@ -502,27 +502,6 @@
           1132
         </td>
         <td>
-          1469
-          -
-          1469
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.Seq.canBuildFrom
-        </td>
-        <td style="background: #F0ADAD">
-          collection.this.Seq.canBuildFrom[String]
-        </td>
-      </tr><tr>
-        <td>
-          40
-        </td>
-        <td>
-          1134
-        </td>
-        <td>
           1457
           -
           1457
@@ -538,31 +517,52 @@
         </td>
       </tr><tr>
         <td>
-          41
+          40
         </td>
         <td>
-          1136
+          1131
         </td>
         <td>
-          1505
+          1469
           -
-          1505
+          1471
         </td>
         <td>
-          Select
+          ApplyToImplicitArgs
         </td>
         <td>
-          scala.None
+          scala.collection.TraversableLike.++
         </td>
         <td style="background: #F0ADAD">
-          scala.None
+          scala.collection.Seq.apply[String](chunk).++[String, Seq[String]](parsedString)(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1130
+        </td>
+        <td>
+          1469
+          -
+          1469
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
         </td>
       </tr><tr>
         <td>
           41
         </td>
         <td>
-          1137
+          1135
         </td>
         <td>
           1505
@@ -580,10 +580,31 @@
         </td>
       </tr><tr>
         <td>
+          41
+        </td>
+        <td>
+          1134
+        </td>
+        <td>
+          1505
+          -
+          1505
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
           44
         </td>
         <td>
-          1141
+          1139
         </td>
         <td>
           1541
@@ -604,7 +625,7 @@
           45
         </td>
         <td>
-          1140
+          1138
         </td>
         <td>
           1561
@@ -625,7 +646,7 @@
           45
         </td>
         <td>
-          1139
+          1137
         </td>
         <td>
           1572

@@ -95,7 +95,7 @@
 </span>71 <span style=''>   * @return true if the chunk is an 'ㅇ' omitted variation
 </span>72 <span style=''>   */
 </span>73 <span style=''>  protected[processor] def isKoreanNameVariation(chunk: CharSequence): Boolean = {
-</span>74 <span style=''>    val nounDict = koreanDictionary(Noun)
+</span>74 <span style=''>    val nounDict = koreanDictionary.get(Noun)
 </span>75 <span style=''>
 </span>76 <span style=''>    val s = chunk.toString
 </span>77 <span style=''>    if (isName(s)) return true
@@ -156,7 +156,7 @@
           31
         </td>
         <td>
-          1634
+          1616
         </td>
         <td>
           1081
@@ -177,7 +177,7 @@
           33
         </td>
         <td>
-          1635
+          1617
         </td>
         <td>
           1160
@@ -198,7 +198,7 @@
           37
         </td>
         <td>
-          1636
+          1618
         </td>
         <td>
           1313
@@ -219,7 +219,7 @@
           37
         </td>
         <td>
-          1639
+          1621
         </td>
         <td>
           1356
@@ -240,7 +240,7 @@
           38
         </td>
         <td>
-          1638
+          1620
         </td>
         <td>
           1387
@@ -261,7 +261,7 @@
           38
         </td>
         <td>
-          1637
+          1619
         </td>
         <td>
           1390
@@ -282,7 +282,7 @@
           42
         </td>
         <td>
-          1646
+          1628
         </td>
         <td>
           1507
@@ -303,7 +303,7 @@
           42
         </td>
         <td>
-          1640
+          1622
         </td>
         <td>
           1526
@@ -324,7 +324,7 @@
           42
         </td>
         <td>
-          1642
+          1624
         </td>
         <td>
           1554
@@ -345,7 +345,7 @@
           42
         </td>
         <td>
-          1645
+          1627
         </td>
         <td>
           1507
@@ -366,7 +366,7 @@
           43
         </td>
         <td>
-          1641
+          1623
         </td>
         <td>
           1599
@@ -387,7 +387,7 @@
           43
         </td>
         <td>
-          1644
+          1626
         </td>
         <td>
           1608
@@ -408,7 +408,7 @@
           43
         </td>
         <td>
-          1643
+          1625
         </td>
         <td>
           1615
@@ -429,7 +429,7 @@
           45
         </td>
         <td>
-          1647
+          1629
         </td>
         <td>
           1631
@@ -450,7 +450,7 @@
           47
         </td>
         <td>
-          1653
+          1635
         </td>
         <td>
           1737
@@ -471,7 +471,7 @@
           47
         </td>
         <td>
-          1649
+          1631
         </td>
         <td>
           1727
@@ -492,7 +492,7 @@
           47
         </td>
         <td>
-          1648
+          1630
         </td>
         <td>
           1688
@@ -513,7 +513,7 @@
           48
         </td>
         <td>
-          1650
+          1632
         </td>
         <td>
           1763
@@ -534,7 +534,7 @@
           48
         </td>
         <td>
-          1652
+          1634
         </td>
         <td>
           1784
@@ -555,7 +555,7 @@
           48
         </td>
         <td>
-          1651
+          1633
         </td>
         <td>
           1809
@@ -576,7 +576,7 @@
           51
         </td>
         <td>
-          1659
+          1641
         </td>
         <td>
           1927
@@ -597,7 +597,7 @@
           51
         </td>
         <td>
-          1655
+          1637
         </td>
         <td>
           1917
@@ -618,7 +618,7 @@
           51
         </td>
         <td>
-          1654
+          1636
         </td>
         <td>
           1870
@@ -639,7 +639,7 @@
           52
         </td>
         <td>
-          1656
+          1638
         </td>
         <td>
           1955
@@ -660,7 +660,7 @@
           52
         </td>
         <td>
-          1658
+          1640
         </td>
         <td>
           1976
@@ -681,7 +681,7 @@
           52
         </td>
         <td>
-          1657
+          1639
         </td>
         <td>
           2001
@@ -702,7 +702,7 @@
           54
         </td>
         <td>
-          1660
+          1642
         </td>
         <td>
           2036
@@ -723,7 +723,7 @@
           58
         </td>
         <td>
-          1662
+          1644
         </td>
         <td>
           2108
@@ -744,7 +744,7 @@
           58
         </td>
         <td>
-          1661
+          1643
         </td>
         <td>
           2082
@@ -765,7 +765,7 @@
           58
         </td>
         <td>
-          1664
+          1646
         </td>
         <td>
           2115
@@ -786,7 +786,7 @@
           58
         </td>
         <td>
-          1663
+          1645
         </td>
         <td>
           2105
@@ -807,7 +807,7 @@
           59
         </td>
         <td>
-          1665
+          1647
         </td>
         <td>
           2155
@@ -828,7 +828,7 @@
           59
         </td>
         <td>
-          1668
+          1650
         </td>
         <td>
           2192
@@ -849,7 +849,7 @@
           59
         </td>
         <td>
-          1667
+          1649
         </td>
         <td>
           2182
@@ -870,7 +870,7 @@
           59
         </td>
         <td>
-          1666
+          1648
         </td>
         <td>
           2185
@@ -891,7 +891,28 @@
           62
         </td>
         <td>
-          1680
+          1653
+        </td>
+        <td>
+          2312
+          -
+          2312
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1662
         </td>
         <td>
           2318
@@ -915,28 +936,7 @@
           62
         </td>
         <td>
-          1671
-        </td>
-        <td>
-          2312
-          -
-          2312
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          true
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          1670
+          1652
         </td>
         <td>
           2298
@@ -957,7 +957,7 @@
           62
         </td>
         <td>
-          1669
+          1651
         </td>
         <td>
           2278
@@ -978,7 +978,7 @@
           63
         </td>
         <td>
-          1674
+          1656
         </td>
         <td>
           2420
@@ -999,7 +999,7 @@
           63
         </td>
         <td>
-          1673
+          1655
         </td>
         <td>
           2348
@@ -1020,7 +1020,7 @@
           63
         </td>
         <td>
-          1676
+          1658
         </td>
         <td>
           2379
@@ -1041,7 +1041,7 @@
           63
         </td>
         <td>
-          1675
+          1657
         </td>
         <td>
           2403
@@ -1062,7 +1062,7 @@
           63
         </td>
         <td>
-          1672
+          1654
         </td>
         <td>
           2365
@@ -1083,7 +1083,7 @@
           64
         </td>
         <td>
-          1677
+          1659
         </td>
         <td>
           2506
@@ -1104,7 +1104,7 @@
           64
         </td>
         <td>
-          1679
+          1661
         </td>
         <td>
           2460
@@ -1125,7 +1125,7 @@
           64
         </td>
         <td>
-          1678
+          1660
         </td>
         <td>
           2489
@@ -1146,33 +1146,33 @@
           74
         </td>
         <td>
-          1682
+          1664
         </td>
         <td>
-          2840
+          2844
           -
-          2840
+          2844
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.collection.MapLike.apply
+          java.util.HashMap.get
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanDictionary.apply(org.openkoreantext.processor.util.KoreanPos.Noun)
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanDictionary.get(org.openkoreantext.processor.util.KoreanPos.Noun)
         </td>
       </tr><tr>
         <td>
           74
         </td>
         <td>
-          1681
+          1663
         </td>
         <td>
-          2841
+          2845
           -
-          2841
+          2845
         </td>
         <td>
           Select
@@ -1188,12 +1188,12 @@
           76
         </td>
         <td>
-          1683
+          1665
         </td>
         <td>
-          2866
+          2870
           -
-          2866
+          2870
         </td>
         <td>
           Apply
@@ -1209,12 +1209,12 @@
           77
         </td>
         <td>
-          1686
+          1668
         </td>
         <td>
-          2894
+          2898
           -
-          2894
+          2898
         </td>
         <td>
           Return
@@ -1230,12 +1230,12 @@
           77
         </td>
         <td>
-          1688
+          1670
         </td>
         <td>
-          2879
+          2883
           -
-          2879
+          2883
         </td>
         <td>
           Block
@@ -1251,12 +1251,12 @@
           77
         </td>
         <td>
-          1685
+          1667
         </td>
         <td>
-          2901
+          2905
           -
-          2901
+          2905
         </td>
         <td>
           Literal
@@ -1272,12 +1272,12 @@
           77
         </td>
         <td>
-          1684
+          1666
         </td>
         <td>
-          2889
+          2893
           -
-          2889
+          2893
         </td>
         <td>
           Apply
@@ -1293,12 +1293,12 @@
           77
         </td>
         <td>
-          1687
+          1669
         </td>
         <td>
-          2879
+          2883
           -
-          2879
+          2883
         </td>
         <td>
           Literal
@@ -1314,12 +1314,54 @@
           78
         </td>
         <td>
-          1689
+          1674
         </td>
         <td>
-          2925
+          2955
           -
-          2925
+          2955
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1677
+        </td>
+        <td>
+          2914
+          -
+          2914
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1671
+        </td>
+        <td>
+          2929
+          -
+          2929
         </td>
         <td>
           Literal
@@ -1335,75 +1377,12 @@
           78
         </td>
         <td>
-          1692
+          1673
         </td>
         <td>
-          2951
+          2927
           -
-          2951
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          false
-        </td>
-      </tr><tr>
-        <td>
-          78
-        </td>
-        <td>
-          1695
-        </td>
-        <td>
-          2910
-          -
-          2910
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          78
-        </td>
-        <td>
-          1694
-        </td>
-        <td>
-          2910
-          -
-          2910
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          78
-        </td>
-        <td>
-          1691
-        </td>
-        <td>
-          2923
-          -
-          2940
+          2944
         </td>
         <td>
           Apply
@@ -1419,12 +1398,33 @@
           78
         </td>
         <td>
-          1693
+          1676
         </td>
         <td>
-          2944
+          2914
           -
-          2944
+          2914
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1675
+        </td>
+        <td>
+          2948
+          -
+          2948
         </td>
         <td>
           Return
@@ -1440,12 +1440,12 @@
           78
         </td>
         <td>
-          1690
+          1672
         </td>
         <td>
-          2939
+          2943
           -
-          2940
+          2944
         </td>
         <td>
           Apply
@@ -1461,12 +1461,12 @@
           80
         </td>
         <td>
-          1698
+          1680
         </td>
         <td>
-          2985
+          2989
           -
-          2985
+          2989
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1482,12 +1482,12 @@
           80
         </td>
         <td>
-          1697
+          1679
         </td>
         <td>
-          2985
+          2989
           -
-          2985
+          2989
         </td>
         <td>
           TypeApply
@@ -1503,12 +1503,12 @@
           80
         </td>
         <td>
-          1696
+          1678
         </td>
         <td>
-          3013
+          3017
           -
-          3013
+          3017
         </td>
         <td>
           Apply
@@ -1524,12 +1524,12 @@
           81
         </td>
         <td>
-          1699
+          1681
         </td>
         <td>
-          3048
+          3052
           -
-          3048
+          3052
         </td>
         <td>
           Select
@@ -1545,12 +1545,12 @@
           82
         </td>
         <td>
-          1701
+          1683
         </td>
         <td>
-          3061
+          3065
           -
-          3061
+          3065
         </td>
         <td>
           Select
@@ -1566,12 +1566,12 @@
           82
         </td>
         <td>
-          1704
+          1686
         </td>
         <td>
-          3057
+          3061
           -
-          3057
+          3061
         </td>
         <td>
           Literal
@@ -1587,33 +1587,12 @@
           82
         </td>
         <td>
-          1703
+          1682
         </td>
         <td>
-          3104
+          3100
           -
-          3104
-        </td>
-        <td>
-          Return
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
-        </td>
-        <td style="background: #AEF1AE">
-          return false
-        </td>
-      </tr><tr>
-        <td>
-          82
-        </td>
-        <td>
-          1700
-        </td>
-        <td>
-          3096
-          -
-          3096
+          3100
         </td>
         <td>
           Select
@@ -1629,12 +1608,33 @@
           82
         </td>
         <td>
-          1702
+          1685
         </td>
         <td>
-          3111
+          3108
           -
-          3111
+          3108
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
+        </td>
+        <td style="background: #AEF1AE">
+          return false
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1684
+        </td>
+        <td>
+          3115
+          -
+          3115
         </td>
         <td>
           Literal
@@ -1650,12 +1650,12 @@
           82
         </td>
         <td>
-          1705
+          1687
         </td>
         <td>
-          3057
+          3061
           -
-          3057
+          3061
         </td>
         <td>
           Block
@@ -1671,12 +1671,12 @@
           83
         </td>
         <td>
-          1707
+          1689
         </td>
         <td>
-          3165
+          3169
           -
-          3167
+          3171
         </td>
         <td>
           Apply
@@ -1692,12 +1692,12 @@
           83
         </td>
         <td>
-          1710
+          1692
         </td>
         <td>
-          3204
+          3208
           -
-          3204
+          3208
         </td>
         <td>
           Literal
@@ -1713,12 +1713,12 @@
           83
         </td>
         <td>
-          1713
+          1695
         </td>
         <td>
-          3121
+          3125
           -
-          3121
+          3125
         </td>
         <td>
           Block
@@ -1734,12 +1734,12 @@
           83
         </td>
         <td>
-          1712
+          1694
         </td>
         <td>
-          3121
+          3125
           -
-          3121
+          3125
         </td>
         <td>
           Literal
@@ -1755,12 +1755,12 @@
           83
         </td>
         <td>
-          1706
+          1688
         </td>
         <td>
-          3143
+          3147
           -
-          3143
+          3147
         </td>
         <td>
           Literal
@@ -1776,12 +1776,12 @@
           83
         </td>
         <td>
-          1709
+          1691
         </td>
         <td>
-          3140
+          3144
           -
-          3191
+          3195
         </td>
         <td>
           Apply
@@ -1797,12 +1797,12 @@
           83
         </td>
         <td>
-          1711
+          1693
         </td>
         <td>
-          3197
+          3201
           -
-          3197
+          3201
         </td>
         <td>
           Return
@@ -1818,12 +1818,12 @@
           83
         </td>
         <td>
-          1708
+          1690
         </td>
         <td>
-          3189
+          3193
           -
-          3191
+          3195
         </td>
         <td>
           Apply
@@ -1839,12 +1839,12 @@
           84
         </td>
         <td>
-          1716
+          1698
         </td>
         <td>
-          3252
+          3256
           -
-          3252
+          3256
         </td>
         <td>
           Return
@@ -1860,12 +1860,12 @@
           84
         </td>
         <td>
-          1715
+          1697
         </td>
         <td>
-          3259
+          3263
           -
-          3259
+          3263
         </td>
         <td>
           Literal
@@ -1881,12 +1881,12 @@
           84
         </td>
         <td>
-          1718
+          1700
         </td>
         <td>
-          3214
+          3218
           -
-          3214
+          3218
         </td>
         <td>
           Block
@@ -1902,33 +1902,12 @@
           84
         </td>
         <td>
-          1717
+          1696
         </td>
         <td>
-          3214
+          3248
           -
-          3214
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          1714
-        </td>
-        <td>
-          3244
-          -
-          3246
+          3250
         </td>
         <td>
           Apply
@@ -1941,15 +1920,36 @@
         </td>
       </tr><tr>
         <td>
+          84
+        </td>
+        <td>
+          1699
+        </td>
+        <td>
+          3218
+          -
+          3218
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
           92
         </td>
         <td>
-          1719
+          1701
         </td>
         <td>
-          3648
+          3652
           -
-          3648
+          3652
         </td>
         <td>
           Apply
@@ -1969,12 +1969,12 @@
           94
         </td>
         <td>
-          1722
+          1704
         </td>
         <td>
-          3695
+          3699
           -
-          3695
+          3699
         </td>
         <td>
           Apply
@@ -1992,12 +1992,12 @@
           94
         </td>
         <td>
-          1721
+          1703
         </td>
         <td>
-          3696
+          3700
           -
-          3696
+          3700
         </td>
         <td>
           Apply
@@ -2013,12 +2013,12 @@
           94
         </td>
         <td>
-          1720
+          1702
         </td>
         <td>
-          3683
+          3687
           -
-          3683
+          3687
         </td>
         <td>
           Select
@@ -2034,12 +2034,12 @@
           104
         </td>
         <td>
-          1724
+          1706
         </td>
         <td>
-          3986
+          3990
           -
-          3986
+          3990
         </td>
         <td>
           Select
@@ -2055,12 +2055,12 @@
           104
         </td>
         <td>
-          1723
+          1705
         </td>
         <td>
-          3979
+          3983
           -
-          3979
+          3983
         </td>
         <td>
           Select
@@ -2076,12 +2076,12 @@
           116
         </td>
         <td>
-          1725
+          1707
         </td>
         <td>
-          4642
+          4646
           -
-          4642
+          4646
         </td>
         <td>
           Select

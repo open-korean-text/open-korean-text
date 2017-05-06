@@ -45,7 +45,7 @@
 </span>21 <span style=''>import org.openkoreantext.processor.util.Hangul._
 </span>22 <span style=''>import org.openkoreantext.processor.util.KoreanDictionaryProvider._
 </span>23 <span style=''>
-</span>24 <span style=''>import scala.collection.JavaConversions._
+</span>24 <span style=''>import scala.collection.JavaConverters._
 </span>25 <span style=''>
 </span>26 <span style=''>/**
 </span>27 <span style=''> * Expands Korean verbs and adjectives to all possible conjugation forms.
@@ -94,7 +94,7 @@
 </span>70 <span style=''>    val expanded: Set[String] = conjugatePredicated(words, isAdjective)
 </span>71 <span style=''>
 </span>72 <span style=''>    val newSet = newCharArraySet
-</span>73 <span style=''>    newSet.addAll(expanded)
+</span>73 <span style=''>    newSet.addAll(expanded.asJava)
 </span>74 <span style=''>    newSet
 </span>75 <span style=''>  }
 </span>76 <span style=''>
@@ -291,12 +291,12 @@
           31
         </td>
         <td>
-          1336
+          1334
         </td>
         <td>
-          1040
+          1039
           -
-          1040
+          1039
         </td>
         <td>
           Apply
@@ -312,12 +312,12 @@
           33
         </td>
         <td>
-          1337
+          1335
         </td>
         <td>
-          1140
+          1139
           -
-          1140
+          1139
         </td>
         <td>
           Apply
@@ -333,12 +333,12 @@
           34
         </td>
         <td>
-          1338
+          1336
         </td>
         <td>
-          1195
+          1194
           -
-          1195
+          1194
         </td>
         <td>
           Apply
@@ -354,12 +354,12 @@
           36
         </td>
         <td>
-          1339
+          1337
         </td>
         <td>
-          1264
+          1263
           -
-          1264
+          1263
         </td>
         <td>
           Apply
@@ -375,12 +375,12 @@
           37
         </td>
         <td>
-          1340
+          1338
         </td>
         <td>
-          1318
+          1317
           -
-          1318
+          1317
         </td>
         <td>
           Apply
@@ -396,33 +396,12 @@
           39
         </td>
         <td>
-          1342
+          1339
         </td>
         <td>
-          1394
+          1367
           -
-          1394
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.collection.SeqLike.toSeq
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.augmentString(&quot;거게겠고구기긴길네다더던도든면자잖재져죠지진질&quot;).toSeq
-        </td>
-      </tr><tr>
-        <td>
-          39
-        </td>
-        <td>
-          1341
-        </td>
-        <td>
-          1368
-          -
-          1368
+          1367
         </td>
         <td>
           Literal
@@ -435,15 +414,36 @@
         </td>
       </tr><tr>
         <td>
+          39
+        </td>
+        <td>
+          1340
+        </td>
+        <td>
+          1393
+          -
+          1393
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;거게겠고구기긴길네다더던도든면자잖재져죠지진질&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
           40
         </td>
         <td>
-          1344
+          1342
         </td>
         <td>
-          1443
+          1442
           -
-          1443
+          1442
         </td>
         <td>
           Select
@@ -459,12 +459,12 @@
           40
         </td>
         <td>
-          1343
+          1341
         </td>
         <td>
-          1435
+          1434
           -
-          1435
+          1434
         </td>
         <td>
           Literal
@@ -480,33 +480,12 @@
           41
         </td>
         <td>
-          1345
+          1344
         </td>
         <td>
-          1484
+          1488
           -
-          1484
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;어었&quot;
-        </td>
-      </tr><tr>
-        <td>
-          41
-        </td>
-        <td>
-          1346
-        </td>
-        <td>
-          1489
-          -
-          1489
+          1488
         </td>
         <td>
           Select
@@ -519,36 +498,36 @@
         </td>
       </tr><tr>
         <td>
-          42
+          41
         </td>
         <td>
-          1348
+          1343
         </td>
         <td>
-          1535
+          1483
           -
-          1535
+          1483
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          scala.collection.SeqLike.toSeq
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.augmentString(&quot;아았&quot;).toSeq
+          &quot;어었&quot;
         </td>
       </tr><tr>
         <td>
           42
         </td>
         <td>
-          1347
+          1345
         </td>
         <td>
-          1530
+          1529
           -
-          1530
+          1529
         </td>
         <td>
           Literal
@@ -561,15 +540,36 @@
         </td>
       </tr><tr>
         <td>
+          42
+        </td>
+        <td>
+          1346
+        </td>
+        <td>
+          1534
+          -
+          1534
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;아았&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
           43
         </td>
         <td>
-          1350
+          1348
         </td>
         <td>
-          1581
+          1580
           -
-          1581
+          1580
         </td>
         <td>
           Select
@@ -585,12 +585,12 @@
           43
         </td>
         <td>
-          1349
+          1347
         </td>
         <td>
-          1576
+          1575
           -
-          1576
+          1575
         </td>
         <td>
           Literal
@@ -606,33 +606,12 @@
           44
         </td>
         <td>
-          1351
+          1350
         </td>
         <td>
-          1622
+          1626
           -
-          1622
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;여였&quot;
-        </td>
-      </tr><tr>
-        <td>
-          44
-        </td>
-        <td>
-          1352
-        </td>
-        <td>
-          1627
-          -
-          1627
+          1626
         </td>
         <td>
           Select
@@ -645,36 +624,36 @@
         </td>
       </tr><tr>
         <td>
-          46
+          44
         </td>
         <td>
-          1354
+          1349
         </td>
         <td>
-          1674
+          1621
           -
-          1674
+          1621
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          scala.collection.SeqLike.toSeq
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.augmentString(&quot;노느니냐&quot;).toSeq
+          &quot;여였&quot;
         </td>
       </tr><tr>
         <td>
           46
         </td>
         <td>
-          1353
+          1351
         </td>
         <td>
-          1667
+          1666
           -
-          1667
+          1666
         </td>
         <td>
           Literal
@@ -687,15 +666,36 @@
         </td>
       </tr><tr>
         <td>
+          46
+        </td>
+        <td>
+          1352
+        </td>
+        <td>
+          1673
+          -
+          1673
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;노느니냐&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
           47
         </td>
         <td>
-          1356
+          1354
         </td>
         <td>
-          1719
+          1718
           -
-          1719
+          1718
         </td>
         <td>
           Select
@@ -711,12 +711,12 @@
           47
         </td>
         <td>
-          1355
+          1353
         </td>
         <td>
-          1713
+          1712
           -
-          1713
+          1712
         </td>
         <td>
           Literal
@@ -732,33 +732,12 @@
           48
         </td>
         <td>
-          1357
+          1356
         </td>
         <td>
-          1758
+          1761
           -
-          1758
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;으&quot;
-        </td>
-      </tr><tr>
-        <td>
-          48
-        </td>
-        <td>
-          1358
-        </td>
-        <td>
-          1762
-          -
-          1762
+          1761
         </td>
         <td>
           Select
@@ -771,36 +750,36 @@
         </td>
       </tr><tr>
         <td>
-          49
+          48
         </td>
         <td>
-          1360
+          1355
         </td>
         <td>
-          1805
+          1757
           -
-          1805
+          1757
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          scala.collection.SeqLike.toSeq
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.augmentString(&quot;은&quot;).toSeq
+          &quot;으&quot;
         </td>
       </tr><tr>
         <td>
           49
         </td>
         <td>
-          1359
+          1357
         </td>
         <td>
-          1801
+          1800
           -
-          1801
+          1800
         </td>
         <td>
           Literal
@@ -813,15 +792,36 @@
         </td>
       </tr><tr>
         <td>
+          49
+        </td>
+        <td>
+          1358
+        </td>
+        <td>
+          1804
+          -
+          1804
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(&quot;은&quot;).toSeq
+        </td>
+      </tr><tr>
+        <td>
           50
         </td>
         <td>
-          1362
+          1360
         </td>
         <td>
-          1848
+          1847
           -
-          1848
+          1847
         </td>
         <td>
           Select
@@ -837,12 +837,12 @@
           50
         </td>
         <td>
-          1361
+          1359
         </td>
         <td>
-          1844
+          1843
           -
-          1844
+          1843
         </td>
         <td>
           Literal
@@ -858,33 +858,12 @@
           51
         </td>
         <td>
-          1363
+          1362
         </td>
         <td>
-          1887
+          1890
           -
-          1887
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;운&quot;
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          1364
-        </td>
-        <td>
-          1891
-          -
-          1891
+          1890
         </td>
         <td>
           Select
@@ -897,36 +876,36 @@
         </td>
       </tr><tr>
         <td>
-          53
+          51
         </td>
         <td>
-          1366
+          1361
         </td>
         <td>
-          1948
+          1886
           -
-          1948
+          1886
         </td>
         <td>
-          Select
+          Literal
         </td>
         <td>
-          scala.collection.SeqLike.toSeq
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.augmentString(&quot;세시실신셔습셨십&quot;).toSeq
+          &quot;운&quot;
         </td>
       </tr><tr>
         <td>
           53
         </td>
         <td>
-          1365
+          1363
         </td>
         <td>
-          1937
+          1936
           -
-          1937
+          1936
         </td>
         <td>
           Literal
@@ -939,36 +918,36 @@
         </td>
       </tr><tr>
         <td>
-          56
+          53
         </td>
         <td>
-          1369
+          1364
         </td>
         <td>
-          2038
+          1947
           -
-          2038
+          1947
         </td>
         <td>
           Select
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_3
+          scala.collection.SeqLike.toSeq
         </td>
         <td style="background: #AEF1AE">
-          KoreanConjugation.this.PRE_EOMI_3
+          scala.Predef.augmentString(&quot;세시실신셔습셨십&quot;).toSeq
         </td>
       </tr><tr>
         <td>
           56
         </td>
         <td>
-          1372
+          1366
         </td>
         <td>
-          2049
+          2020
           -
-          2049
+          2020
         </td>
         <td>
           TypeApply
@@ -984,12 +963,54 @@
           56
         </td>
         <td>
+          1369
+        </td>
+        <td>
+          2051
+          -
+          2051
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_RESPECT
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanConjugation.this.PRE_EOMI_RESPECT
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1365
+        </td>
+        <td>
+          2023
+          -
+          2023
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_2
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanConjugation.this.PRE_EOMI_2
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
           1368
         </td>
         <td>
-          2021
+          2034
           -
-          2021
+          2034
         </td>
         <td>
           TypeApply
@@ -1008,51 +1029,9 @@
           1371
         </td>
         <td>
-          2052
+          2020
           -
-          2052
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_RESPECT
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanConjugation.this.PRE_EOMI_RESPECT
-        </td>
-      </tr><tr>
-        <td>
-          56
-        </td>
-        <td>
-          1370
-        </td>
-        <td>
-          2035
-          -
-          2035
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.Seq.canBuildFrom
-        </td>
-        <td style="background: #AEF1AE">
-          collection.this.Seq.canBuildFrom[Char]
-        </td>
-      </tr><tr>
-        <td>
-          56
-        </td>
-        <td>
-          1373
-        </td>
-        <td>
-          2021
-          -
-          2051
+          2050
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1068,21 +1047,42 @@
           56
         </td>
         <td>
+          1370
+        </td>
+        <td>
+          2048
+          -
+          2048
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Char]
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
           1367
         </td>
         <td>
-          2024
+          2037
           -
-          2024
+          2037
         </td>
         <td>
           Select
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_2
+          org.openkoreantext.processor.util.KoreanConjugation.PRE_EOMI_3
         </td>
         <td style="background: #AEF1AE">
-          KoreanConjugation.this.PRE_EOMI_2
+          KoreanConjugation.this.PRE_EOMI_3
         </td>
       </tr><tr>
         <td>
@@ -1092,51 +1092,9 @@
           1375
         </td>
         <td>
-          2185
+          2174
           -
-          2186
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Char.+
-        </td>
-        <td style="background: #AEF1AE">
-          lastChar.+(x$1.toString())
-        </td>
-      </tr><tr>
-        <td>
-          59
-        </td>
-        <td>
-          1374
-        </td>
-        <td>
-          2189
-          -
-          2189
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Any.toString
-        </td>
-        <td style="background: #AEF1AE">
-          x$1.toString()
-        </td>
-      </tr><tr>
-        <td>
-          59
-        </td>
-        <td>
-          1377
-        </td>
-        <td>
-          2175
-          -
-          2175
+          2174
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1152,12 +1110,33 @@
           59
         </td>
         <td>
-          1376
+          1372
         </td>
         <td>
-          2175
+          2188
           -
-          2175
+          2188
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.toString()
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1374
+        </td>
+        <td>
+          2174
+          -
+          2174
         </td>
         <td>
           TypeApply
@@ -1170,15 +1149,36 @@
         </td>
       </tr><tr>
         <td>
+          59
+        </td>
+        <td>
+          1373
+        </td>
+        <td>
+          2184
+          -
+          2185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Char.+
+        </td>
+        <td style="background: #AEF1AE">
+          lastChar.+(x$1.toString())
+        </td>
+      </tr><tr>
+        <td>
           70
         </td>
         <td>
-          1378
+          1376
         </td>
         <td>
-          2587
+          2586
           -
-          2587
+          2586
         </td>
         <td>
           Apply
@@ -1194,12 +1194,12 @@
           72
         </td>
         <td>
-          1379
+          1377
         </td>
         <td>
-          2626
+          2625
           -
-          2626
+          2625
         </td>
         <td>
           Select
@@ -1215,12 +1215,33 @@
           73
         </td>
         <td>
-          1381
+          1378
         </td>
         <td>
-          2659
+          2668
           -
-          2659
+          2668
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.convert.Decorators.AsJava.asJava
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.JavaConverters.setAsJavaSetConverter[String](expanded).asJava
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          1379
+        </td>
+        <td>
+          2658
+          -
+          2658
         </td>
         <td>
           Apply
@@ -1229,40 +1250,19 @@
           java.util.AbstractCollection.addAll
         </td>
         <td style="background: #AEF1AE">
-          newSet.addAll(scala.collection.JavaConversions.deprecated setAsJavaSet[String](expanded))
-        </td>
-      </tr><tr>
-        <td>
-          73
-        </td>
-        <td>
-          1380
-        </td>
-        <td>
-          2660
-          -
-          2660
-        </td>
-        <td>
-          ApplyImplicitView
-        </td>
-        <td>
-          scala.collection.convert.WrapAsJava.deprecated setAsJavaSet
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.JavaConversions.deprecated setAsJavaSet[String](expanded)
+          newSet.addAll(scala.collection.JavaConverters.setAsJavaSetConverter[String](expanded).asJava)
         </td>
       </tr><tr>
         <td>
           247
         </td>
         <td>
-          1382
+          1380
         </td>
         <td>
-          10204
+          10210
           -
-          10204
+          10210
         </td>
         <td>
           Ident
@@ -1278,33 +1278,12 @@
           250
         </td>
         <td>
-          1384
+          1381
         </td>
         <td>
-          10328
+          10340
           -
-          10330
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.generic.Subtractable.--
-        </td>
-        <td style="background: #AEF1AE">
-          expanded.--(scala.Predef.Set.apply[String](&quot;아니&quot;, &quot;입&quot;, &quot;입니&quot;, &quot;나는&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          250
-        </td>
-        <td>
-          1383
-        </td>
-        <td>
-          10334
-          -
-          10334
+          10340
         </td>
         <td>
           Apply
@@ -1320,15 +1299,36 @@
           250
         </td>
         <td>
-          1385
+          1383
         </td>
         <td>
-          10328
+          10334
           -
-          10330
+          10336
         </td>
         <td>
           Block
+        </td>
+        <td>
+          scala.collection.generic.Subtractable.--
+        </td>
+        <td style="background: #AEF1AE">
+          expanded.--(scala.Predef.Set.apply[String](&quot;아니&quot;, &quot;입&quot;, &quot;입니&quot;, &quot;나는&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          250
+        </td>
+        <td>
+          1382
+        </td>
+        <td>
+          10334
+          -
+          10336
+        </td>
+        <td>
+          Apply
         </td>
         <td>
           scala.collection.generic.Subtractable.--

@@ -92,6 +92,7 @@ To include this in your Maven-based JVM project, add the following lines to your
 | Wrapper | [Node JS](https://github.com/open-korean-text/open-korean-text-wrapper-node-1) | [Ch0p](https://github.com/Ch0p) |
 | Wrapper | [Node JS](https://github.com/open-korean-text/open-korean-text-wrapper-node-2) | [Youngrok Kim](https://github.com/rokoroku) |
 | Wrapper | [Python](https://github.com/open-korean-text/open-korean-text-wrapper-python) | [Jaepil Jeong](https://github.com/jaepil) |
+| Wrapper | [Python](https://github.com/cookieshake/pyokt) | [cookieshake](https://github.com/cookieshake) |
 | Wrapper | [Ruby for Java Version](https://github.com/open-korean-text/open-korean-text-wrapper-ruby-1) | [jun85664396](https://github.com/jun85664396) |
 | Wrapper | [Ruby for Scala Version](https://github.com/open-korean-text/open-korean-text-wrapper-ruby-2) | [Jaehyun Shin](https://github.com/keepcosmos) |
 | Porting | [Python](https://github.com/open-korean-text/open-korean-text-python) | [Baeg-il Kim](https://github.com/cedar101) |

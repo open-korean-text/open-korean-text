@@ -98,6 +98,7 @@ To include this in your Maven-based JVM project, add the following lines to your
 | Porting | [Python](https://github.com/open-korean-text/open-korean-text-python) | [Baeg-il Kim](https://github.com/cedar101) |
 | Package | [Python Korean NLP](https://github.com/konlpy/konlpy) | [KoNLPy](https://github.com/konlpy/konlpy) |
 | Package | [Elastic Search](https://github.com/open-korean-text/open-korean-text-elastic-search) | [socurites](https://github.com/socurites) |
+| Package | [Elastic Search](https://github.com/open-korean-text/elasticsearch-analysis-openkoreantext) | [Jaehyun Shin](https://github.com/keepcosmos) |
 
 
 ## Get the source / 소스를 원하시는 경우

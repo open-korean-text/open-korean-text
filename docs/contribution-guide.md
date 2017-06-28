@@ -5,7 +5,7 @@ github에서 clone해서 설치하고 사전을 업데이트 하고 pull request
 * IntelliJ Idea를 설치해 주세요. [https://www.jetbrains.com/idea/download/](https://www.jetbrains.com/idea/download/)
 * 설치 후에는 Scala Plugin을 설치해 주세요. 환경 설정에 있습니다.
 * GitHub repo를 Clone해 주세요.
-* Terminal에서 ```git clone https://github.com/twitter/twitter-korean-text.git``` 을 해 주시면 됩니다. 물론 git도 설치 되어 있어야 겠죠?
+* Terminal에서 ```git clone https://github.com/open-korean-text/open-korean-text.git``` 을 해 주시면 됩니다. 물론 git도 설치 되어 있어야 겠죠?
 * Intellij Idea에서 ```pom.xml``` 파일을 열어 주세요.
 
 # Branch를 만들어서 사전을 수정하고 업데이트 하기

@@ -79,7 +79,7 @@ To include this in your Maven-based JVM project, add the following lines to your
   <dependency>
     <groupId>org.openkoreantext</groupId>
     <artifactId>open-korean-text</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.4</version>
   </dependency>
 ```
 

@@ -40,7 +40,7 @@ git checkout -b "feature_branch_name"
 
 * 무엇이 변경되었나 확인해 보겠습니다. 
 ```
-~/workspace/twitter-korean-text remove_verbs_from_wiki* ➜  git diff
+~/workspace/open-korean-text remove_verbs_from_wiki* ➜  git diff
 
 diff --git a/src/main/resources/org/openkoreantext/processor/util/noun/wikipedia_title_nouns.txt b/src/main/resources/org/openkoreantext/processor/util/noun/wikipedia_title_nouns.txt
 index 8a6d3c5..c1386d3 100644
@@ -109,12 +109,12 @@ index 8a6d3c5..c1386d3 100644
 
 * 테스트를 실행해 봅니다. 
 
-~/workspace/twitter-korean-text remove_verbs_from_wiki* ➜  mvn test
+~/workspace/open-korean-text remove_verbs_from_wiki* ➜  mvn test
 ```
 Picked up _JAVA_OPTIONS: -Xmx2g
 [INFO] Scanning for projects...
 [WARNING]
-[WARNING] Some problems were encountered while building the effective model for com.twitter.penguin:korean-text:jar:2.1.2-SNAPSHOT
+[WARNING] Some problems were encountered while building the effective model for org.openkoreantext.processor:korean-text:jar:2.1.2-SNAPSHOT
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-compiler-plugin is missing. @ line 187, column 15
 
 ...
@@ -132,19 +132,19 @@ Running org.openkoreantext.processor.tokenizer.KoreanChunkerTest
 Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 sec
 Running org.openkoreantext.processor.tokenizer.KoreanTokenizerTest
 Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.214 sec
-Running org.openkoreantext.processor.TwitterKoreanProcessorJavaTest
+Running org.openkoreantext.processor.OpenKoreanProcessorJavaTest
 Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.055 sec
-Running org.openkoreantext.processor.TwitterKoreanProcessorTest
+Running org.openkoreantext.processor.OpenKoreanProcessorTest
 Goldenset Match Error: 가야하나요 (가야하나Noun 요Josa) -> (가다Verb)
 Goldenset Match Error: 가야하나 (가야하나Noun) -> (가야Noun 하나Noun)
 Goldenset Match Error: 락이가 (락이Noun* 가Josa) -> (락Noun 이Suffix 가Josa)
-Nov 14, 2014 9:43:51 PM org.openkoreantext.processor.TwitterKoreanProcessorTest$$anonfun$12 apply$mcV$sp
+Nov 14, 2014 9:43:51 PM org.openkoreantext.processor.OpenKoreanProcessorTest$$anonfun$12 apply$mcV$sp
 INFO: Parsed 42496 chunks.
        Total time: 4843 ms
        Average time: 0.11 ms
        Max time: 15 ms, 불러주시면
 Tests run: 12, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 5.884 sec <<< FAILURE!
-tokenize should correctly tokenize the goldenset(org.openkoreantext.processor.TwitterKoreanProcessorTest)  Time elapsed: 5.637 sec  <<< ERROR!
+tokenize should correctly tokenize the goldenset(org.openkoreantext.processor.OpenKoreanProcessorTest)  Time elapsed: 5.637 sec  <<< ERROR!
 
 ...
 
@@ -152,7 +152,7 @@ tokenize should correctly tokenize the goldenset(org.openkoreantext.processor.Tw
 Results :
 
 Tests in error:
-  tokenize should correctly tokenize the goldenset(org.openkoreantext.processor.TwitterKoreanProcessorTest): {(..)
+  tokenize should correctly tokenize the goldenset(org.openkoreantext.processor.OpenKoreanProcessorTest): {(..)
 
 Tests run: 66, Failures: 0, Errors: 1, Skipped: 0
 
@@ -187,10 +187,10 @@ Running org.openkoreantext.processor.tokenizer.KoreanChunkerTest
 Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 sec
 Running org.openkoreantext.processor.tokenizer.KoreanTokenizerTest
 Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.236 sec
-Running org.openkoreantext.processor.TwitterKoreanProcessorJavaTest
+Running org.openkoreantext.processor.OpenKoreanProcessorJavaTest
 Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.063 sec
-Running org.openkoreantext.processor.TwitterKoreanProcessorTest
-Nov 14, 2014 9:52:40 PM org.openkoreantext.processor.TwitterKoreanProcessorTest$$anonfun$12 apply$mcV$sp
+Running org.openkoreantext.processor.OpenKoreanProcessorTest
+Nov 14, 2014 9:52:40 PM org.openkoreantext.processor.OpenKoreanProcessorTest$$anonfun$12 apply$mcV$sp
 INFO: Parsed 42496 chunks.
        Total time: 5166 ms
        Average time: 0.12 ms
@@ -216,17 +216,17 @@ Tests run: 66, Failures: 0, Errors: 0, Skipped: 0
 
 ## Commit & Push
 
-~/workspace/twitter-korean-text remove_verbs_from_wiki* ➜  git commit -am "dictionary update"
+~/workspace/open-korean-text remove_verbs_from_wiki* ➜  git commit -am "dictionary update"
 [dictionary_update_name 8dffbfc] dictionary update
  2 files changed, 8 insertions(+), 41 deletions(-)
  rewrite src/test/resources/org/openkoreantext/processor/util/goldenset.txt.gz (61%)
-~/workspace/twitter-korean-text remove_verbs_from_wiki ➜  git push origin remove_verbs_from_wiki
+~/workspace/open-korean-text remove_verbs_from_wiki ➜  git push origin remove_verbs_from_wiki
 Counting objects: 20, done.
 Delta compression using up to 8 threads.
 Compressing objects: 100% (10/10), done.
 Writing objects: 100% (20/20), 578.94 KiB | 0 bytes/s, done.
 Total 20 (delta 4), reused 0 (delta 0)
-To git@github.com:twitter/twitter-korean-text.git
+To https://github.com/open-korean-text/open-korean-text.git
  * [new branch]      remove_verbs_from_wiki -> remove_verbs_from_wiki
 
 

@@ -58,16 +58,6 @@ object KoreanStemmer {
       validLength && validPos && validEndings && validNouns
     }
 
-    stemmed.flatMap {
-      case token if validNounHeading(token) =>
-        val heading = token.text.take(token.text.length - 2)
-        val ending = token.text.takeRight(2)
-
-        Seq(
-          KoreanToken(heading, Noun, token.offset, heading.length),
-          KoreanToken(ending, token.pos, token.offset + heading.length, token.length - heading.length)
-        )
-      case token => Seq(token)
-    }
+    stemmed.flatMap(token => Seq(token))
   }
 }

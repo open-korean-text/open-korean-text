@@ -5,7 +5,7 @@ import org.openkoreantext.processor.util.KoreanDictionaryProvider._
 import org.openkoreantext.processor.util.KoreanPos._
 
 /**
- * Stems Adjectives and Verbs: 새로운 스테밍을 추가했었다. -> 새롭다 + 스테밍 + 을 + 추가하다
+ * Stems Adjectives and Verbs: 새로운 스테밍을 추가했었다. -> 새롭다 + 스테밍 + 을 + 추가 + 하다
  */
 object KoreanStemmer {
   private val Endings = Set(Eomi, PreEomi)

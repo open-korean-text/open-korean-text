@@ -122,8 +122,7 @@ object KoreanNormalizer {
         (last == '데' || last == '가' || last == '지') &&
         koreanDictionary.get(Noun).contains(newHead)
     ) {
-      val mid = "인"
-      newHead + mid + last
+      newHead + "인" + last
     } else {
       chunk
     }

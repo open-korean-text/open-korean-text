@@ -1,5 +1,5 @@
 /*
- * Twitter Korean Text - Scala library to process Korean text
+ * Open Korean Text - Scala library to process Korean text
  *
  * Copyright 2014 Twitter, Inc.
  *
@@ -233,8 +233,8 @@ class KoreanChunkerTest extends TestBase {
     )
 
     assert(
-      getChunks("여러 칸  띄어쓰기,   하나의 Space묶음으로 처리됩니다.").mkString("/")
-        === "여러/ /칸/  /띄어쓰기/,/   /하나의/ /Space/묶음으로/ /처리됩니다/."
+      getChunks(" 여러 칸  띄어쓰기,   하나의 Space묶음으로 처리됩니다.").mkString("/")
+        === " /여러/ /칸/  /띄어쓰기/,/   /하나의/ /Space/묶음으로/ /처리됩니다/."
     )
   }
 

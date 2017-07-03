@@ -24,7 +24,7 @@ object KoreanStemmer {
       return tokens
     }
 
-    val stemmed = tokens.foldLeft(List[KoreanToken]()) {
+    tokens.foldLeft(List[KoreanToken]()) {
       case (l: List[KoreanToken], token: KoreanToken) if l.nonEmpty && Endings.contains(token.pos) =>
         if (Predicates.contains(l.head.pos)) {
           val prevToken = l.head
@@ -46,18 +46,5 @@ object KoreanStemmer {
         ) :: l
       case (l: List[KoreanToken], token: KoreanToken) => token :: l
     }.reverse
-
-    def validNounHeading(token: KoreanToken): Boolean = {
-      val heading = token.text.take(token.text.length - 2)
-
-      val validLength = token.text.length > 2
-      val validPos = token.pos == Verb
-      val validEndings = EndingsForNouns.contains(token.text.takeRight(2))
-      val validNouns = koreanDictionary.get(Noun).contains(heading)
-
-      validLength && validPos && validEndings && validNouns
-    }
-
-    stemmed.flatMap(token => Seq(token))
   }
 }

@@ -70,6 +70,9 @@ class KoreanNormalizerTest extends TestBase {
   test("normalizeCodaN should normalize coda N nouns correctly") {
     assert(normalizeCodaN("오노딘가") === "오노디인가")
     assert(normalizeCodaN("소린가") === "소리인가")
+
+    assert(normalizeCodaN("버슨가") === "버스인가")
+    assert(normalizeCodaN("보슨지") === "보스인지")
     // Unknown noun
     assert(normalizeCodaN("쵸킨데") === "쵸킨데")
   }

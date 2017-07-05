@@ -38,14 +38,14 @@ have good reasons for rejecting.
 
 1. Clone the repo
 ```
-git clone https://github.com/twitter/twitter-korean-text.git
+git clone https://github.com/open-korean-text/open-korean-text.git
 ```
 2. Change the code
 3. Run tests
 ```
 mvn test
 ```
-4. You are almost certain to have broken a test, probably TwitterKoreanProcessorTest. You will see the difference of behavior in the console. Check if the difference improves the tokenizer. (Please copy and store the difference. It would be useful to have it in the review process.)
+4. You are almost certain to have broken a test, probably OpenKoreanTextProcessorTest. You will see the difference of behavior in the console. Check if the difference improves the tokenizer. (Please copy and store the difference. It would be useful to have it in the review process.)
 ```
 Goldenset Match Error: 올라와도 (올라Noun 와도Josa) -> (올라와Verb 도Eomi)
 Goldenset Match Error: 동일조건변경허락 (동일조건변경허락Noun) -> (동일Noun 조건Noun 변경Noun 허락Noun)

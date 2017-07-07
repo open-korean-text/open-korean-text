@@ -62,7 +62,7 @@
 </span>38 <span style=''>    profile: TokenizerProfile = TokenizerProfile.defaultProfile) {
 </span>39 <span style=''>
 </span>40 <span style=''>  // Using lazy val to cache the score
-</span>41 <span style=''>  lazy val score = countTokens * profile.tokenCount +
+</span>41 <span style=''>  lazy val score: Float = countTokens * profile.tokenCount +
 </span>42 <span style=''>      countUnknowns * profile.unknown +
 </span>43 <span style=''>      words * profile.wordCount +
 </span>44 <span style=''>      getUnknownCoverage * profile.unknownCoverage +
@@ -77,15 +77,15 @@
 </span>53 <span style=''>      isNounHa * profile.haVerb +
 </span>54 <span style=''>      hasSpaceOutOfGuide * profile.spaceGuidePenalty
 </span>55 <span style=''>
-</span>56 <span style=''>  def countUnknowns = this.posNodes.count { p: KoreanToken =&gt; p.unknown }
+</span>56 <span style=''>  def countUnknowns: Int = this.posNodes.count { p: KoreanToken =&gt; p.unknown }
 </span>57 <span style=''>
-</span>58 <span style=''>  def countTokens = this.posNodes.size
+</span>58 <span style=''>  def countTokens: Int = this.posNodes.size
 </span>59 <span style=''>
-</span>60 <span style=''>  def isInitialPostPosition = if (suffixes.contains(this.posNodes.head.pos)) 1 else 0
+</span>60 <span style=''>  def isInitialPostPosition: Int = if (suffixes.contains(this.posNodes.head.pos)) 1 else 0
 </span>61 <span style=''>
-</span>62 <span style=''>  def isExactMatch = if (this.posNodes.size </span><span style='background: #AEF1AE'>==</span><span style=''> 1) 0 else 1
+</span>62 <span style=''>  def isExactMatch: Int = if (this.posNodes.size </span><span style='background: #AEF1AE'>==</span><span style=''> 1) 0 else 1
 </span>63 <span style=''>
-</span>64 <span style=''>  def hasSpaceOutOfGuide = if (profile.spaceGuide.isEmpty) {
+</span>64 <span style=''>  def hasSpaceOutOfGuide: Int = if (profile.spaceGuide.isEmpty) {
 </span>65 <span style=''>    0
 </span>66 <span style=''>  } else {
 </span>67 <span style=''>    this.posNodes
@@ -96,39 +96,41 @@
 </span>72 <span style=''>  }
 </span>73 <span style=''>
 </span>74 <span style=''>
-</span>75 <span style=''>  def isAllNouns = if (this.posNodes.exists(
+</span>75 <span style=''>  def isAllNouns: Int = if (this.posNodes.exists(
 </span>76 <span style=''>    t =&gt; t.pos </span><span style='background: #AEF1AE'>!= Noun &amp;&amp; t.pos !=</span><span style=''> ProperNoun)) 1
 </span>77 <span style=''>  else 0
 </span>78 <span style=''>
-</span>79 <span style=''>  def isPreferredPattern = if (
+</span>79 <span style=''>  def isPreferredPattern: Int = if (
 </span>80 <span style=''>    posNodes.size </span><span style='background: #AEF1AE'>== 2 &amp;&amp;</span><span style=''> profile.preferredPatterns.contains(posNodes.map(_.pos))
 </span>81 <span style=''>  ) 0
 </span>82 <span style=''>  else 1
 </span>83 <span style=''>
-</span>84 <span style=''>  def isNounHa = if (this.posNodes.size </span><span style='background: #AEF1AE'>&gt;= 2
+</span>84 <span style=''>  def isNounHa: Int = if (this.posNodes.size </span><span style='background: #AEF1AE'>&gt;= 2
 </span>85 <span style=''></span><span style='background: #AEF1AE'>      &amp;&amp; preferredBeforeHaVerb.contains(this.posNodes.head.pos)
 </span>86 <span style=''></span><span style='background: #AEF1AE'>      &amp;&amp; this.posNodes(1).pos == Verb
-</span>87 <span style=''></span><span style='background: #AEF1AE'>      &amp;&amp;</span><span style=''> this.posNodes(1).text.startsWith(&quot;하&quot;)) 0
-</span>88 <span style=''>  else 1
-</span>89 <span style=''>
-</span>90 <span style=''>  def posTieBreaker = this.posNodes.map(_.pos.id).sum
+</span>87 <span style=''></span><span style='background: #AEF1AE'>      &amp;&amp;</span><span style=''> (this.posNodes(1).text.startsWith(&quot;하&quot;) </span><span style='background: #AEF1AE'>||</span><span style=''> this.posNodes(1).text.startsWith(&quot;해&quot;)))
+</span>88 <span style=''>    0
+</span>89 <span style=''>  else
+</span>90 <span style=''>    1
 </span>91 <span style=''>
-</span>92 <span style=''>  def getUnknownCoverage = this.posNodes.foldLeft(0) {
-</span>93 <span style=''>    case (sum, p: KoreanToken) =&gt; if (p.unknown) sum </span><span style='background: #AEF1AE'>+</span><span style=''> p.text.length else sum
-</span>94 <span style=''>  }
-</span>95 <span style=''>
-</span>96 <span style=''>  def getFreqScore = this.posNodes.foldLeft(0f) {
-</span>97 <span style=''>    case (output: Float, p: KoreanToken) if p.pos </span><span style='background: #AEF1AE'>== Noun || p.pos ==</span><span style=''> ProperNoun =&gt;
-</span>98 <span style=''>      output </span><span style='background: #AEF1AE'>+</span><span style=''> (1f </span><span style='background: #AEF1AE'>-</span><span style=''> koreanEntityFreq.getOrDefault(p.text, 0f))
-</span>99 <span style=''>    case (output: Float, p: KoreanToken) =&gt; output </span><span style='background: #AEF1AE'>+</span><span style=''> 1.0f
-</span>100 <span style=''>  } </span><span style='background: #AEF1AE'>/</span><span style=''> this.posNodes.size
-</span>101 <span style=''>
-</span>102 <span style=''>  def ++(that: ParsedChunk) = {
-</span>103 <span style=''>    ParsedChunk(this.posNodes </span><span style='background: #AEF1AE'>++</span><span style=''> that.posNodes, this.words </span><span style='background: #AEF1AE'>+</span><span style=''> that.words, profile)
-</span>104 <span style=''>  }
-</span>105 <span style=''>
-</span>106 <span style=''>  def countPos(pos: KoreanPos) = this.posNodes.count { p: KoreanToken =&gt; p.pos </span><span style='background: #AEF1AE'>==</span><span style=''> pos }
-</span>107 <span style=''>}
+</span>92 <span style=''>  def posTieBreaker: Int = this.posNodes.map(_.pos.id).sum
+</span>93 <span style=''>
+</span>94 <span style=''>  def getUnknownCoverage: Int = this.posNodes.foldLeft(0) {
+</span>95 <span style=''>    case (sum, p: KoreanToken) =&gt; if (p.unknown) sum </span><span style='background: #AEF1AE'>+</span><span style=''> p.text.length else sum
+</span>96 <span style=''>  }
+</span>97 <span style=''>
+</span>98 <span style=''>  def getFreqScore: Float = this.posNodes.foldLeft(0f) {
+</span>99 <span style=''>    case (output: Float, p: KoreanToken) if p.pos </span><span style='background: #AEF1AE'>== Noun || p.pos ==</span><span style=''> ProperNoun =&gt;
+</span>100 <span style=''>      output </span><span style='background: #AEF1AE'>+</span><span style=''> (1f </span><span style='background: #AEF1AE'>-</span><span style=''> koreanEntityFreq.getOrDefault(p.text, 0f))
+</span>101 <span style=''>    case (output: Float, p: KoreanToken) =&gt; output </span><span style='background: #AEF1AE'>+</span><span style=''> 1.0f
+</span>102 <span style=''>  } </span><span style='background: #AEF1AE'>/</span><span style=''> this.posNodes.size
+</span>103 <span style=''>
+</span>104 <span style=''>  def ++(that: ParsedChunk): ParsedChunk = {
+</span>105 <span style=''>    ParsedChunk(this.posNodes </span><span style='background: #AEF1AE'>++</span><span style=''> that.posNodes, this.words </span><span style='background: #AEF1AE'>+</span><span style=''> that.words, profile)
+</span>106 <span style=''>  }
+</span>107 <span style=''>
+</span>108 <span style=''>  def countPos(pos: KoreanPos): Int = this.posNodes.count { p: KoreanToken =&gt; p.pos </span><span style='background: #AEF1AE'>==</span><span style=''> pos }
+</span>109 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -145,28 +147,7 @@
           27
         </td>
         <td>
-          1001
-        </td>
-        <td>
-          1021
-          -
-          1021
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Josa
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Josa
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          1000
+          873
         </td>
         <td>
           1015
@@ -187,7 +168,70 @@
           27
         </td>
         <td>
-          1003
+          872
+        </td>
+        <td>
+          1007
+          -
+          1007
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Suffix
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Suffix
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          875
+        </td>
+        <td>
+          1027
+          -
+          1027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.PreEomi
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.PreEomi
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          874
+        </td>
+        <td>
+          1021
+          -
+          1021
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Josa
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Josa
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          876
         </td>
         <td>
           1006
@@ -205,52 +249,31 @@
         </td>
       </tr><tr>
         <td>
-          27
+          28
         </td>
         <td>
-          999
+          878
         </td>
         <td>
-          1007
+          1076
           -
-          1007
+          1076
         </td>
         <td>
           Select
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanPos.Suffix
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Suffix
-        </td>
-      </tr><tr>
-        <td>
-          27
-        </td>
-        <td>
-          1002
-        </td>
-        <td>
-          1027
-          -
-          1027
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.PreEomi
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.PreEomi
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
         </td>
       </tr><tr>
         <td>
           28
         </td>
         <td>
-          1004
+          877
         </td>
         <td>
           1070
@@ -271,7 +294,7 @@
           28
         </td>
         <td>
-          1007
+          880
         </td>
         <td>
           1069
@@ -292,7 +315,7 @@
           28
         </td>
         <td>
-          1006
+          879
         </td>
         <td>
           1088
@@ -307,39 +330,18 @@
         </td>
         <td style="background: #AEF1AE">
           org.openkoreantext.processor.util.KoreanPos.VerbPrefix
-        </td>
-      </tr><tr>
-        <td>
-          28
-        </td>
-        <td>
-          1005
-        </td>
-        <td>
-          1076
-          -
-          1076
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.ProperNoun
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.ProperNoun
         </td>
       </tr><tr>
         <td>
           56
         </td>
         <td>
-          1009
+          882
         </td>
         <td>
-          2135
+          2147
           -
-          2135
+          2147
         </td>
         <td>
           Apply
@@ -355,12 +357,12 @@
           56
         </td>
         <td>
-          1008
+          881
         </td>
         <td>
-          2157
+          2169
           -
-          2157
+          2169
         </td>
         <td>
           Select
@@ -376,12 +378,12 @@
           58
         </td>
         <td>
-          1010
+          883
         </td>
         <td>
-          2202
+          2219
           -
-          2202
+          2219
         </td>
         <td>
           Select
@@ -397,12 +399,54 @@
           60
         </td>
         <td>
-          1013
+          884
         </td>
         <td>
-          2285
+          2301
           -
-          2285
+          2301
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
+        </td>
+        <td style="background: #AEF1AE">
+          this.posNodes.head.pos
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          887
+        </td>
+        <td>
+          2307
+          -
+          2307
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          886
+        </td>
+        <td>
+          2307
+          -
+          2307
         </td>
         <td>
           Literal
@@ -418,12 +462,12 @@
           60
         </td>
         <td>
-          1016
+          889
         </td>
         <td>
-          2292
+          2314
           -
-          2292
+          2314
         </td>
         <td>
           Block
@@ -439,33 +483,12 @@
           60
         </td>
         <td>
-          1015
+          885
         </td>
         <td>
-          2292
+          2281
           -
-          2292
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          0
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          1012
-        </td>
-        <td>
-          2259
-          -
-          2259
+          2281
         </td>
         <td>
           Apply
@@ -481,75 +504,12 @@
           60
         </td>
         <td>
-          1014
+          888
         </td>
         <td>
-          2285
+          2314
           -
-          2285
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          1
-        </td>
-      </tr><tr>
-        <td>
-          60
-        </td>
-        <td>
-          1011
-        </td>
-        <td>
-          2279
-          -
-          2279
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
-        </td>
-        <td style="background: #AEF1AE">
-          this.posNodes.head.pos
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          1019
-        </td>
-        <td>
-          2345
-          -
-          2345
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          0
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          1018
-        </td>
-        <td>
-          2345
-          -
-          2345
+          2314
         </td>
         <td>
           Literal
@@ -565,33 +525,12 @@
           62
         </td>
         <td>
-          1021
+          891
         </td>
         <td>
-          2352
+          2372
           -
-          2352
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          1
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          1020
-        </td>
-        <td>
-          2352
-          -
-          2352
+          2372
         </td>
         <td>
           Literal
@@ -600,19 +539,19 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          1
+          0
         </td>
       </tr><tr>
         <td>
           62
         </td>
         <td>
-          1017
+          890
         </td>
         <td>
-          2339
+          2366
           -
-          2341
+          2368
         </td>
         <td>
           Apply
@@ -625,15 +564,78 @@
         </td>
       </tr><tr>
         <td>
+          62
+        </td>
+        <td>
+          893
+        </td>
+        <td>
+          2379
+          -
+          2379
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          892
+        </td>
+        <td>
+          2372
+          -
+          2372
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          894
+        </td>
+        <td>
+          2379
+          -
+          2379
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
           64
         </td>
         <td>
-          1022
+          895
         </td>
         <td>
-          2405
+          2437
           -
-          2405
+          2437
         </td>
         <td>
           Select
@@ -649,33 +651,12 @@
           65
         </td>
         <td>
-          1024
+          896
         </td>
         <td>
-          2420
+          2452
           -
-          2420
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          0
-        </td>
-      </tr><tr>
-        <td>
-          65
-        </td>
-        <td>
-          1023
-        </td>
-        <td>
-          2420
-          -
-          2420
+          2452
         </td>
         <td>
           Literal
@@ -688,36 +669,36 @@
         </td>
       </tr><tr>
         <td>
-          68
+          65
         </td>
         <td>
-          1025
+          897
         </td>
         <td>
-          2506
+          2452
           -
-          2506
+          2452
         </td>
         <td>
-          Select
+          Block
         </td>
         <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          p.pos
+          0
         </td>
       </tr><tr>
         <td>
           68
         </td>
         <td>
-          1026
+          899
         </td>
         <td>
-          2485
+          2517
           -
-          2485
+          2517
         </td>
         <td>
           Select
@@ -730,36 +711,36 @@
         </td>
       </tr><tr>
         <td>
-          69
+          68
         </td>
         <td>
-          1030
+          898
         </td>
         <td>
-          2527
+          2538
           -
-          2527
+          2538
         </td>
         <td>
-          Block
+          Select
         </td>
         <td>
-          scala.collection.TraversableOnce.count
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
         </td>
         <td style="background: #AEF1AE">
-          this.posNodes.filter(((p: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.ParsedChunk.suffixes.contains(p.pos).unary_!)).count(((p: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; ParsedChunk.this.profile.spaceGuide.contains(p.offset).unary_!))
+          p.pos
         </td>
       </tr><tr>
         <td>
           69
         </td>
         <td>
-          1029
+          902
         </td>
         <td>
-          2527
+          2559
           -
-          2527
+          2559
         </td>
         <td>
           Apply
@@ -772,15 +753,36 @@
         </td>
       </tr><tr>
         <td>
+          69
+        </td>
+        <td>
+          903
+        </td>
+        <td>
+          2559
+          -
+          2559
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.TraversableOnce.count
+        </td>
+        <td style="background: #AEF1AE">
+          this.posNodes.filter(((p: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; org.openkoreantext.processor.tokenizer.ParsedChunk.suffixes.contains(p.pos).unary_!)).count(((p: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; ParsedChunk.this.profile.spaceGuide.contains(p.offset).unary_!))
+        </td>
+      </tr><tr>
+        <td>
           70
         </td>
         <td>
-          1028
+          901
         </td>
         <td>
-          2557
+          2589
           -
-          2557
+          2589
         </td>
         <td>
           Select
@@ -796,12 +798,12 @@
           70
         </td>
         <td>
-          1027
+          900
         </td>
         <td>
-          2588
+          2620
           -
-          2588
+          2620
         </td>
         <td>
           Select
@@ -817,12 +819,12 @@
           75
         </td>
         <td>
-          1035
+          908
         </td>
         <td>
-          2655
+          2692
           -
-          2655
+          2692
         </td>
         <td>
           Apply
@@ -838,33 +840,33 @@
           76
         </td>
         <td>
-          1037
+          905
         </td>
         <td>
-          2705
+          2729
           -
-          2705
+          2729
         </td>
         <td>
-          Block
+          Select
         </td>
         <td>
-          &lt;nosymbol&gt;
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
         </td>
         <td style="background: #AEF1AE">
-          1
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
         </td>
       </tr><tr>
         <td>
           76
         </td>
         <td>
-          1031
+          904
         </td>
         <td>
-          2675
+          2712
           -
-          2675
+          2712
         </td>
         <td>
           Select
@@ -880,12 +882,12 @@
           76
         </td>
         <td>
-          1034
+          907
         </td>
         <td>
-          2672
+          2709
           -
-          2691
+          2728
         </td>
         <td>
           Apply
@@ -901,33 +903,33 @@
           76
         </td>
         <td>
-          1033
+          910
         </td>
         <td>
-          2689
+          2742
           -
-          2691
+          2742
         </td>
         <td>
-          Apply
+          Block
         </td>
         <td>
-          java.lang.Object.!=
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          t.pos.!=(org.openkoreantext.processor.util.KoreanPos.ProperNoun)
+          1
         </td>
       </tr><tr>
         <td>
           76
         </td>
         <td>
-          1036
+          909
         </td>
         <td>
-          2705
+          2742
           -
-          2705
+          2742
         </td>
         <td>
           Literal
@@ -943,33 +945,54 @@
           76
         </td>
         <td>
-          1032
+          906
         </td>
         <td>
-          2692
+          2726
           -
-          2692
+          2728
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+          java.lang.Object.!=
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.ProperNoun
+          t.pos.!=(org.openkoreantext.processor.util.KoreanPos.ProperNoun)
         </td>
       </tr><tr>
         <td>
           77
         </td>
         <td>
-          1039
+          911
         </td>
         <td>
-          2714
+          2751
           -
-          2714
+          2751
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          912
+        </td>
+        <td>
+          2751
+          -
+          2751
         </td>
         <td>
           Block
@@ -982,120 +1005,36 @@
         </td>
       </tr><tr>
         <td>
-          77
-        </td>
-        <td>
-          1038
-        </td>
-        <td>
-          2714
-          -
-          2714
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          0
-        </td>
-      </tr><tr>
-        <td>
           80
         </td>
         <td>
-          1043
+          917
         </td>
         <td>
-          2822
+          2851
           -
-          2822
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.collection.TraversableLike.map
-        </td>
-        <td style="background: #AEF1AE">
-          ParsedChunk.this.posNodes.map[org.openkoreantext.processor.util.KoreanPos.KoreanPos, Seq[org.openkoreantext.processor.util.KoreanPos.KoreanPos]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPos])
-        </td>
-      </tr><tr>
-        <td>
-          80
-        </td>
-        <td>
-          1040
-        </td>
-        <td>
-          2770
-          -
-          2770
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          2
-        </td>
-      </tr><tr>
-        <td>
-          80
-        </td>
-        <td>
-          1042
-        </td>
-        <td>
-          2822
-          -
-          2822
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.Seq.canBuildFrom
-        </td>
-        <td style="background: #AEF1AE">
-          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPos]
-        </td>
-      </tr><tr>
-        <td>
-          80
-        </td>
-        <td>
-          1045
-        </td>
-        <td>
-          2767
-          -
-          2774
+          2851
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Boolean.&amp;&amp;
+          scala.collection.SeqLike.contains
         </td>
         <td style="background: #AEF1AE">
-          ParsedChunk.this.posNodes.size.==(2).&amp;&amp;(ParsedChunk.this.profile.preferredPatterns.contains[Seq[Any]](ParsedChunk.this.posNodes.map[org.openkoreantext.processor.util.KoreanPos.KoreanPos, Seq[org.openkoreantext.processor.util.KoreanPos.KoreanPos]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPos])))
+          ParsedChunk.this.profile.preferredPatterns.contains[Seq[Any]](ParsedChunk.this.posNodes.map[org.openkoreantext.processor.util.KoreanPos.KoreanPos, Seq[org.openkoreantext.processor.util.KoreanPos.KoreanPos]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPos]))
         </td>
       </tr><tr>
         <td>
           80
         </td>
         <td>
-          1041
+          914
         </td>
         <td>
-          2825
+          2867
           -
-          2825
+          2867
         </td>
         <td>
           Select
@@ -1111,33 +1050,12 @@
           80
         </td>
         <td>
-          1044
+          913
         </td>
         <td>
-          2809
+          2812
           -
-          2809
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.SeqLike.contains
-        </td>
-        <td style="background: #AEF1AE">
-          ParsedChunk.this.profile.preferredPatterns.contains[Seq[Any]](ParsedChunk.this.posNodes.map[org.openkoreantext.processor.util.KoreanPos.KoreanPos, Seq[org.openkoreantext.processor.util.KoreanPos.KoreanPos]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPos]))
-        </td>
-      </tr><tr>
-        <td>
-          81
-        </td>
-        <td>
-          1046
-        </td>
-        <td>
-          2835
-          -
-          2835
+          2812
         </td>
         <td>
           Literal
@@ -1146,19 +1064,82 @@
           &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          0
+          2
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          916
+        </td>
+        <td>
+          2864
+          -
+          2864
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          ParsedChunk.this.posNodes.map[org.openkoreantext.processor.util.KoreanPos.KoreanPos, Seq[org.openkoreantext.processor.util.KoreanPos.KoreanPos]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPos])
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          918
+        </td>
+        <td>
+          2809
+          -
+          2816
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          ParsedChunk.this.posNodes.size.==(2).&amp;&amp;(ParsedChunk.this.profile.preferredPatterns.contains[Seq[Any]](ParsedChunk.this.posNodes.map[org.openkoreantext.processor.util.KoreanPos.KoreanPos, Seq[org.openkoreantext.processor.util.KoreanPos.KoreanPos]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.pos))(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPos])))
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          915
+        </td>
+        <td>
+          2864
+          -
+          2864
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPos]
         </td>
       </tr><tr>
         <td>
           81
         </td>
         <td>
-          1047
+          920
         </td>
         <td>
-          2835
+          2877
           -
-          2835
+          2877
         </td>
         <td>
           Block
@@ -1171,15 +1152,36 @@
         </td>
       </tr><tr>
         <td>
+          81
+        </td>
+        <td>
+          919
+        </td>
+        <td>
+          2877
+          -
+          2877
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
           82
         </td>
         <td>
-          1049
+          922
         </td>
         <td>
-          2844
+          2886
           -
-          2844
+          2886
         </td>
         <td>
           Block
@@ -1195,12 +1197,12 @@
           82
         </td>
         <td>
-          1048
+          921
         </td>
         <td>
-          2844
+          2886
           -
-          2844
+          2886
         </td>
         <td>
           Literal
@@ -1216,12 +1218,12 @@
           84
         </td>
         <td>
-          1050
+          923
         </td>
         <td>
-          2890
+          2937
           -
-          2890
+          2937
         </td>
         <td>
           Literal
@@ -1237,12 +1239,12 @@
           85
         </td>
         <td>
-          1052
+          925
         </td>
         <td>
-          2931
+          2978
           -
-          2931
+          2978
         </td>
         <td>
           Apply
@@ -1258,12 +1260,12 @@
           85
         </td>
         <td>
-          1051
+          924
         </td>
         <td>
-          2951
+          2998
           -
-          2951
+          2998
         </td>
         <td>
           Select
@@ -1279,12 +1281,33 @@
           86
         </td>
         <td>
-          1055
+          926
         </td>
         <td>
-          2986
+          3026
           -
-          2988
+          3026
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          928
+        </td>
+        <td>
+          3033
+          -
+          3035
         </td>
         <td>
           Apply
@@ -1300,12 +1323,12 @@
           86
         </td>
         <td>
-          1054
+          927
         </td>
         <td>
-          2989
+          3036
           -
-          2989
+          3036
         </td>
         <td>
           Select
@@ -1318,15 +1341,36 @@
         </td>
       </tr><tr>
         <td>
-          86
+          87
         </td>
         <td>
-          1053
+          932
         </td>
         <td>
-          2979
+          3089
           -
-          2979
+          3091
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          this.posNodes.apply(1).text.startsWith(&quot;하&quot;).||(this.posNodes.apply(1).text.startsWith(&quot;해&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          929
+        </td>
+        <td>
+          3065
+          -
+          3065
         </td>
         <td>
           Literal
@@ -1342,54 +1386,12 @@
           87
         </td>
         <td>
-          1058
+          931
         </td>
         <td>
-          3042
+          3124
           -
-          3042
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          0
-        </td>
-      </tr><tr>
-        <td>
-          87
-        </td>
-        <td>
-          1057
-        </td>
-        <td>
-          2887
-          -
-          3002
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Boolean.&amp;&amp;
-        </td>
-        <td style="background: #AEF1AE">
-          this.posNodes.size.&gt;=(2).&amp;&amp;(org.openkoreantext.processor.tokenizer.ParsedChunk.preferredBeforeHaVerb.contains(this.posNodes.head.pos)).&amp;&amp;(this.posNodes.apply(1).pos.==(org.openkoreantext.processor.util.KoreanPos.Verb)).&amp;&amp;(this.posNodes.apply(1).text.startsWith(&quot;하&quot;))
-        </td>
-      </tr><tr>
-        <td>
-          87
-        </td>
-        <td>
-          1056
-        </td>
-        <td>
-          3035
-          -
-          3035
+          3124
         </td>
         <td>
           Apply
@@ -1398,19 +1400,61 @@
           java.lang.String.startsWith
         </td>
         <td style="background: #AEF1AE">
-          this.posNodes.apply(1).text.startsWith(&quot;하&quot;)
+          this.posNodes.apply(1).text.startsWith(&quot;해&quot;)
         </td>
       </tr><tr>
         <td>
           87
         </td>
         <td>
-          1059
+          930
         </td>
         <td>
-          3042
+          3084
           -
-          3042
+          3084
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;하&quot;
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          933
+        </td>
+        <td>
+          2934
+          -
+          3049
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          this.posNodes.size.&gt;=(2).&amp;&amp;(org.openkoreantext.processor.tokenizer.ParsedChunk.preferredBeforeHaVerb.contains(this.posNodes.head.pos)).&amp;&amp;(this.posNodes.apply(1).pos.==(org.openkoreantext.processor.util.KoreanPos.Verb)).&amp;&amp;(this.posNodes.apply(1).text.startsWith(&quot;하&quot;).||(this.posNodes.apply(1).text.startsWith(&quot;해&quot;)))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          935
+        </td>
+        <td>
+          3136
+          -
+          3136
         </td>
         <td>
           Block
@@ -1426,12 +1470,33 @@
           88
         </td>
         <td>
-          1061
+          934
         </td>
         <td>
-          3051
+          3136
           -
-          3051
+          3136
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          937
+        </td>
+        <td>
+          3149
+          -
+          3149
         </td>
         <td>
           Block
@@ -1444,15 +1509,15 @@
         </td>
       </tr><tr>
         <td>
-          88
+          90
         </td>
         <td>
-          1060
+          936
         </td>
         <td>
-          3051
+          3149
           -
-          3051
+          3149
         </td>
         <td>
           Literal
@@ -1465,57 +1530,15 @@
         </td>
       </tr><tr>
         <td>
-          90
+          92
         </td>
         <td>
-          1064
+          941
         </td>
         <td>
-          3104
+          3207
           -
-          3104
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.math.Numeric.IntIsIntegral
-        </td>
-        <td style="background: #AEF1AE">
-          math.this.Numeric.IntIsIntegral
-        </td>
-      </tr><tr>
-        <td>
-          90
-        </td>
-        <td>
-          1063
-        </td>
-        <td>
-          3093
-          -
-          3093
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.Seq.canBuildFrom
-        </td>
-        <td style="background: #AEF1AE">
-          collection.this.Seq.canBuildFrom[Int]
-        </td>
-      </tr><tr>
-        <td>
-          90
-        </td>
-        <td>
-          1065
-        </td>
-        <td>
-          3104
-          -
-          3104
+          3207
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1528,15 +1551,15 @@
         </td>
       </tr><tr>
         <td>
-          90
+          92
         </td>
         <td>
-          1062
+          938
         </td>
         <td>
-          3100
+          3203
           -
-          3100
+          3203
         </td>
         <td>
           Select
@@ -1552,33 +1575,54 @@
           92
         </td>
         <td>
-          1066
+          940
         </td>
         <td>
-          3159
+          3207
           -
-          3159
+          3207
         </td>
         <td>
-          Literal
+          Select
         </td>
         <td>
-          &lt;nosymbol&gt;
+          scala.math.Numeric.IntIsIntegral
         </td>
         <td style="background: #AEF1AE">
-          0
+          math.this.Numeric.IntIsIntegral
         </td>
       </tr><tr>
         <td>
           92
         </td>
         <td>
-          1072
+          939
         </td>
         <td>
-          3162
+          3196
           -
-          3162
+          3196
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Int]
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          948
+        </td>
+        <td>
+          3270
+          -
+          3270
         </td>
         <td>
           Apply
@@ -1596,78 +1640,36 @@
         </td>
       </tr><tr>
         <td>
-          93
+          94
         </td>
         <td>
-          1070
+          942
         </td>
         <td>
-          3217
+          3267
           -
-          3218
+          3267
         </td>
         <td>
-          Block
+          Literal
         </td>
         <td>
-          scala.Int.+
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          sum.+(p.text.length())
+          0
         </td>
       </tr><tr>
         <td>
-          93
+          95
         </td>
         <td>
-          1067
+          944
         </td>
         <td>
-          3204
+          3334
           -
-          3204
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.unknown
-        </td>
-        <td style="background: #AEF1AE">
-          p.unknown
-        </td>
-      </tr><tr>
-        <td>
-          93
-        </td>
-        <td>
-          1069
-        </td>
-        <td>
-          3217
-          -
-          3218
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.+
-        </td>
-        <td style="background: #AEF1AE">
-          sum.+(p.text.length())
-        </td>
-      </tr><tr>
-        <td>
-          93
-        </td>
-        <td>
-          1068
-        </td>
-        <td>
-          3226
-          -
-          3226
+          3334
         </td>
         <td>
           Apply
@@ -1680,15 +1682,15 @@
         </td>
       </tr><tr>
         <td>
-          93
+          95
         </td>
         <td>
-          1071
+          947
         </td>
         <td>
-          3238
+          3346
           -
-          3238
+          3346
         </td>
         <td>
           Ident
@@ -1701,15 +1703,78 @@
         </td>
       </tr><tr>
         <td>
-          96
+          95
         </td>
         <td>
-          1073
+          946
         </td>
         <td>
-          3291
+          3325
           -
-          3291
+          3326
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          sum.+(p.text.length())
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          943
+        </td>
+        <td>
+          3312
+          -
+          3312
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.unknown
+        </td>
+        <td style="background: #AEF1AE">
+          p.unknown
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          945
+        </td>
+        <td>
+          3325
+          -
+          3326
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          sum.+(p.text.length())
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          949
+        </td>
+        <td>
+          3406
+          -
+          3406
         </td>
         <td>
           Literal
@@ -1722,57 +1787,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          99
         </td>
         <td>
-          1076
+          950
         </td>
         <td>
-          3364
+          3465
           -
-          3366
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.Object.==
-        </td>
-        <td style="background: #AEF1AE">
-          p.pos.==(org.openkoreantext.processor.util.KoreanPos.ProperNoun)
-        </td>
-      </tr><tr>
-        <td>
-          97
-        </td>
-        <td>
-          1075
-        </td>
-        <td>
-          3367
-          -
-          3367
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.ProperNoun
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.ProperNoun
-        </td>
-      </tr><tr>
-        <td>
-          97
-        </td>
-        <td>
-          1074
-        </td>
-        <td>
-          3350
-          -
-          3350
+          3465
         </td>
         <td>
           Select
@@ -1785,15 +1808,15 @@
         </td>
       </tr><tr>
         <td>
-          97
+          99
         </td>
         <td>
-          1077
+          953
         </td>
         <td>
-          3347
+          3462
           -
-          3366
+          3481
         </td>
         <td>
           Apply
@@ -1806,120 +1829,57 @@
         </td>
       </tr><tr>
         <td>
-          98
+          99
         </td>
         <td>
-          1079
+          952
         </td>
         <td>
-          3434
+          3479
           -
-          3434
+          3481
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.pos.==(org.openkoreantext.processor.util.KoreanPos.ProperNoun)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          951
+        </td>
+        <td>
+          3482
+          -
+          3482
         </td>
         <td>
           Select
         </td>
         <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
         </td>
         <td style="background: #AEF1AE">
-          p.text
+          org.openkoreantext.processor.util.KoreanPos.ProperNoun
         </td>
       </tr><tr>
         <td>
-          98
+          100
         </td>
         <td>
-          1082
+          959
         </td>
         <td>
-          3400
+          3509
           -
-          3401
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Float.-
-        </td>
-        <td style="background: #AEF1AE">
-          1.0.-(org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanEntityFreq.getOrDefault(p.text, 0.0))
-        </td>
-      </tr><tr>
-        <td>
-          98
-        </td>
-        <td>
-          1078
-        </td>
-        <td>
-          3397
-          -
-          3397
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          1.0
-        </td>
-      </tr><tr>
-        <td>
-          98
-        </td>
-        <td>
-          1081
-        </td>
-        <td>
-          3431
-          -
-          3431
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.util.HashMap.getOrDefault
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanEntityFreq.getOrDefault(p.text, 0.0)
-        </td>
-      </tr><tr>
-        <td>
-          98
-        </td>
-        <td>
-          1080
-        </td>
-        <td>
-          3440
-          -
-          3440
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          0.0
-        </td>
-      </tr><tr>
-        <td>
-          98
-        </td>
-        <td>
-          1083
-        </td>
-        <td>
-          3394
-          -
-          3395
+          3510
         </td>
         <td>
           Apply
@@ -1932,15 +1892,120 @@
         </td>
       </tr><tr>
         <td>
-          99
+          100
         </td>
         <td>
-          1084
+          956
         </td>
         <td>
-          3496
+          3555
           -
-          3497
+          3555
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0.0
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          955
+        </td>
+        <td>
+          3549
+          -
+          3549
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
+        </td>
+        <td style="background: #AEF1AE">
+          p.text
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          958
+        </td>
+        <td>
+          3515
+          -
+          3516
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Float.-
+        </td>
+        <td style="background: #AEF1AE">
+          1.0.-(org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanEntityFreq.getOrDefault(p.text, 0.0))
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          954
+        </td>
+        <td>
+          3512
+          -
+          3512
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1.0
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          957
+        </td>
+        <td>
+          3546
+          -
+          3546
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.getOrDefault
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanEntityFreq.getOrDefault(p.text, 0.0)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          960
+        </td>
+        <td>
+          3611
+          -
+          3612
         </td>
         <td>
           Apply
@@ -1953,36 +2018,15 @@
         </td>
       </tr><tr>
         <td>
-          100
+          102
         </td>
         <td>
-          1085
+          962
         </td>
         <td>
-          3523
+          3622
           -
-          3523
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.collection.SeqLike.size
-        </td>
-        <td style="background: #AEF1AE">
-          this.posNodes.size
-        </td>
-      </tr><tr>
-        <td>
-          100
-        </td>
-        <td>
-          1086
-        </td>
-        <td>
-          3507
-          -
-          3508
+          3623
         </td>
         <td>
           Apply
@@ -1998,141 +2042,36 @@
         </td>
       </tr><tr>
         <td>
-          103
+          102
         </td>
         <td>
-          1088
+          961
         </td>
         <td>
-          3591
+          3638
           -
-          3591
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.Seq.canBuildFrom
-        </td>
-        <td style="background: #AEF1AE">
-          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]
-        </td>
-      </tr><tr>
-        <td>
-          103
-        </td>
-        <td>
-          1091
-        </td>
-        <td>
-          3620
-          -
-          3621
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.+
-        </td>
-        <td style="background: #AEF1AE">
-          this.words.+(that.words)
-        </td>
-      </tr><tr>
-        <td>
-          103
-        </td>
-        <td>
-          1093
-        </td>
-        <td>
-          3576
-          -
-          3576
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.ParsedChunk.apply
-        </td>
-        <td style="background: #AEF1AE">
-          ParsedChunk.apply(this.posNodes.++[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](that.posNodes)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), this.words.+(that.words), ParsedChunk.this.profile)
-        </td>
-      </tr><tr>
-        <td>
-          103
-        </td>
-        <td>
-          1087
-        </td>
-        <td>
-          3599
-          -
-          3599
+          3638
         </td>
         <td>
           Select
         </td>
         <td>
-          org.openkoreantext.processor.tokenizer.ParsedChunk.posNodes
+          scala.collection.SeqLike.size
         </td>
         <td style="background: #AEF1AE">
-          that.posNodes
+          this.posNodes.size
         </td>
       </tr><tr>
         <td>
-          103
+          105
         </td>
         <td>
-          1090
+          968
         </td>
         <td>
-          3627
+          3762
           -
-          3627
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.ParsedChunk.words
-        </td>
-        <td style="background: #AEF1AE">
-          that.words
-        </td>
-      </tr><tr>
-        <td>
-          103
-        </td>
-        <td>
-          1089
-        </td>
-        <td>
-          3591
-          -
-          3593
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.collection.TraversableLike.++
-        </td>
-        <td style="background: #AEF1AE">
-          this.posNodes.++[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](that.posNodes)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
-        </td>
-      </tr><tr>
-        <td>
-          103
-        </td>
-        <td>
-          1092
-        </td>
-        <td>
-          3634
-          -
-          3634
+          3762
         </td>
         <td>
           Select
@@ -2145,36 +2084,141 @@
         </td>
       </tr><tr>
         <td>
-          106
+          105
         </td>
         <td>
-          1094
+          965
         </td>
         <td>
-          3727
+          3719
           -
-          3729
+          3721
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          this.posNodes.++[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](that.posNodes)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          964
+        </td>
+        <td>
+          3719
+          -
+          3719
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          967
+        </td>
+        <td>
+          3748
+          -
+          3749
         </td>
         <td>
           Apply
         </td>
         <td>
-          java.lang.Object.==
+          scala.Int.+
         </td>
         <td style="background: #AEF1AE">
-          p.pos.==(pos)
+          this.words.+(that.words)
         </td>
       </tr><tr>
         <td>
-          106
+          105
         </td>
         <td>
-          1095
+          969
         </td>
         <td>
-          3701
+          3704
           -
-          3701
+          3704
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.ParsedChunk.apply
+        </td>
+        <td style="background: #AEF1AE">
+          ParsedChunk.apply(this.posNodes.++[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](that.posNodes)(collection.this.Seq.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]), this.words.+(that.words), ParsedChunk.this.profile)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          963
+        </td>
+        <td>
+          3727
+          -
+          3727
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.ParsedChunk.posNodes
+        </td>
+        <td style="background: #AEF1AE">
+          that.posNodes
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          966
+        </td>
+        <td>
+          3755
+          -
+          3755
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.tokenizer.ParsedChunk.words
+        </td>
+        <td style="background: #AEF1AE">
+          that.words
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          971
+        </td>
+        <td>
+          3834
+          -
+          3834
         </td>
         <td>
           Apply
@@ -2184,6 +2228,27 @@
         </td>
         <td style="background: #AEF1AE">
           this.posNodes.count(((p: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; p.pos.==(pos)))
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          970
+        </td>
+        <td>
+          3860
+          -
+          3862
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.pos.==(pos)
         </td>
       </tr>
     </table>

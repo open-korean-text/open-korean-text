@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Open Korean Text Processor 2.0.2-SNAPSHOT API  - org.openkoreantext.processor.KoreanTokenJava</title>
-          <meta name="description" content="Open Korean Text Processor 2.0.2 - SNAPSHOT API - org.openkoreantext.processor.KoreanTokenJava" />
-          <meta name="keywords" content="Open Korean Text Processor 2.0.2 SNAPSHOT API org.openkoreantext.processor.KoreanTokenJava" />
+          <title>Open Korean Text Processor 2.0.6-SNAPSHOT API  - org.openkoreantext.processor.KoreanTokenJava</title>
+          <meta name="description" content="Open Korean Text Processor 2.0.6 - SNAPSHOT API - org.openkoreantext.processor.KoreanTokenJava" />
+          <meta name="keywords" content="Open Korean Text Processor 2.0.6 SNAPSHOT API org.openkoreantext.processor.KoreanTokenJava" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">Open Korean Text Processor 2.0.2-SNAPSHOT API<span id="doc-version"></span></span>
+        <span id="doc-title">Open Korean Text Processor 2.0.6-SNAPSHOT API<span id="doc-version"></span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -358,9 +358,9 @@ to match with Scala's org.openkoreantext.processor.util.KoreanPos enumeration.">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.openkoreantext.processor.KoreanTokenJava#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(text:String,pos:org.openkoreantext.processor.KoreanPosJava,offset:Int,length:Int,unknown:Boolean):org.openkoreantext.processor.KoreanTokenJava"></a><a id="&lt;init&gt;:KoreanTokenJava"></a>
+      <a id="&lt;init&gt;(text:String,pos:org.openkoreantext.processor.KoreanPosJava,offset:Int,length:Int,unknown:Boolean,stem:String):org.openkoreantext.processor.KoreanTokenJava"></a><a id="&lt;init&gt;:KoreanTokenJava"></a>
       <span class="permalink">
-      <a href="../../../org/openkoreantext/processor/KoreanTokenJava.html#&lt;init&gt;(text:String,pos:org.openkoreantext.processor.KoreanPosJava,offset:Int,length:Int,unknown:Boolean):org.openkoreantext.processor.KoreanTokenJava" title="Permalink">
+      <a href="../../../org/openkoreantext/processor/KoreanTokenJava.html#&lt;init&gt;(text:String,pos:org.openkoreantext.processor.KoreanPosJava,offset:Int,length:Int,unknown:Boolean,stem:String):org.openkoreantext.processor.KoreanTokenJava" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -369,7 +369,7 @@ to match with Scala's org.openkoreantext.processor.util.KoreanPos enumeration.">
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">KoreanTokenJava</span><span class="params">(<span name="text">text: <span class="extype" name="java.lang.String">String</span></span>, <span name="pos">pos: <a href="KoreanPosJava.html" class="extype" name="org.openkoreantext.processor.KoreanPosJava">KoreanPosJava</a></span>, <span name="offset">offset: <span class="extype" name="scala.Int">Int</span></span>, <span name="length">length: <span class="extype" name="scala.Int">Int</span></span>, <span name="unknown">unknown: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span>
+        <span class="name">KoreanTokenJava</span><span class="params">(<span name="text">text: <span class="extype" name="java.lang.String">String</span></span>, <span name="pos">pos: <a href="KoreanPosJava.html" class="extype" name="org.openkoreantext.processor.KoreanPosJava">KoreanPosJava</a></span>, <span name="offset">offset: <span class="extype" name="scala.Int">Int</span></span>, <span name="length">length: <span class="extype" name="scala.Int">Int</span></span>, <span name="unknown">unknown: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="stem">stem: <span class="extype" name="java.lang.String">String</span></span>)</span>
       </span>
       
       
@@ -584,6 +584,22 @@ to match with Scala's org.openkoreantext.processor.util.KoreanPos enumeration.">
       </span>
       <span class="symbol">
         <span class="name">getPos</span><span class="params">()</span><span class="result">: <a href="KoreanPosJava.html" class="extype" name="org.openkoreantext.processor.KoreanPosJava">KoreanPosJava</a></span>
+      </span>
+      
+      
+    </li><li name="org.openkoreantext.processor.KoreanTokenJava#getStem" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getStem():String"></a>
+      <span class="permalink">
+      <a href="../../../org/openkoreantext/processor/KoreanTokenJava.html#getStem():String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getStem</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       
       

@@ -134,7 +134,7 @@
 </span>110 <span style=''>    * @return A sequence of token strings.
 </span>111 <span style=''>    */
 </span>112 <span style=''>  def tokensToStrings(tokens: Seq[KoreanToken]): Seq[String] = {
-</span>113 <span style=''>    tokens.filterNot(t =&gt; t.pos </span><span style='background: #F0ADAD'>==</span><span style=''> KoreanPos.Space).map(_.text.toString)
+</span>113 <span style=''>    tokens.filterNot(t =&gt; t.pos </span><span style='background: #AEF1AE'>==</span><span style=''> KoreanPos.Space).map(_.text.toString)
 </span>114 <span style=''>  }
 </span>115 <span style=''>
 </span>116 <span style=''>  /**
@@ -389,7 +389,7 @@
         <td>
           java.lang.Object.==
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           t.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
         </td>
       </tr><tr>
@@ -410,7 +410,7 @@
         <td>
           scala.collection.TraversableLike.map
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           tokens.filterNot(((t: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; t.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).map[String, Seq[String]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.text.toString()))(collection.this.Seq.canBuildFrom[String])
         </td>
       </tr><tr>
@@ -431,7 +431,7 @@
         <td>
           scala.collection.Seq.canBuildFrom
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           collection.this.Seq.canBuildFrom[String]
         </td>
       </tr><tr>
@@ -452,7 +452,7 @@
         <td>
           org.openkoreantext.processor.util.KoreanPos.Space
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           org.openkoreantext.processor.util.KoreanPos.Space
         </td>
       </tr><tr>
@@ -473,7 +473,7 @@
         <td>
           java.lang.String.toString
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           x$1.text.toString()
         </td>
       </tr><tr>

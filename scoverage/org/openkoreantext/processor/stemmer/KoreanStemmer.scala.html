@@ -29,7 +29,7 @@
 </span>5 <span style=''>import org.openkoreantext.processor.util.KoreanPos._
 </span>6 <span style=''>
 </span>7 <span style=''>/**
-</span>8 <span style=''> * Stems Adjectives and Verbs: 새로운 스테밍을 추가했었다. -&gt; 새롭다 + 스테밍 + 을 + 추가하다
+</span>8 <span style=''> * Stems Adjectives and Verbs: 새로운 스테밍을 추가했었다. -&gt; 새롭다 + 스테밍 + 을 + 추가 + 하다
 </span>9 <span style=''> */
 </span>10 <span style=''>object KoreanStemmer {
 </span>11 <span style=''>  private val Endings = Set(Eomi, PreEomi)
@@ -48,7 +48,7 @@
 </span>24 <span style=''>      return tokens
 </span>25 <span style=''>    }
 </span>26 <span style=''>
-</span>27 <span style=''>    val stemmed = tokens.foldLeft(List[KoreanToken]()) {
+</span>27 <span style=''>    tokens.foldLeft(List[KoreanToken]()) {
 </span>28 <span style=''>      case (l: List[KoreanToken], token: KoreanToken) if l.nonEmpty </span><span style='background: #AEF1AE'>&amp;&amp;</span><span style=''> Endings.contains(token.pos) =&gt;
 </span>29 <span style=''>        if (Predicates.contains(l.head.pos)) {
 </span>30 <span style=''>          val prevToken = l.head
@@ -59,7 +59,7 @@
 </span>35 <span style=''>            unknown = prevToken.unknown
 </span>36 <span style=''>          ) </span><span style='background: #AEF1AE'>::</span><span style=''> l.tail
 </span>37 <span style=''>        } else {
-</span>38 <span style=''>          l
+</span>38 <span style=''>          token </span><span style='background: #AEF1AE'>::</span><span style=''> l
 </span>39 <span style=''>        }
 </span>40 <span style=''>      case (l: List[KoreanToken], token: KoreanToken) if Predicates.contains(token.pos) =&gt;
 </span>41 <span style=''>        KoreanToken(
@@ -70,31 +70,8 @@
 </span>46 <span style=''>        ) </span><span style='background: #AEF1AE'>::</span><span style=''> l
 </span>47 <span style=''>      case (l: List[KoreanToken], token: KoreanToken) =&gt; token </span><span style='background: #AEF1AE'>::</span><span style=''> l
 </span>48 <span style=''>    }.reverse
-</span>49 <span style=''>
-</span>50 <span style=''>    def validNounHeading(token: KoreanToken): Boolean = {
-</span>51 <span style=''>      val heading = token.text.take(token.text.length </span><span style='background: #AEF1AE'>-</span><span style=''> 2)
-</span>52 <span style=''>
-</span>53 <span style=''>      val validLength = token.text.length </span><span style='background: #AEF1AE'>&gt;</span><span style=''> 2
-</span>54 <span style=''>      val validPos = token.pos </span><span style='background: #AEF1AE'>==</span><span style=''> Verb
-</span>55 <span style=''>      val validEndings = EndingsForNouns.contains(token.text.takeRight(2))
-</span>56 <span style=''>      val validNouns = koreanDictionary.get(Noun).contains(heading)
-</span>57 <span style=''>
-</span>58 <span style=''>      validLength </span><span style='background: #AEF1AE'>&amp;&amp; validPos &amp;&amp; validEndings &amp;&amp;</span><span style=''> validNouns
-</span>59 <span style=''>    }
-</span>60 <span style=''>
-</span>61 <span style=''>    stemmed.flatMap {
-</span>62 <span style=''>      case token if validNounHeading(token) =&gt;
-</span>63 <span style=''>        val heading = token.text.take(token.text.length </span><span style='background: #F0ADAD'>-</span><span style=''> 2)
-</span>64 <span style=''>        val ending = token.text.takeRight(2)
-</span>65 <span style=''>
-</span>66 <span style=''>        Seq(
-</span>67 <span style=''>          KoreanToken(heading, Noun, token.offset, heading.length),
-</span>68 <span style=''>          KoreanToken(ending, token.pos, token.offset </span><span style='background: #F0ADAD'>+</span><span style=''> heading.length, token.length </span><span style='background: #F0ADAD'>-</span><span style=''> heading.length)
-</span>69 <span style=''>        )
-</span>70 <span style=''>      case token =&gt; Seq(token)
-</span>71 <span style=''>    }
-</span>72 <span style=''>  }
-</span>73 <span style=''>}
+</span>49 <span style=''>  }
+</span>50 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -111,54 +88,12 @@
           11
         </td>
         <td>
-          528
+          433
         </td>
         <td>
-          378
+          374
           -
-          378
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.PreEomi
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.PreEomi
-        </td>
-      </tr><tr>
-        <td>
-          11
-        </td>
-        <td>
-          527
-        </td>
-        <td>
-          372
-          -
-          372
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Eomi
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Eomi
-        </td>
-      </tr><tr>
-        <td>
-          11
-        </td>
-        <td>
-          529
-        </td>
-        <td>
-          371
-          -
-          371
+          374
         </td>
         <td>
           Apply
@@ -171,15 +106,57 @@
         </td>
       </tr><tr>
         <td>
+          11
+        </td>
+        <td>
+          432
+        </td>
+        <td>
+          381
+          -
+          381
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.PreEomi
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.PreEomi
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          431
+        </td>
+        <td>
+          375
+          -
+          375
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Eomi
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Eomi
+        </td>
+      </tr><tr>
+        <td>
           12
         </td>
         <td>
-          532
+          436
         </td>
         <td>
-          417
+          420
           -
-          417
+          420
         </td>
         <td>
           Apply
@@ -195,12 +172,12 @@
           12
         </td>
         <td>
-          531
+          435
         </td>
         <td>
-          424
+          427
           -
-          424
+          427
         </td>
         <td>
           Select
@@ -216,12 +193,12 @@
           12
         </td>
         <td>
-          530
+          434
         </td>
         <td>
-          418
+          421
           -
-          418
+          421
         </td>
         <td>
           Select
@@ -237,12 +214,12 @@
           14
         </td>
         <td>
-          533
+          437
         </td>
         <td>
-          471
+          474
           -
-          471
+          474
         </td>
         <td>
           Apply
@@ -258,12 +235,33 @@
           23
         </td>
         <td>
-          541
+          442
         </td>
         <td>
-          728
+          735
           -
-          728
+          735
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.exists(((t: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; t.pos.==(org.openkoreantext.processor.util.KoreanPos.Verb).||(t.pos.==(org.openkoreantext.processor.util.KoreanPos.Adjective)))).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          445
+        </td>
+        <td>
+          731
+          -
+          731
         </td>
         <td>
           Block
@@ -279,33 +277,33 @@
           23
         </td>
         <td>
-          540
+          439
         </td>
         <td>
-          728
+          781
           -
-          728
+          781
         </td>
         <td>
-          Literal
+          Select
         </td>
         <td>
-          &lt;nosymbol&gt;
+          org.openkoreantext.processor.util.KoreanPos.Adjective
         </td>
         <td style="background: #AEF1AE">
-          ()
+          org.openkoreantext.processor.util.KoreanPos.Adjective
         </td>
       </tr><tr>
         <td>
           23
         </td>
         <td>
-          534
+          438
         </td>
         <td>
-          761
+          764
           -
-          761
+          764
         </td>
         <td>
           Select
@@ -321,12 +319,12 @@
           23
         </td>
         <td>
-          537
+          441
         </td>
         <td>
-          758
+          761
           -
-          777
+          780
         </td>
         <td>
           Apply
@@ -342,12 +340,33 @@
           23
         </td>
         <td>
-          536
+          444
         </td>
         <td>
-          775
+          731
           -
-          777
+          731
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          440
+        </td>
+        <td>
+          778
+          -
+          780
         </td>
         <td>
           Apply
@@ -360,57 +379,15 @@
         </td>
       </tr><tr>
         <td>
-          23
-        </td>
-        <td>
-          535
-        </td>
-        <td>
-          778
-          -
-          778
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Adjective
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Adjective
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          538
-        </td>
-        <td>
-          732
-          -
-          732
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Boolean.unary_!
-        </td>
-        <td style="background: #AEF1AE">
-          tokens.exists(((t: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; t.pos.==(org.openkoreantext.processor.util.KoreanPos.Verb).||(t.pos.==(org.openkoreantext.processor.util.KoreanPos.Adjective)))).unary_!
-        </td>
-      </tr><tr>
-        <td>
           24
         </td>
         <td>
-          539
+          443
         </td>
         <td>
-          798
+          801
           -
-          798
+          801
         </td>
         <td>
           Return
@@ -426,12 +403,12 @@
           27
         </td>
         <td>
-          542
+          446
         </td>
         <td>
-          870
+          859
           -
-          870
+          859
         </td>
         <td>
           Select
@@ -447,12 +424,33 @@
           28
         </td>
         <td>
-          543
+          448
         </td>
         <td>
-          970
+          952
           -
-          970
+          952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanStemmer.this.Endings.contains(token.pos)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          447
+        </td>
+        <td>
+          959
+          -
+          959
         </td>
         <td>
           Select
@@ -468,12 +466,12 @@
           28
         </td>
         <td>
-          545
+          449
         </td>
         <td>
-          944
+          933
           -
-          946
+          935
         </td>
         <td>
           Apply
@@ -486,15 +484,15 @@
         </td>
       </tr><tr>
         <td>
-          28
+          29
         </td>
         <td>
-          544
+          451
         </td>
         <td>
-          963
+          998
           -
-          963
+          998
         </td>
         <td>
           Apply
@@ -503,19 +501,19 @@
           scala.collection.SetLike.contains
         </td>
         <td style="background: #AEF1AE">
-          KoreanStemmer.this.Endings.contains(token.pos)
+          KoreanStemmer.this.Predicates.contains(l.head.pos)
         </td>
       </tr><tr>
         <td>
           29
         </td>
         <td>
-          550
+          454
         </td>
         <td>
-          1023
+          1012
           -
-          1023
+          1012
         </td>
         <td>
           Block
@@ -537,12 +535,12 @@
           29
         </td>
         <td>
-          546
+          450
         </td>
         <td>
-          1017
+          1006
           -
-          1017
+          1006
         </td>
         <td>
           Select
@@ -555,36 +553,15 @@
         </td>
       </tr><tr>
         <td>
-          29
-        </td>
-        <td>
-          547
-        </td>
-        <td>
-          1009
-          -
-          1009
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.SetLike.contains
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanStemmer.this.Predicates.contains(l.head.pos)
-        </td>
-      </tr><tr>
-        <td>
           30
         </td>
         <td>
-          548
+          452
         </td>
         <td>
-          1053
+          1042
           -
-          1053
+          1042
         </td>
         <td>
           Select
@@ -600,12 +577,12 @@
           36
         </td>
         <td>
-          549
+          453
         </td>
         <td>
-          1287
+          1276
           -
-          1289
+          1278
         </td>
         <td>
           Apply
@@ -621,33 +598,57 @@
           38
         </td>
         <td>
-          551
+          456
         </td>
         <td>
-          1324
+          1319
           -
-          1324
+          1321
         </td>
         <td>
-          Ident
+          Block
         </td>
         <td>
-          org.openkoreantext.processor.stemmer.KoreanStemmer.l
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          l
+          {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken = token;
+  l.::[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x$2)
+}
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          455
+        </td>
+        <td>
+          1319
+          -
+          1321
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.::
+        </td>
+        <td style="background: #AEF1AE">
+          l.::[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x$2)
         </td>
       </tr><tr>
         <td>
           40
         </td>
         <td>
-          552
+          457
         </td>
         <td>
-          1419
+          1417
           -
-          1419
+          1417
         </td>
         <td>
           Select
@@ -663,12 +664,12 @@
           40
         </td>
         <td>
-          553
+          458
         </td>
         <td>
-          1412
+          1410
           -
-          1412
+          1410
         </td>
         <td>
           Apply
@@ -684,33 +685,12 @@
           46
         </td>
         <td>
-          554
+          459
         </td>
         <td>
+          1623
+          -
           1625
-          -
-          1627
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.immutable.List.::
-        </td>
-        <td style="background: #AEF1AE">
-          l.::[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x$2)
-        </td>
-      </tr><tr>
-        <td>
-          47
-        </td>
-        <td>
-          555
-        </td>
-        <td>
-          1693
-          -
-          1695
         </td>
         <td>
           Apply
@@ -723,15 +703,36 @@
         </td>
       </tr><tr>
         <td>
+          47
+        </td>
+        <td>
+          460
+        </td>
+        <td>
+          1691
+          -
+          1693
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.::
+        </td>
+        <td style="background: #AEF1AE">
+          l.::[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x$4)
+        </td>
+      </tr><tr>
+        <td>
           48
         </td>
         <td>
-          556
+          461
         </td>
         <td>
-          1704
+          1702
           -
-          1704
+          1702
         </td>
         <td>
           Select
@@ -750,716 +751,19 @@
       }
     }
   else
-    l
+    {
+      &lt;synthetic&gt; &lt;artifact&gt; val x$2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken = token;
+      l.::[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x$2)
+    }
   case (_1: List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken], _2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)(List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken], org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)((l @ (_: List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])), (token @ (_: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken))) if KoreanStemmer.this.Predicates.contains(token.pos) =&gt; {
-    &lt;synthetic&gt; &lt;artifact&gt; val x$2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken = org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, scala.Some.apply[String](org.openkoreantext.processor.util.KoreanDictionaryProvider.predicateStems.apply(token.pos).apply(token.text)), token.unknown);
-    l.::[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x$2)
-  }
-  case (_1: List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken], _2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)(List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken], org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)((l @ (_: List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])), (token @ (_: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken))) =&gt; {
-    &lt;synthetic&gt; &lt;artifact&gt; val x$3: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken = token;
+    &lt;synthetic&gt; &lt;artifact&gt; val x$3: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken = org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(token.text, token.pos, token.offset, token.length, scala.Some.apply[String](org.openkoreantext.processor.util.KoreanDictionaryProvider.predicateStems.apply(token.pos).apply(token.text)), token.unknown);
     l.::[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x$3)
   }
-})).reverse
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          559
-        </td>
-        <td>
-          1806
-          -
-          1806
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.IndexedSeqOptimized.take
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.augmentString(token.text).take(token.text.length().-(2))
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          558
-        </td>
-        <td>
-          1825
-          -
-          1826
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.-
-        </td>
-        <td style="background: #AEF1AE">
-          token.text.length().-(2)
-        </td>
-      </tr><tr>
-        <td>
-          51
-        </td>
-        <td>
-          557
-        </td>
-        <td>
-          1797
-          -
-          1797
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
-        </td>
-        <td style="background: #AEF1AE">
-          token.text
-        </td>
-      </tr><tr>
-        <td>
-          53
-        </td>
-        <td>
-          560
-        </td>
-        <td>
-          1873
-          -
-          1874
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          token.text.length().&gt;(2)
-        </td>
-      </tr><tr>
-        <td>
-          54
-        </td>
-        <td>
-          561
-        </td>
-        <td>
-          1911
-          -
-          1911
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Verb
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Verb
-        </td>
-      </tr><tr>
-        <td>
-          54
-        </td>
-        <td>
-          562
-        </td>
-        <td>
-          1908
-          -
-          1910
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.Object.==
-        </td>
-        <td style="background: #AEF1AE">
-          token.pos.==(org.openkoreantext.processor.util.KoreanPos.Verb)
-        </td>
-      </tr><tr>
-        <td>
-          55
-        </td>
-        <td>
-          564
-        </td>
-        <td>
-          1965
-          -
-          1965
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.SetLike.contains
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanStemmer.this.EndingsForNouns.contains(scala.Predef.augmentString(token.text).takeRight(2))
-        </td>
-      </tr><tr>
-        <td>
-          55
-        </td>
-        <td>
-          563
-        </td>
-        <td>
-          1986
-          -
-          1986
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.IndexedSeqOptimized.takeRight
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.augmentString(token.text).takeRight(2)
-        </td>
-      </tr><tr>
-        <td>
-          56
-        </td>
-        <td>
-          565
-        </td>
-        <td>
-          2049
-          -
-          2049
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.CharArraySet.contains
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanDictionary.get(org.openkoreantext.processor.util.KoreanPos.Noun).contains(heading)
-        </td>
-      </tr><tr>
-        <td>
-          58
-        </td>
-        <td>
-          566
-        </td>
-        <td>
-          2078
-          -
-          2108
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Boolean.&amp;&amp;
-        </td>
-        <td style="background: #AEF1AE">
-          validLength.&amp;&amp;(validPos).&amp;&amp;(validEndings).&amp;&amp;(validNouns)
-        </td>
-      </tr><tr>
-        <td>
-          61
-        </td>
-        <td>
-          588
-        </td>
-        <td>
-          2147
-          -
-          2147
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.immutable.List.canBuildFrom
-        </td>
-        <td style="background: #AEF1AE">
-          immutable.this.List.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]
-        </td>
-      </tr><tr>
-        <td>
-          61
-        </td>
-        <td>
-          589
-        </td>
-        <td>
-          2147
-          -
-          2147
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.collection.immutable.List.flatMap
-        </td>
-        <td style="background: #AEF1AE">
-          stemmed.flatMap[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken, Seq[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken]](((x0$2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x0$2 match {
-  case (token @ _) if validNounHeading(token) =&gt; {
-    val heading: String = scala.Predef.augmentString(token.text).take(token.text.length().-(2));
-    val ending: String = scala.Predef.augmentString(token.text).takeRight(2);
-    scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(heading, org.openkoreantext.processor.util.KoreanPos.Noun, token.offset, heading.length(), org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6), org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(ending, token.pos, token.offset.+(heading.length()), token.length.-(heading.length()), org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6))
+  case (_1: List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken], _2: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)(List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken], org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken)((l @ (_: List[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])), (token @ (_: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken))) =&gt; {
+    &lt;synthetic&gt; &lt;artifact&gt; val x$4: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken = token;
+    l.::[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](x$4)
   }
-  case (token @ _) =&gt; scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token)
-}))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken])
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          567
-        </td>
-        <td>
-          2185
-          -
-          2185
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.stemmer.KoreanStemmer.validNounHeading
-        </td>
-        <td style="background: #AEF1AE">
-          validNounHeading(token)
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          568
-        </td>
-        <td>
-          2224
-          -
-          2224
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.text
-        </td>
-        <td style="background: #F0ADAD">
-          token.text
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          570
-        </td>
-        <td>
-          2233
-          -
-          2233
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.IndexedSeqOptimized.take
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.augmentString(token.text).take(token.text.length().-(2))
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          569
-        </td>
-        <td>
-          2252
-          -
-          2253
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.-
-        </td>
-        <td style="background: #F0ADAD">
-          token.text.length().-(2)
-        </td>
-      </tr><tr>
-        <td>
-          64
-        </td>
-        <td>
-          571
-        </td>
-        <td>
-          2298
-          -
-          2298
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.IndexedSeqOptimized.takeRight
-        </td>
-        <td style="background: #F0ADAD">
-          scala.Predef.augmentString(token.text).takeRight(2)
-        </td>
-      </tr><tr>
-        <td>
-          66
-        </td>
-        <td>
-          586
-        </td>
-        <td>
-          2314
-          -
-          2314
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.generic.GenericCompanion.apply
-        </td>
-        <td style="background: #F0ADAD">
-          scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(heading, org.openkoreantext.processor.util.KoreanPos.Noun, token.offset, heading.length(), org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6), org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(ending, token.pos, token.offset.+(heading.length()), token.length.-(heading.length()), org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6))
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          577
-        </td>
-        <td>
-          2337
-          -
-          2337
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply
-        </td>
-        <td style="background: #F0ADAD">
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(heading, org.openkoreantext.processor.util.KoreanPos.Noun, token.offset, heading.length(), org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6)
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          576
-        </td>
-        <td>
-          2326
-          -
-          2326
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6
-        </td>
-        <td style="background: #F0ADAD">
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          573
-        </td>
-        <td>
-          2359
-          -
-          2359
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.offset
-        </td>
-        <td style="background: #F0ADAD">
-          token.offset
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          572
-        </td>
-        <td>
-          2347
-          -
-          2347
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Noun
-        </td>
-        <td style="background: #F0ADAD">
-          org.openkoreantext.processor.util.KoreanPos.Noun
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          575
-        </td>
-        <td>
-          2326
-          -
-          2326
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
-        </td>
-        <td style="background: #F0ADAD">
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
-        </td>
-      </tr><tr>
-        <td>
-          67
-        </td>
-        <td>
-          574
-        </td>
-        <td>
-          2375
-          -
-          2375
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.length
-        </td>
-        <td style="background: #F0ADAD">
-          heading.length()
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          585
-        </td>
-        <td>
-          2405
-          -
-          2405
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply
-        </td>
-        <td style="background: #F0ADAD">
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply(ending, token.pos, token.offset.+(heading.length()), token.length.-(heading.length()), org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5, org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6)
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          579
-        </td>
-        <td>
-          2448
-          -
-          2448
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.length
-        </td>
-        <td style="background: #F0ADAD">
-          heading.length()
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          582
-        </td>
-        <td>
-          2469
-          -
-          2470
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.-
-        </td>
-        <td style="background: #F0ADAD">
-          token.length.-(heading.length())
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          581
-        </td>
-        <td>
-          2479
-          -
-          2479
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.length
-        </td>
-        <td style="background: #F0ADAD">
-          heading.length()
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          584
-        </td>
-        <td>
-          2394
-          -
-          2394
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6
-        </td>
-        <td style="background: #F0ADAD">
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$6
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          578
-        </td>
-        <td>
-          2420
-          -
-          2420
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.pos
-        </td>
-        <td style="background: #F0ADAD">
-          token.pos
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          580
-        </td>
-        <td>
-          2438
-          -
-          2439
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.+
-        </td>
-        <td style="background: #F0ADAD">
-          token.offset.+(heading.length())
-        </td>
-      </tr><tr>
-        <td>
-          68
-        </td>
-        <td>
-          583
-        </td>
-        <td>
-          2394
-          -
-          2394
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
-        </td>
-        <td style="background: #F0ADAD">
-          org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken.apply$default$5
-        </td>
-      </tr><tr>
-        <td>
-          70
-        </td>
-        <td>
-          587
-        </td>
-        <td>
-          2520
-          -
-          2520
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.generic.GenericCompanion.apply
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.Seq.apply[org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken](token)
+})).reverse
         </td>
       </tr>
     </table>

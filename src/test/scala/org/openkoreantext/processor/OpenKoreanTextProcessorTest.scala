@@ -144,6 +144,19 @@ class OpenKoreanTextProcessorTest extends TestBase {
     )
   }
 
+  test("tokenizeTopN with a given profile should return different top candidates from the default tokenizeTopN") {
+    assert(
+      OpenKoreanTextProcessor.tokenizeTopN("대선 후보", 3) !==
+        OpenKoreanTextProcessor.tokenizeTopN("대선 후보", 3,
+          TokenizerProfile(
+            unknownPosCount = 1.0f,
+            allNoun = 10,
+            preferredPattern = 4
+          )
+        )
+    )
+  }
+
   test("tokensToStrings should return correct strings") {
     assert(
       OpenKoreanTextProcessor.tokensToStrings(OpenKoreanTextProcessor.tokenize("사랑해")) ===

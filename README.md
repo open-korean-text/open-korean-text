@@ -79,9 +79,11 @@ To include this in your Maven-based JVM project, add the following lines to your
   <dependency>
     <groupId>org.openkoreantext</groupId>
     <artifactId>open-korean-text</artifactId>
-    <version>2.0.4</version>
+    <version>2.1.0</version>
   </dependency>
 ```
+
+Maven Repository: http://mvnrepository.com/artifact/org.openkoreantext/open-korean-text
 
 <!-- The maven site is available here http://twitter.github.io/open-korean-text/ and scaladocs are here http://twitter.github.io/open-korean-text/scaladocs/ -->
 

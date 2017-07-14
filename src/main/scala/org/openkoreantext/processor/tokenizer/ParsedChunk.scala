@@ -21,6 +21,7 @@ package org.openkoreantext.processor.tokenizer
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken
 import org.openkoreantext.processor.tokenizer.ParsedChunk._
 import org.openkoreantext.processor.util.KoreanDictionaryProvider._
+import org.openkoreantext.processor.util.{Hangul, KoreanPos}
 import org.openkoreantext.processor.util.KoreanPos._
 
 object ParsedChunk {
@@ -51,7 +52,8 @@ case class ParsedChunk(posNodes: Seq[KoreanToken], words: Int,
       countPos(Exclamation) * profile.exclamationPosCount +
       isInitialPostPosition * profile.initialPostPosition +
       isNounHa * profile.haVerb +
-      hasSpaceOutOfGuide * profile.spaceGuidePenalty
+      hasSpaceOutOfGuide * profile.spaceGuidePenalty +
+      josaMismatched * profile.josaUnmatchedPenalty
 
   def countUnknowns: Int = this.posNodes.count { p: KoreanToken => p.unknown }
 
@@ -106,4 +108,21 @@ case class ParsedChunk(posNodes: Seq[KoreanToken], words: Int,
   }
 
   def countPos(pos: KoreanPos): Int = this.posNodes.count { p: KoreanToken => p.pos == pos }
+
+  def josaMismatched: Int = {
+    val mismatched = this.posNodes.sliding(2).exists{
+      case tokenPair: Seq[KoreanToken] if tokenPair.head.pos == KoreanPos.Noun
+        && tokenPair.last.pos == KoreanPos.Josa =>
+        if (Hangul.hasCoda(tokenPair.head.text.last)) {
+          val nounEnding = Hangul.decomposeHangul(tokenPair.head.text.last)
+          (nounEnding.coda != 'ㄹ' && tokenPair.last.text.head == '로') ||
+            Set("는", "를", "다").contains(tokenPair.last.text)
+        } else {
+          tokenPair.last.text.head == '으' || Set("은", "을", "이").contains(tokenPair.last.text)
+        }
+      case _ =>
+        false
+    }
+    if (mismatched) 1 else 0
+  }
 }

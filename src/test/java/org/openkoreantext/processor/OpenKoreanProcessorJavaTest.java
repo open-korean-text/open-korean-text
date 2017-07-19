@@ -18,14 +18,14 @@
 
 package org.openkoreantext.processor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.Test;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer;
 import org.openkoreantext.processor.tokenizer.Sentence;
 import scala.collection.Seq;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -97,6 +97,13 @@ public class OpenKoreanProcessorJavaTest {
             "받은(Verb(받다): 8, 2), 루루(Noun: 11, 2)]",
         OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens, false).toString()
     );
+
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens, true).get(0).getText(), "착한");
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens, true).get(0).getStem(), "착하다");
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens, true).get(0).getOffset(), 0);
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens, true).get(0).getLength(), 2);
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens, true).get(0).getPos(), KoreanPosJava.Adjective);
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens, true).get(0).isUnknown(), false);
 
     text = "백여마리";
     tokens = OpenKoreanTextProcessorJava.tokenize(text);

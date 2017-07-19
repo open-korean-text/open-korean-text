@@ -33,6 +33,10 @@ public class KoreanTokenJava {
     this.unknown = unknown;
     this.stem = stem;
   }
+  
+  public String getStem() {
+    return stem;
+  }
 
   public String getText() {
     return text;

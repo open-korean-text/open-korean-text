@@ -254,7 +254,7 @@ class KoreanTokenizerTest extends TestBase {
     assert(!KoreanDictionaryProvider.koreanDictionary.get(Noun).contains("츄쵸"))
 
     assert(tokenize("뇬뇨뇬뇨뇬뇨뇬뇨츄쵸").mkString(" ") ===
-        "뇬뇨뇬뇨뇬뇨뇬뇨*(Noun: 0, 8) 츄쵸*(Noun: 8, 2)")
+      "뇬뇨뇬뇨뇬뇨뇬뇨*(Noun: 0, 8) 츄쵸*(Noun: 8, 2)")
 
     KoreanDictionaryProvider.addWordsToDictionary(Noun, List("뇬뇨", "츄쵸"))
 
@@ -262,6 +262,16 @@ class KoreanTokenizerTest extends TestBase {
     assert(KoreanDictionaryProvider.koreanDictionary.get(Noun).contains("츄쵸"))
 
     assert(tokenize("뇬뇨뇬뇨뇬뇨뇬뇨츄쵸").mkString(" ") ===
-        "뇬뇨(Noun: 0, 2) 뇬뇨(Noun: 2, 2) 뇬뇨(Noun: 4, 2) 뇬뇨(Noun: 6, 2) 츄쵸(Noun: 8, 2)")
+      "뇬뇨(Noun: 0, 2) 뇬뇨(Noun: 2, 2) 뇬뇨(Noun: 4, 2) 뇬뇨(Noun: 6, 2) 츄쵸(Noun: 8, 2)")
+  }
+
+  test("test noun-josa unmatched") {
+    assert(tokenize("울다").mkString(" ") === "울다(Verb(울다): 0, 2)")
+    assert(tokenize("울이다").mkString(" ") === "울(Noun: 0, 1) 이다(Josa: 1, 2)")
+
+    assert(tokenize("사랑으로").mkString(" ") === "사랑(Noun: 0, 2) 으로(Josa: 2, 2)")
+    assert(tokenize("사랑로").mkString(" ") === "사랑(Noun: 0, 2) 로(Noun: 2, 1)")
+
+    assert(tokenize("고화질로").mkString(" ") === "고화질(Noun: 0, 3) 로(Josa: 3, 1)")
   }
 }

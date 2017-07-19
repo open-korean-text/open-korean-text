@@ -36,7 +36,7 @@ object KoreanConjugation {
   private[this] val CODAS_SLANG_CONSONANT = Seq('ㅋ', 'ㅎ')
   private[this] val CODAS_SLANG_VOWEL = Seq('ㅜ', 'ㅠ')
 
-  private[this] val PRE_EOMI_COMMON = "거게겠고구기긴길네다더던도든면자잖재져죠지진질".toSeq
+  private[this] val PRE_EOMI_COMMON = "게겠고구기긴길네다더던도든면자잖재져죠지진질".toSeq
   private[this] val PRE_EOMI_1_1 = "야서써도준".toSeq
   private[this] val PRE_EOMI_1_2 = "어었".toSeq
   private[this] val PRE_EOMI_1_3 = "아았".toSeq
@@ -240,7 +240,29 @@ object KoreanConjugation {
 
       }
 
-      expandedLast.map(init + _)
+      // -르 불규칙 (고르다 -> 골르다)
+      val irregularExpansion = if (lastChar == '르' && !hasCoda(init.last)) {
+        val lastInitCharDecomposed = decomposeHangul(init.last)
+        val newInit = init.init +
+          composeHangul(lastInitCharDecomposed.onset, lastInitCharDecomposed.vowel, 'ㄹ')
+
+        val o = lastCharDecomposed.onset
+        val conjugation: Seq[String] = addPreEomi(lastChar, PRE_EOMI_2 ++ PRE_EOMI_6) ++
+          CODAS_NO_PAST.map(composeHangul(o, 'ㅡ', _).toString) ++
+          Seq(composeHangul(o, 'ㅝ').toString,
+            composeHangul(o, 'ㅓ').toString,
+            composeHangul(o, 'ㅏ').toString,
+            composeHangul(o, 'ㅝ', 'ㅆ').toString,
+            composeHangul(o, 'ㅓ', 'ㅆ').toString,
+            composeHangul(o, 'ㅏ', 'ㅆ').toString,
+            lastCharString)
+
+        conjugation.map(newInit + _)
+      } else {
+        Seq()
+      }
+
+      expandedLast.map(init + _) ++ irregularExpansion
     }
 
     if (isAdjective) {

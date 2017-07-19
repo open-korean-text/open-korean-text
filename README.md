@@ -79,9 +79,11 @@ To include this in your Maven-based JVM project, add the following lines to your
   <dependency>
     <groupId>org.openkoreantext</groupId>
     <artifactId>open-korean-text</artifactId>
-    <version>2.0.4</version>
+    <version>2.1.0</version>
   </dependency>
 ```
+
+Maven Repository: http://mvnrepository.com/artifact/org.openkoreantext/open-korean-text
 
 <!-- The maven site is available here http://twitter.github.io/open-korean-text/ and scaladocs are here http://twitter.github.io/open-korean-text/scaladocs/ -->
 
@@ -93,6 +95,7 @@ To include this in your Maven-based JVM project, add the following lines to your
 | Wrapper | [Node JS](https://github.com/open-korean-text/open-korean-text-wrapper-node-1) | [Ch0p](https://github.com/Ch0p) |
 | Wrapper | [Node JS](https://github.com/open-korean-text/open-korean-text-wrapper-node-2) | [Youngrok Kim](https://github.com/rokoroku) |
 | Wrapper | [Python](https://github.com/open-korean-text/open-korean-text-wrapper-python) | [Jaepil Jeong](https://github.com/jaepil) |
+| Wrapper | [Clojure](https://github.com/open-korean-text/open-korean-text-4clj) | [Seonho Kim](https://github.com/ksseono) |
 | Wrapper | [Ruby for Java Version](https://github.com/open-korean-text/open-korean-text-wrapper-ruby-1) | [jun85664396](https://github.com/jun85664396) |
 | Wrapper | [Ruby for Scala Version](https://github.com/open-korean-text/open-korean-text-wrapper-ruby-2) | [Jaehyun Shin](https://github.com/keepcosmos) |
 | Porting | [Python](https://github.com/open-korean-text/open-korean-text-python) | [Baeg-il Kim](https://github.com/cedar101) |
@@ -156,6 +159,7 @@ Average time per parsing a chunk (평균 어절 처리 시간): 0.12 ms
 Tweets|100K|200K|300K|400K|500K|600K|700K|800K|900K|1M
 ---|---|---|---|---|---|---|---|---|---|---
 Time in Seconds|57.59|112.09|165.05|218.11|270.54|328.52|381.09|439.71|492.94|542.12
+
 Average per tweet: 0.54212 ms
 
 **Benchmark test by [KoNLPy](http://konlpy.org/)**

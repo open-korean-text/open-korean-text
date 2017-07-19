@@ -109,11 +109,11 @@ class OpenKoreanTextProcessorTest extends TestBase {
     )
   }
 
-  test("tokenize should correctly tokenize the example set") {
-    assertExamples(
-      "current_parsing.txt", LOG,
-      OpenKoreanTextProcessor.tokenize(_).mkString("/")
-    )
+  test("tokenize should correctly tokenize the example set with normalization") {
+    def process(input: String): String =
+      OpenKoreanTextProcessor.tokenize(OpenKoreanTextProcessor.normalize(input)).mkString("/")
+
+    assertExamples("current_parsing.txt", LOG, process)
   }
 
   test("splitSentences should correctly split sentences") {
@@ -141,6 +141,19 @@ class OpenKoreanTextProcessorTest extends TestBase {
           "List(후보(Noun: 3, 2)), " +
           "List(후보*(Noun: 3, 2)), " +
           "List(후(Noun: 3, 1), 보(Verb: 4, 1))))"
+    )
+  }
+
+  test("tokenizeTopN with a given profile should return different top candidates from the default tokenizeTopN") {
+    assert(
+      OpenKoreanTextProcessor.tokenizeTopN("대선 후보", 3) !==
+        OpenKoreanTextProcessor.tokenizeTopN("대선 후보", 3,
+          TokenizerProfile(
+            unknownPosCount = 1.0f,
+            allNoun = 10,
+            preferredPattern = 4
+          )
+        )
     )
   }
 

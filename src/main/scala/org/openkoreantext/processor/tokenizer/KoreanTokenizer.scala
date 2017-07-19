@@ -250,5 +250,4 @@ object KoreanTokenizer {
                                     ending: Option[KoreanPos])
 
   private case class PossibleTrie(curTrie: KoreanPosTrie, words: Int)
-
 }

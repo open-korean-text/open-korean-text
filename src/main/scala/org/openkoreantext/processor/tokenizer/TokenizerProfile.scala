@@ -41,5 +41,6 @@ case class TokenizerProfile(
     preferredPattern: Float = 0.6f,
     preferredPatterns: Seq[Seq[Any]] = Seq(Seq(Noun, Josa), Seq(ProperNoun, Josa)),
     spaceGuide: Set[Int] = Set[Int](),
-    spaceGuidePenalty: Float = 3.0f
+    spaceGuidePenalty: Float = 3.0f,
+    josaUnmatchedPenalty: Float = 3.0f
 )

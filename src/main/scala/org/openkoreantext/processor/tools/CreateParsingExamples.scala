@@ -36,7 +36,7 @@ object CreateParsingExamples extends Runnable  {
     val parsedPairs = readFileByLineFromResources("example_chunks.txt").flatMap {
       case line if line.length > 0 =>
         val chunk = line.trim
-        val parsed = tokenize(chunk)
+        val parsed = tokenize(normalize(chunk))
         Some(ParsingExample(chunk, parsed))
       case line => None
     }.toSet

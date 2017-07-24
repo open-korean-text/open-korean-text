@@ -79,9 +79,11 @@ To include this in your Maven-based JVM project, add the following lines to your
   <dependency>
     <groupId>org.openkoreantext</groupId>
     <artifactId>open-korean-text</artifactId>
-    <version>2.0.4</version>
+    <version>2.1.0</version>
   </dependency>
 ```
+
+Maven Repository: http://mvnrepository.com/artifact/org.openkoreantext/open-korean-text
 
 <!-- The maven site is available here http://twitter.github.io/open-korean-text/ and scaladocs are here http://twitter.github.io/open-korean-text/scaladocs/ -->
 
@@ -157,6 +159,7 @@ Average time per parsing a chunk (평균 어절 처리 시간): 0.12 ms
 Tweets|100K|200K|300K|400K|500K|600K|700K|800K|900K|1M
 ---|---|---|---|---|---|---|---|---|---|---
 Time in Seconds|57.59|112.09|165.05|218.11|270.54|328.52|381.09|439.71|492.94|542.12
+
 Average per tweet: 0.54212 ms
 
 **Benchmark test by [KoNLPy](http://konlpy.org/)**

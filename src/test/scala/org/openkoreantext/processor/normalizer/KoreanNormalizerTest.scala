@@ -86,6 +86,7 @@ class KoreanNormalizerTest extends TestBase {
     assert(normalizeCodaN("가는건데") === "가는건데")
     assert(normalizeCodaN("곤란한데") === "곤란한데")
     assert(normalizeCodaN("생각하는건데") === "생각하는건데")
+    assert(normalizeCodaN("졸린데") === "졸린데")
   }
 
 

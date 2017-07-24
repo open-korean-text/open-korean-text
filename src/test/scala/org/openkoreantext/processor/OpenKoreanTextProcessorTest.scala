@@ -109,11 +109,11 @@ class OpenKoreanTextProcessorTest extends TestBase {
     )
   }
 
-  test("tokenize should correctly tokenize the example set") {
-    assertExamples(
-      "current_parsing.txt", LOG,
-      OpenKoreanTextProcessor.tokenize(_).mkString("/")
-    )
+  test("tokenize should correctly tokenize the example set with normalization") {
+    def process(input: String): String =
+      OpenKoreanTextProcessor.tokenize(OpenKoreanTextProcessor.normalize(input)).mkString("/")
+
+    assertExamples("current_parsing.txt", LOG, process)
   }
 
   test("splitSentences should correctly split sentences") {

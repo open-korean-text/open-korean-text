@@ -20,7 +20,9 @@ package org.openkoreantext.processor.normalizer
 
 import java.util.regex.Matcher
 
-import org.openkoreantext.processor.util.Hangul
+import org.openkoreantext.processor.tokenizer.KoreanTokenizer
+import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken
+import org.openkoreantext.processor.util.{Hangul, KoreanPos}
 import org.openkoreantext.processor.util.Hangul.{HangulChar, _}
 import org.openkoreantext.processor.util.KoreanDictionaryProvider._
 import org.openkoreantext.processor.util.KoreanPos._
@@ -109,6 +111,10 @@ object KoreanNormalizer {
         lastTwoHead < '가' || lastTwoHead > '힣' ||
         CODA_N_EXCPETION.contains(lastTwoHead)
     ) {
+      return chunk
+    }
+
+    if (KoreanPos.Predicates.contains(KoreanTokenizer.tokenize(chunk).head.pos)) {
       return chunk
     }
 

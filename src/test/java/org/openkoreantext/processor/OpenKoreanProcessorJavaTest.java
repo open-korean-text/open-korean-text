@@ -69,17 +69,21 @@ public class OpenKoreanProcessorJavaTest {
 
   @Test
   public void testAddToDictionary() {
-    Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize("춍춍춍춍챵챵챵");
-    assertEquals("[춍춍춍춍챵챵챵]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
+    Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize("춍춍춍춍그라고챵챵챵");
+    assertEquals("[춍춍춍춍, 그, 라고, 챵챵챵]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
 
-    ArrayList<String> words = new ArrayList<>();
-    words.add("춍춍");
-    words.add("챵챵챵");
-    OpenKoreanTextProcessorJava.addNounsToDictionary(words);
+    ArrayList<String> nouns = new ArrayList<>();
+    nouns.add("춍춍");
+    nouns.add("챵챵챵");
+    OpenKoreanTextProcessorJava.addNounsToDictionary(nouns);
 
-    tokens = OpenKoreanTextProcessorJava.tokenize("춍춍춍춍챵챵챵");
+    ArrayList<String> conjunctions = new ArrayList<>();
+    conjunctions.add("그라고");
+    OpenKoreanTextProcessorJava.addWordsToDictionary(KoreanPosJava.Conjunction, conjunctions);
 
-    assertEquals("[춍춍, 춍춍, 챵챵챵]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
+    tokens = OpenKoreanTextProcessorJava.tokenize("춍춍춍춍그라고챵챵챵");
+
+    assertEquals("[춍춍, 춍춍, 그라고, 챵챵챵]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
   }
 
   @Test

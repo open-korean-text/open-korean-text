@@ -1,5 +1,5 @@
 /*
- * Twitter Korean Text - Scala library to process Korean text
+ * Open Korean Text - Scala library to process Korean text
  *
  * Copyright 2014 Twitter, Inc.
  *
@@ -18,9 +18,6 @@
 
 package org.openkoreantext.processor;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken;
 import org.openkoreantext.processor.tokenizer.Sentence;
@@ -28,6 +25,9 @@ import org.openkoreantext.processor.util.KoreanPos;
 import scala.collection.Iterator;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Java wrapper for TwitterKoreanProcessor using Builder pattern
@@ -66,6 +66,15 @@ public final class OpenKoreanTextProcessorJava {
     OpenKoreanTextProcessor.addNounsToDictionary(JavaConverters.asScalaBuffer(words));
   }
 
+  /**
+   * Add user-defined word List to the dictionary for the specified KoreanPos.
+   *
+   * @param pos KoreanPos of words to add.
+   * @param words Sequence of words to add.
+   */
+  public static void addWordsToDictionary(KoreanPosJava pos, List<String> words) {
+    OpenKoreanTextProcessor.addWordsToDictionary(KoreanPos.withName(pos.toString()), JavaConverters.asScalaBuffer(words));
+  }
 
   /**
    * Transforms the tokenization output to List<KoreanTokenJava>

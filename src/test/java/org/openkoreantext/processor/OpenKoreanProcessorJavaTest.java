@@ -1,5 +1,5 @@
 /*
- * Twitter Korean Text - Scala library to process Korean text
+ * Open Korean Text - Scala library to process Korean text
  *
  * Copyright 2016 Twitter, Inc.
  *
@@ -68,19 +68,48 @@ public class OpenKoreanProcessorJavaTest {
   }
 
   @Test
-  public void testAddToDictionary() {
-    Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize("춍춍춍춍챵챵챵");
+  public void testAddNounsToDictionary() {
+    String text = "춍춍춍춍챵챵챵";
+
+    // before
+    Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize(text);
     assertEquals("[춍춍춍춍챵챵챵]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
 
+    // add nouns
     ArrayList<String> words = new ArrayList<>();
     words.add("춍춍");
     words.add("챵챵챵");
     OpenKoreanTextProcessorJava.addNounsToDictionary(words);
 
-    tokens = OpenKoreanTextProcessorJava.tokenize("춍춍춍춍챵챵챵");
-
+    // after
+    tokens = OpenKoreanTextProcessorJava.tokenize(text);
     assertEquals("[춍춍, 춍춍, 챵챵챵]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
   }
+
+  @Test
+  public void testAddWordsToDictionary() {
+    String text = "그라믄 당신 먼저 얼렁 가이소";
+
+    // before
+    Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize(text);
+    assertEquals("[그, 라, 믄, 당신, 먼저, 얼렁, 가이소]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens).get(4).getPos(), KoreanPosJava.Noun);
+
+    // add words
+    ArrayList<String> conjs = new ArrayList<>();
+    conjs.add("그라믄");
+    OpenKoreanTextProcessorJava.addWordsToDictionary(KoreanPosJava.Conjunction, conjs);
+
+    ArrayList<String> advs = new ArrayList<>();
+    advs.add("얼렁");
+    OpenKoreanTextProcessorJava.addWordsToDictionary(KoreanPosJava.Adverb, advs);
+
+    // after
+    tokens = OpenKoreanTextProcessorJava.tokenize(text);
+    assertEquals("[그라믄, 당신, 먼저, 얼렁, 가이소]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens).get(3).getPos(), KoreanPosJava.Adverb);
+  }
+
 
   @Test
   public void testTokensToJavaKoreanTokenList() throws Exception {

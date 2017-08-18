@@ -1,5 +1,5 @@
 /*
- * Twitter Korean Text - Scala library to process Korean text
+ * Open Korean Text - Scala library to process Korean text
  *
  * Copyright 2014 Twitter, Inc.
  *
@@ -24,6 +24,7 @@ import org.openkoreantext.processor.phrase_extractor.KoreanPhraseExtractor.Korea
 import org.openkoreantext.processor.stemmer.KoreanStemmer
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken
 import org.openkoreantext.processor.tokenizer._
+import org.openkoreantext.processor.util.KoreanPos.KoreanPos
 import org.openkoreantext.processor.util.{KoreanDictionaryProvider, KoreanPos}
 
 /**
@@ -101,6 +102,16 @@ object OpenKoreanTextProcessor {
     */
   def addNounsToDictionary(words: Seq[String]) {
     KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, words)
+  }
+
+  /**
+    * Add user-defined word List to the dictionary for the specified KoreanPos.
+    *
+    * @param pos KoreanPos of words to add.
+    * @param words Sequence of words to add.
+    */
+  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]) {
+    KoreanDictionaryProvider.addWordsToDictionary(pos, words);
   }
 
   /**

@@ -1,5 +1,5 @@
 /*
- * Twitter Korean Text - Scala library to process Korean text
+ * Open Korean Text - Scala library to process Korean text
  *
  * Copyright 2014 Twitter, Inc.
  *
@@ -127,6 +127,12 @@ class OpenKoreanTextProcessorTest extends TestBase {
     assert(!KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Noun).contains("후랴오교"))
     addNounsToDictionary(List("후랴오교"))
     assert(KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Noun).contains("후랴오교"))
+  }
+
+  test("addWordsToDictionary should add the words list to the dictionary") {
+    assert(!KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Conjunction).contains("그란디"))
+    addWordsToDictionary(KoreanPos.Conjunction, List("그란디"));
+    assert(KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Conjunction).contains("그란디"))
   }
 
   test("tokenizeTopN should return top candidates") {

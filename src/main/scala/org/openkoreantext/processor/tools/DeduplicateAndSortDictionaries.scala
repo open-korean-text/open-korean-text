@@ -1,5 +1,5 @@
 /*
- * Twitter Korean Text - Scala library to process Korean text
+ * Open Korean Text - Scala library to process Korean text
  *
  * Copyright 2014 Twitter, Inc.
  *
@@ -42,6 +42,7 @@ object DeduplicateAndSortDictionaries extends Runnable  {
     "noun/foreign.txt", "noun/geolocations.txt", "noun/profane.txt",
     "noun/kpop.txt", "noun/bible.txt",
     "noun/wikipedia_title_nouns.txt", "noun/pokemon.txt", "noun/congress.txt",
+    "noun/brand.txt", "noun/fashion.txt", "noun/neologism.txt",
 
     "substantives/modifier.txt", "substantives/suffix.txt",
     "substantives/family_names.txt", "substantives/given_names.txt",

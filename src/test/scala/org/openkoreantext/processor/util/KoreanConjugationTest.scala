@@ -45,8 +45,8 @@ class KoreanConjugationTest extends TestBase {
   }
 
   def assertConjugations(filename: String, isAdjective: Boolean) {
-    val input = readFileByLineFromResources(filename)
-    val loaded: Seq[(String, String)] = input.toSeq.map {
+    val input = readWordsAsSeq(filename)
+    val loaded: Seq[(String, String)] = input.map {
       s =>
         val sp = s.split("\t")
         (sp(0), sp(1))

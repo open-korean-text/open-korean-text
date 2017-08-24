@@ -45,10 +45,11 @@ object KoreanDictionaryProvider {
       new java.util.HashMap[CharSequence, Float]
 
     readFileByLineFromResources(filename).foreach {
-      case line => if (line.contains("\t")) {
-        val data = line.split("\t")
-        freqMap.put(data(0), data(1).slice(0, 6).toFloat)
-      }
+      line =>
+        if (line.contains("\t")) {
+          val data = line.split("\t")
+          freqMap.put(data(0), data(1).slice(0, 6).toFloat)
+        }
     }
     freqMap
   }

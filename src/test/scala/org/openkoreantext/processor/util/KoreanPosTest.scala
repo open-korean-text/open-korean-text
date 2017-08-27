@@ -117,4 +117,22 @@ class KoreanPosTest extends TestBase {
       )
     )
   }
+  test("buildTrie should build Trie correctly for initial optionals") {
+    // 1
+    assert(
+      buildTrie("A1", Adverb) === List(
+        KoreanPosTrie(Adverb, List(), ending = Some(Adverb))
+      )
+    )
+  }
+  test("buildTrie should build Trie correctly for initial non-optionals") {
+    // +
+    assert(
+      buildTrie("E+", Exclamation) === List(
+        KoreanPosTrie(Exclamation, List(
+          selfNode
+        ), ending = Some(Exclamation))
+      )
+    )
+  }
 }

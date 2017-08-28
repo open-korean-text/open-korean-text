@@ -120,11 +120,7 @@ object KoreanPos extends Enumeration {
 
     val pos = shortCut(s.charAt(0))
     val rule = s.charAt(1)
-    val rest = if (s.length > 1) {
-      s.slice(2, s.length)
-    } else {
-      ""
-    }
+    val rest = s.slice(2, s.length)
 
     val end: Option[KoreanPos] = if (isFinal(rest)) Some(ending_pos) else None
 

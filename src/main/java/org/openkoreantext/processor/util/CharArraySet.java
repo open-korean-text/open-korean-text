@@ -142,9 +142,9 @@ public class CharArraySet extends AbstractSet<Object> {
   }
 
   public boolean removeAll(List<String> words) {
-    boolean removed = true;
+    boolean removed = false;
     for (String word : words) {
-      removed &= remove(word);
+      removed |= remove(word);
     }
     return removed;
   }

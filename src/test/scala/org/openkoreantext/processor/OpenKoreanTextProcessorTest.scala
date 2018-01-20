@@ -125,19 +125,20 @@ class OpenKoreanTextProcessorTest extends TestBase {
 
   test("addNounsToDictionary should add nouns to the dictionary") {
     assert(!KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Noun).contains("후랴오교"))
-    addNounsToDictionary(List("후랴오교"))
+    assert(addNounsToDictionary(List("후랴오교")))
     assert(KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Noun).contains("후랴오교"))
   }
 
   test("addWordsToDictionary should add the words list to the dictionary") {
     assert(!KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Conjunction).contains("그란디"))
-    addWordsToDictionary(KoreanPos.Conjunction, List("그란디"))
+    assert(addWordsToDictionary(KoreanPos.Conjunction, List("그란디")))
     assert(KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Conjunction).contains("그란디"))
   }
 
   test("removeNounsToDictionary should remove nouns from the dictionary") {
+    addWordsToDictionary(KoreanPos.Noun, List("평창올림픽"))
     assert(KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Noun).contains("평창올림픽"))
-    removeWordsFromDictionary(KoreanPos.Noun, List("평창올림픽"))
+    assert(removeWordsFromDictionary(KoreanPos.Noun, List("평창올림픽")))
     assert(!KoreanDictionaryProvider.koreanDictionary.get(KoreanPos.Noun).contains("평창올림픽"))
   }
 

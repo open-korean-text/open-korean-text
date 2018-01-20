@@ -104,11 +104,11 @@ object KoreanDictionaryProvider {
   lazy val koreanEntityFreq: util.HashMap[CharSequence, Float] =
     readWordFreqs("freq/entity-freq.txt.gz")
 
-  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]): Unit = {
+  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]): Boolean = {
     koreanDictionary.get(pos).addAll(words.asJava)
   }
 
-  def removeWordsToDictionary(pos: KoreanPos, words: Seq[String]): Unit = {
+  def removeWordsToDictionary(pos: KoreanPos, words: Seq[String]): Boolean = {
     koreanDictionary.get(pos).removeAll(words.asJava)
   }
 

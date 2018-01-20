@@ -114,14 +114,16 @@ public class OpenKoreanProcessorJavaTest {
   public void testRemoveWordsFromDictionary() {
     String text = "평창올림픽에";
 
+    ArrayList<String> nouns = new ArrayList<>();
+    nouns.add("평창올림픽");
+    OpenKoreanTextProcessorJava.addWordsToDictionary(KoreanPosJava.Noun, nouns);
+
     // before
     Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize(text);
     assertEquals("[평창올림픽, 에]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
     assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens).get(0).getPos(), KoreanPosJava.Noun);
 
     // remove word
-    ArrayList<String> nouns = new ArrayList<>();
-    nouns.add("평창올림픽");
     OpenKoreanTextProcessorJava.removeWordFromDictionary(KoreanPosJava.Noun, nouns);
 
     // after

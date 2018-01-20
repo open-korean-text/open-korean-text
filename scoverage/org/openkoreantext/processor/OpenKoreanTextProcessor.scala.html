@@ -23,7 +23,7 @@
         <div class="tab-content">
           <div class="tab-pane active" id="codegrid">
             <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
-</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>2 <span style=''> * Open Korean Text - Scala library to process Korean text
 </span>3 <span style=''> *
 </span>4 <span style=''> * Copyright 2014 Twitter, Inc.
 </span>5 <span style=''> *
@@ -48,129 +48,150 @@
 </span>24 <span style=''>import org.openkoreantext.processor.stemmer.KoreanStemmer
 </span>25 <span style=''>import org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken
 </span>26 <span style=''>import org.openkoreantext.processor.tokenizer._
-</span>27 <span style=''>import org.openkoreantext.processor.util.{KoreanDictionaryProvider, KoreanPos}
-</span>28 <span style=''>
-</span>29 <span style=''>/**
-</span>30 <span style=''>  * OpenKoreanTextProcessor provides error and slang tolerant Korean tokenization.
-</span>31 <span style=''>  */
-</span>32 <span style=''>object OpenKoreanTextProcessor {
-</span>33 <span style=''>  /**
-</span>34 <span style=''>    * Normalize Korean text. Uses KoreanNormalizer.normalize().
-</span>35 <span style=''>    *
-</span>36 <span style=''>    * @param text Input text
-</span>37 <span style=''>    * @return Normalized Korean text
-</span>38 <span style=''>    */
-</span>39 <span style=''>  def normalize(text: CharSequence): CharSequence = KoreanNormalizer.normalize(text)
-</span>40 <span style=''>
+</span>27 <span style=''>import org.openkoreantext.processor.util.KoreanPos.KoreanPos
+</span>28 <span style=''>import org.openkoreantext.processor.util.{KoreanDictionaryProvider, KoreanPos}
+</span>29 <span style=''>
+</span>30 <span style=''>/**
+</span>31 <span style=''>  * OpenKoreanTextProcessor provides error and slang tolerant Korean tokenization.
+</span>32 <span style=''>  */
+</span>33 <span style=''>object OpenKoreanTextProcessor {
+</span>34 <span style=''>  /**
+</span>35 <span style=''>    * Normalize Korean text. Uses KoreanNormalizer.normalize().
+</span>36 <span style=''>    *
+</span>37 <span style=''>    * @param text Input text
+</span>38 <span style=''>    * @return Normalized Korean text
+</span>39 <span style=''>    */
+</span>40 <span style=''>  def normalize(text: CharSequence): CharSequence = KoreanNormalizer.normalize(text)
 </span>41 <span style=''>
-</span>42 <span style=''>  /**
-</span>43 <span style=''>    * Tokenize text into a sequence of KoreanTokens, which includes part-of-speech information and
-</span>44 <span style=''>    * whether a token is an out-of-vocabulary term.
-</span>45 <span style=''>    *
-</span>46 <span style=''>    * @param text input text
-</span>47 <span style=''>    * @return A sequence of KoreanTokens.
-</span>48 <span style=''>    */
-</span>49 <span style=''>  def tokenize(text: CharSequence): Seq[KoreanToken] = KoreanTokenizer.tokenize(text)
-</span>50 <span style=''>
-</span>51 <span style=''>  /**
-</span>52 <span style=''>    * Tokenize text (with a custom profile) into a sequence of KoreanTokens,
-</span>53 <span style=''>    * which includes part-of-speech information and whether a token is an out-of-vocabulary term.
-</span>54 <span style=''>    *
-</span>55 <span style=''>    * @param text input text
-</span>56 <span style=''>    * @param profile TokenizerProfile
-</span>57 <span style=''>    * @return A sequence of KoreanTokens.
-</span>58 <span style=''>    */
-</span>59 <span style=''>  def tokenize(text: CharSequence,
-</span>60 <span style=''>               profile: TokenizerProfile
-</span>61 <span style=''>              ): Seq[KoreanToken] = {
-</span>62 <span style=''>    KoreanTokenizer.tokenize(text, profile)
-</span>63 <span style=''>  }
-</span>64 <span style=''>
-</span>65 <span style=''>  /**
-</span>66 <span style=''>    * Tokenize text (with a custom profile) into a sequence of KoreanTokens,
-</span>67 <span style=''>    * which includes part-of-speech information and whether a token is an out-of-vocabulary term,
-</span>68 <span style=''>    * and return top `n` candidates.
-</span>69 <span style=''>    *
-</span>70 <span style=''>    * @param text input text
-</span>71 <span style=''>    * @param n number of top candidates
-</span>72 <span style=''>    * @return A sequence of sequences of KoreanTokens.
-</span>73 <span style=''>    */
-</span>74 <span style=''>  def tokenizeTopN(text: CharSequence,
-</span>75 <span style=''>                   n: Int
-</span>76 <span style=''>                  ): Seq[Seq[Seq[KoreanToken]]] = {
-</span>77 <span style=''>    KoreanTokenizer.tokenizeTopN(text, n)
-</span>78 <span style=''>  }
-</span>79 <span style=''>
-</span>80 <span style=''>  /**
-</span>81 <span style=''>    * Tokenize text (with a custom profile) into a sequence of KoreanTokens,
-</span>82 <span style=''>    * which includes part-of-speech information and whether a token is an out-of-vocabulary term,
-</span>83 <span style=''>    * and return top `n` candidates.
-</span>84 <span style=''>    *
-</span>85 <span style=''>    * @param text input text
-</span>86 <span style=''>    * @param n number of top candidates
-</span>87 <span style=''>    * @param profile TokenizerProfile
-</span>88 <span style=''>    * @return A sequence of sequences of KoreanTokens.
-</span>89 <span style=''>    */
-</span>90 <span style=''>  def tokenizeTopN(text: CharSequence,
-</span>91 <span style=''>                   n: Int,
-</span>92 <span style=''>                   profile: TokenizerProfile
-</span>93 <span style=''>                  ): Seq[Seq[Seq[KoreanToken]]] = {
-</span>94 <span style=''>    KoreanTokenizer.tokenizeTopN(text, n, profile)
-</span>95 <span style=''>  }
-</span>96 <span style=''>
-</span>97 <span style=''>  /**
-</span>98 <span style=''>    * Add user-defined word list to the noun dictionary. Spaced words are not allowed.
-</span>99 <span style=''>    *
-</span>100 <span style=''>    * @param words Sequence of words to add.
-</span>101 <span style=''>    */
-</span>102 <span style=''>  def addNounsToDictionary(words: Seq[String]) {
-</span>103 <span style=''>    KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, words)
-</span>104 <span style=''>  }
-</span>105 <span style=''>
-</span>106 <span style=''>  /**
-</span>107 <span style=''>    * Tokenize text into a sequence of token strings. This excludes spaces.
-</span>108 <span style=''>    *
-</span>109 <span style=''>    * @param tokens Korean tokens
-</span>110 <span style=''>    * @return A sequence of token strings.
-</span>111 <span style=''>    */
-</span>112 <span style=''>  def tokensToStrings(tokens: Seq[KoreanToken]): Seq[String] = {
-</span>113 <span style=''>    tokens.filterNot(t =&gt; t.pos </span><span style='background: #AEF1AE'>==</span><span style=''> KoreanPos.Space).map(_.text.toString)
-</span>114 <span style=''>  }
-</span>115 <span style=''>
-</span>116 <span style=''>  /**
-</span>117 <span style=''>    * Split input text into sentences.
-</span>118 <span style=''>    *
-</span>119 <span style=''>    * @param text input text
-</span>120 <span style=''>    * @return A sequence of sentences.
-</span>121 <span style=''>    */
-</span>122 <span style=''>  def splitSentences(text: CharSequence): Seq[Sentence] = {
-</span>123 <span style=''>    KoreanSentenceSplitter.split(text)
-</span>124 <span style=''>  }
-</span>125 <span style=''>
-</span>126 <span style=''>  /**
-</span>127 <span style=''>    * Extract noun-phrases from Korean text
-</span>128 <span style=''>    *
-</span>129 <span style=''>    * @param tokens         Korean tokens
-</span>130 <span style=''>    * @param filterSpam     true if spam/slang terms to be filtered out (default: false)
-</span>131 <span style=''>    * @param enableHashtags true if #hashtags to be included (default: true)
-</span>132 <span style=''>    * @return A sequence of extracted phrases
-</span>133 <span style=''>    */
-</span>134 <span style=''>  def extractPhrases(tokens: Seq[KoreanToken],
-</span>135 <span style=''>                     filterSpam: Boolean = false,
-</span>136 <span style=''>                     enableHashtags: Boolean = true): Seq[KoreanPhrase] = {
-</span>137 <span style=''>    KoreanPhraseExtractor.extractPhrases(tokens, filterSpam, enableHashtags)
-</span>138 <span style=''>  }
-</span>139 <span style=''>
-</span>140 <span style=''>  /**
-</span>141 <span style=''>    * Detokenize the input list of words.
-</span>142 <span style=''>    *
-</span>143 <span style=''>    * @param tokens List of words.
-</span>144 <span style=''>    * @return Detokenized string.
-</span>145 <span style=''>    */
-</span>146 <span style=''>  def detokenize(tokens: Iterable[String]): String = {
-</span>147 <span style=''>    KoreanDetokenizer.detokenize(tokens)
-</span>148 <span style=''>  }
-</span>149 <span style=''>}
+</span>42 <span style=''>
+</span>43 <span style=''>  /**
+</span>44 <span style=''>    * Tokenize text into a sequence of KoreanTokens, which includes part-of-speech information and
+</span>45 <span style=''>    * whether a token is an out-of-vocabulary term.
+</span>46 <span style=''>    *
+</span>47 <span style=''>    * @param text input text
+</span>48 <span style=''>    * @return A sequence of KoreanTokens.
+</span>49 <span style=''>    */
+</span>50 <span style=''>  def tokenize(text: CharSequence): Seq[KoreanToken] = KoreanTokenizer.tokenize(text)
+</span>51 <span style=''>
+</span>52 <span style=''>  /**
+</span>53 <span style=''>    * Tokenize text (with a custom profile) into a sequence of KoreanTokens,
+</span>54 <span style=''>    * which includes part-of-speech information and whether a token is an out-of-vocabulary term.
+</span>55 <span style=''>    *
+</span>56 <span style=''>    * @param text input text
+</span>57 <span style=''>    * @param profile TokenizerProfile
+</span>58 <span style=''>    * @return A sequence of KoreanTokens.
+</span>59 <span style=''>    */
+</span>60 <span style=''>  def tokenize(text: CharSequence,
+</span>61 <span style=''>               profile: TokenizerProfile
+</span>62 <span style=''>              ): Seq[KoreanToken] = {
+</span>63 <span style=''>    KoreanTokenizer.tokenize(text, profile)
+</span>64 <span style=''>  }
+</span>65 <span style=''>
+</span>66 <span style=''>  /**
+</span>67 <span style=''>    * Tokenize text (with a custom profile) into a sequence of KoreanTokens,
+</span>68 <span style=''>    * which includes part-of-speech information and whether a token is an out-of-vocabulary term,
+</span>69 <span style=''>    * and return top `n` candidates.
+</span>70 <span style=''>    *
+</span>71 <span style=''>    * @param text input text
+</span>72 <span style=''>    * @param n number of top candidates
+</span>73 <span style=''>    * @return A sequence of sequences of KoreanTokens.
+</span>74 <span style=''>    */
+</span>75 <span style=''>  def tokenizeTopN(text: CharSequence,
+</span>76 <span style=''>                   n: Int
+</span>77 <span style=''>                  ): Seq[Seq[Seq[KoreanToken]]] = {
+</span>78 <span style=''>    KoreanTokenizer.tokenizeTopN(text, n)
+</span>79 <span style=''>  }
+</span>80 <span style=''>
+</span>81 <span style=''>  /**
+</span>82 <span style=''>    * Tokenize text (with a custom profile) into a sequence of KoreanTokens,
+</span>83 <span style=''>    * which includes part-of-speech information and whether a token is an out-of-vocabulary term,
+</span>84 <span style=''>    * and return top `n` candidates.
+</span>85 <span style=''>    *
+</span>86 <span style=''>    * @param text input text
+</span>87 <span style=''>    * @param n number of top candidates
+</span>88 <span style=''>    * @param profile TokenizerProfile
+</span>89 <span style=''>    * @return A sequence of sequences of KoreanTokens.
+</span>90 <span style=''>    */
+</span>91 <span style=''>  def tokenizeTopN(text: CharSequence,
+</span>92 <span style=''>                   n: Int,
+</span>93 <span style=''>                   profile: TokenizerProfile
+</span>94 <span style=''>                  ): Seq[Seq[Seq[KoreanToken]]] = {
+</span>95 <span style=''>    KoreanTokenizer.tokenizeTopN(text, n, profile)
+</span>96 <span style=''>  }
+</span>97 <span style=''>
+</span>98 <span style=''>  /**
+</span>99 <span style=''>    * Add user-defined word list to the noun dictionary. Spaced words are not allowed.
+</span>100 <span style=''>    *
+</span>101 <span style=''>    * @param words Sequence of words to add.
+</span>102 <span style=''>    */
+</span>103 <span style=''>  def addNounsToDictionary(words: Seq[String]): Boolean = {
+</span>104 <span style=''>    KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, words)
+</span>105 <span style=''>  }
+</span>106 <span style=''>
+</span>107 <span style=''>  /**
+</span>108 <span style=''>    * Add user-defined word List to the dictionary for the specified KoreanPos.
+</span>109 <span style=''>    *
+</span>110 <span style=''>    * @param pos KoreanPos of words to add.
+</span>111 <span style=''>    * @param words Sequence of words to add.
+</span>112 <span style=''>    */
+</span>113 <span style=''>  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]): Boolean = {
+</span>114 <span style=''>    KoreanDictionaryProvider.addWordsToDictionary(pos, words)
+</span>115 <span style=''>  }
+</span>116 <span style=''>
+</span>117 <span style=''>  /**
+</span>118 <span style=''>    * Remove user-defined word List from the dictionary for the specified KoreanPos.
+</span>119 <span style=''>    *
+</span>120 <span style=''>    * @param pos KoreanPos of words to add.
+</span>121 <span style=''>    * @param words Sequence of words to add.
+</span>122 <span style=''>    */
+</span>123 <span style=''>  def removeWordsFromDictionary(pos: KoreanPos, words: Seq[String]): Boolean = {
+</span>124 <span style=''>    KoreanDictionaryProvider.removeWordsToDictionary(pos, words)
+</span>125 <span style=''>  }
+</span>126 <span style=''>
+</span>127 <span style=''>  /**
+</span>128 <span style=''>    * Tokenize text into a sequence of token strings. This excludes spaces.
+</span>129 <span style=''>    *
+</span>130 <span style=''>    * @param tokens Korean tokens
+</span>131 <span style=''>    * @return A sequence of token strings.
+</span>132 <span style=''>    */
+</span>133 <span style=''>  def tokensToStrings(tokens: Seq[KoreanToken]): Seq[String] = {
+</span>134 <span style=''>    tokens.filterNot(t =&gt; t.pos </span><span style='background: #AEF1AE'>==</span><span style=''> KoreanPos.Space).map(_.text.toString)
+</span>135 <span style=''>  }
+</span>136 <span style=''>
+</span>137 <span style=''>  /**
+</span>138 <span style=''>    * Split input text into sentences.
+</span>139 <span style=''>    *
+</span>140 <span style=''>    * @param text input text
+</span>141 <span style=''>    * @return A sequence of sentences.
+</span>142 <span style=''>    */
+</span>143 <span style=''>  def splitSentences(text: CharSequence): Seq[Sentence] = {
+</span>144 <span style=''>    KoreanSentenceSplitter.split(text)
+</span>145 <span style=''>  }
+</span>146 <span style=''>
+</span>147 <span style=''>  /**
+</span>148 <span style=''>    * Extract noun-phrases from Korean text
+</span>149 <span style=''>    *
+</span>150 <span style=''>    * @param tokens         Korean tokens
+</span>151 <span style=''>    * @param filterSpam     true if spam/slang terms to be filtered out (default: false)
+</span>152 <span style=''>    * @param enableHashtags true if #hashtags to be included (default: true)
+</span>153 <span style=''>    * @return A sequence of extracted phrases
+</span>154 <span style=''>    */
+</span>155 <span style=''>  def extractPhrases(tokens: Seq[KoreanToken],
+</span>156 <span style=''>                     filterSpam: Boolean = false,
+</span>157 <span style=''>                     enableHashtags: Boolean = true): Seq[KoreanPhrase] = {
+</span>158 <span style=''>    KoreanPhraseExtractor.extractPhrases(tokens, filterSpam, enableHashtags)
+</span>159 <span style=''>  }
+</span>160 <span style=''>
+</span>161 <span style=''>  /**
+</span>162 <span style=''>    * Detokenize the input list of words.
+</span>163 <span style=''>    *
+</span>164 <span style=''>    * @param tokens List of words.
+</span>165 <span style=''>    * @return Detokenized string.
+</span>166 <span style=''>    */
+</span>167 <span style=''>  def detokenize(tokens: Iterable[String]): String = {
+</span>168 <span style=''>    KoreanDetokenizer.detokenize(tokens)
+</span>169 <span style=''>  }
+</span>170 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -184,15 +205,15 @@
         <th>Code</th>
       </tr><tr>
         <td>
-          39
+          40
         </td>
         <td>
           1
         </td>
         <td>
-          1538
+          1596
           -
-          1538
+          1596
         </td>
         <td>
           Apply
@@ -205,15 +226,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          50
         </td>
         <td>
           2
         </td>
         <td>
-          1859
+          1917
           -
-          1859
+          1917
         </td>
         <td>
           Select
@@ -226,15 +247,15 @@
         </td>
       </tr><tr>
         <td>
-          49
+          50
         </td>
         <td>
           3
         </td>
         <td>
-          1867
+          1925
           -
-          1867
+          1925
         </td>
         <td>
           Apply
@@ -247,15 +268,15 @@
         </td>
       </tr><tr>
         <td>
-          62
+          63
         </td>
         <td>
           4
         </td>
         <td>
-          2320
+          2378
           -
-          2320
+          2378
         </td>
         <td>
           Apply
@@ -268,15 +289,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
           5
         </td>
         <td>
-          2833
+          2891
           -
-          2833
+          2891
         </td>
         <td>
           Select
@@ -289,15 +310,15 @@
         </td>
       </tr><tr>
         <td>
-          77
+          78
         </td>
         <td>
           6
         </td>
         <td>
-          2845
+          2903
           -
-          2845
+          2903
         </td>
         <td>
           Apply
@@ -310,15 +331,15 @@
         </td>
       </tr><tr>
         <td>
-          94
+          95
         </td>
         <td>
           7
         </td>
         <td>
-          3448
+          3506
           -
-          3448
+          3506
         </td>
         <td>
           Apply
@@ -331,15 +352,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           8
         </td>
         <td>
-          3732
+          3801
           -
-          3732
+          3801
         </td>
         <td>
           Select
@@ -352,15 +373,15 @@
         </td>
       </tr><tr>
         <td>
-          103
+          104
         </td>
         <td>
           9
         </td>
         <td>
-          3721
+          3790
           -
-          3721
+          3790
         </td>
         <td>
           Apply
@@ -373,99 +394,57 @@
         </td>
       </tr><tr>
         <td>
-          113
-        </td>
-        <td>
-          11
-        </td>
-        <td>
-          4019
-          -
-          4021
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.Object.==
-        </td>
-        <td style="background: #AEF1AE">
-          t.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
-        </td>
-      </tr><tr>
-        <td>
-          113
-        </td>
-        <td>
-          14
-        </td>
-        <td>
-          4042
-          -
-          4042
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.collection.TraversableLike.map
-        </td>
-        <td style="background: #AEF1AE">
-          tokens.filterNot(((t: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; t.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).map[String, Seq[String]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.text.toString()))(collection.this.Seq.canBuildFrom[String])
-        </td>
-      </tr><tr>
-        <td>
-          113
-        </td>
-        <td>
-          13
-        </td>
-        <td>
-          4042
-          -
-          4042
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.Seq.canBuildFrom
-        </td>
-        <td style="background: #AEF1AE">
-          collection.this.Seq.canBuildFrom[String]
-        </td>
-      </tr><tr>
-        <td>
-          113
+          114
         </td>
         <td>
           10
         </td>
         <td>
-          4032
+          4132
           -
-          4032
+          4132
         </td>
         <td>
-          Select
+          Apply
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanPos.Space
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.addWordsToDictionary
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanPos.Space
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.addWordsToDictionary(pos, words)
         </td>
       </tr><tr>
         <td>
-          113
+          124
         </td>
         <td>
-          12
+          11
         </td>
         <td>
-          4050
+          4476
           -
-          4050
+          4476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.removeWordsToDictionary
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.removeWordsToDictionary(pos, words)
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          14
+        </td>
+        <td>
+          4794
+          -
+          4794
         </td>
         <td>
           Apply
@@ -478,15 +457,99 @@
         </td>
       </tr><tr>
         <td>
-          123
+          134
+        </td>
+        <td>
+          13
+        </td>
+        <td>
+          4763
+          -
+          4765
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          t.pos.==(org.openkoreantext.processor.util.KoreanPos.Space)
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          16
+        </td>
+        <td>
+          4786
+          -
+          4786
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          tokens.filterNot(((t: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; t.pos.==(org.openkoreantext.processor.util.KoreanPos.Space))).map[String, Seq[String]](((x$1: org.openkoreantext.processor.tokenizer.KoreanTokenizer.KoreanToken) =&gt; x$1.text.toString()))(collection.this.Seq.canBuildFrom[String])
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          12
+        </td>
+        <td>
+          4776
+          -
+          4776
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanPos.Space
+        </td>
+      </tr><tr>
+        <td>
+          134
         </td>
         <td>
           15
         </td>
         <td>
-          4283
+          4786
           -
-          4283
+          4786
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          17
+        </td>
+        <td>
+          5027
+          -
+          5027
         </td>
         <td>
           Apply
@@ -499,15 +562,15 @@
         </td>
       </tr><tr>
         <td>
-          137
+          158
         </td>
         <td>
-          16
+          18
         </td>
         <td>
-          4825
+          5569
           -
-          4825
+          5569
         </td>
         <td>
           Apply
@@ -520,15 +583,15 @@
         </td>
       </tr><tr>
         <td>
-          147
+          168
         </td>
         <td>
-          17
+          19
         </td>
         <td>
-          5084
+          5828
           -
-          5084
+          5828
         </td>
         <td>
           Apply

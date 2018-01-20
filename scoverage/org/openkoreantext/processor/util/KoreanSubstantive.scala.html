@@ -23,7 +23,7 @@
         <div class="tab-content">
           <div class="tab-pane active" id="codegrid">
             <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
-</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>2 <span style=''> * Open Korean Text - Scala library to process Korean text
 </span>3 <span style=''> *
 </span>4 <span style=''> * Copyright 2014 Twitter, Inc.
 </span>5 <span style=''> *
@@ -156,12 +156,12 @@
           31
         </td>
         <td>
-          1397
+          1396
         </td>
         <td>
-          1081
+          1078
           -
-          1081
+          1078
         </td>
         <td>
           Apply
@@ -177,12 +177,12 @@
           33
         </td>
         <td>
-          1398
+          1397
         </td>
         <td>
-          1160
+          1157
           -
-          1160
+          1157
         </td>
         <td>
           Apply
@@ -198,33 +198,12 @@
           37
         </td>
         <td>
-          1402
+          1398
         </td>
         <td>
-          1356
+          1310
           -
-          1358
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Boolean.||
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.Hangul.hasCoda(prevChar).&amp;&amp;(KoreanSubstantive.this.JOSA_HEAD_FOR_NO_CODA.contains(headChar).unary_!).||(org.openkoreantext.processor.util.Hangul.hasCoda(prevChar).unary_!.&amp;&amp;(KoreanSubstantive.this.JOSA_HEAD_FOR_CODA.contains(headChar).unary_!))
-        </td>
-      </tr><tr>
-        <td>
-          37
-        </td>
-        <td>
-          1399
-        </td>
-        <td>
-          1313
-          -
-          1313
+          1310
         </td>
         <td>
           Select
@@ -237,36 +216,36 @@
         </td>
       </tr><tr>
         <td>
-          38
+          37
         </td>
         <td>
           1401
         </td>
         <td>
-          1387
+          1353
           -
-          1389
+          1355
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Boolean.&amp;&amp;
+          scala.Boolean.||
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.Hangul.hasCoda(prevChar).unary_!.&amp;&amp;(KoreanSubstantive.this.JOSA_HEAD_FOR_CODA.contains(headChar).unary_!)
+          org.openkoreantext.processor.util.Hangul.hasCoda(prevChar).&amp;&amp;(KoreanSubstantive.this.JOSA_HEAD_FOR_NO_CODA.contains(headChar).unary_!).||(org.openkoreantext.processor.util.Hangul.hasCoda(prevChar).unary_!.&amp;&amp;(KoreanSubstantive.this.JOSA_HEAD_FOR_CODA.contains(headChar).unary_!))
         </td>
       </tr><tr>
         <td>
           38
         </td>
         <td>
-          1400
+          1399
         </td>
         <td>
-          1390
+          1387
           -
-          1390
+          1387
         </td>
         <td>
           Select
@@ -279,57 +258,36 @@
         </td>
       </tr><tr>
         <td>
-          42
+          38
         </td>
         <td>
-          1405
+          1400
         </td>
         <td>
-          1554
+          1384
           -
-          1556
+          1386
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Boolean.||
+          scala.Boolean.&amp;&amp;
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.nameDictionary.apply(scala.Symbol.apply(&quot;full_name&quot;)).contains(chunk).||(org.openkoreantext.processor.util.KoreanDictionaryProvider.nameDictionary.apply(scala.Symbol.apply(&quot;given_name&quot;)).contains(chunk))
+          org.openkoreantext.processor.util.Hangul.hasCoda(prevChar).unary_!.&amp;&amp;(KoreanSubstantive.this.JOSA_HEAD_FOR_CODA.contains(headChar).unary_!)
         </td>
       </tr><tr>
         <td>
           42
         </td>
         <td>
-          1408
+          1402
         </td>
         <td>
-          1507
+          1523
           -
-          1507
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          42
-        </td>
-        <td>
-          1403
-        </td>
-        <td>
-          1526
-          -
-          1526
+          1523
         </td>
         <td>
           Apply
@@ -345,12 +303,12 @@
           42
         </td>
         <td>
-          1409
+          1408
         </td>
         <td>
-          1507
+          1504
           -
-          1507
+          1504
         </td>
         <td>
           Block
@@ -363,36 +321,78 @@
         </td>
       </tr><tr>
         <td>
-          43
+          42
         </td>
         <td>
           1407
         </td>
         <td>
-          1608
+          1504
           -
-          1608
+          1504
         </td>
         <td>
-          Return
+          Literal
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanSubstantive.isName
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          return true
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1404
+        </td>
+        <td>
+          1551
+          -
+          1553
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.nameDictionary.apply(scala.Symbol.apply(&quot;full_name&quot;)).contains(chunk).||(org.openkoreantext.processor.util.KoreanDictionaryProvider.nameDictionary.apply(scala.Symbol.apply(&quot;given_name&quot;)).contains(chunk))
         </td>
       </tr><tr>
         <td>
           43
         </td>
         <td>
-          1404
+          1405
         </td>
         <td>
-          1599
+          1612
           -
-          1599
+          1612
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1403
+        </td>
+        <td>
+          1596
+          -
+          1596
         </td>
         <td>
           Apply
@@ -411,30 +411,30 @@
           1406
         </td>
         <td>
-          1615
+          1605
           -
-          1615
+          1605
         </td>
         <td>
-          Literal
+          Return
         </td>
         <td>
-          &lt;nosymbol&gt;
+          org.openkoreantext.processor.util.KoreanSubstantive.isName
         </td>
         <td style="background: #AEF1AE">
-          true
+          return true
         </td>
       </tr><tr>
         <td>
           45
         </td>
         <td>
-          1410
+          1409
         </td>
         <td>
-          1631
+          1628
           -
-          1631
+          1628
         </td>
         <td>
           Apply
@@ -453,9 +453,30 @@
           1411
         </td>
         <td>
-          1688
+          1724
           -
-          1688
+          1724
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Any.toString
+        </td>
+        <td style="background: #AEF1AE">
+          chunk.charAt(0).toString()
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1410
+        </td>
+        <td>
+          1685
+          -
+          1685
         </td>
         <td>
           Apply
@@ -471,12 +492,12 @@
           47
         </td>
         <td>
-          1416
+          1415
         </td>
         <td>
-          1737
+          1734
           -
-          1739
+          1736
         </td>
         <td>
           Apply
@@ -489,36 +510,36 @@
         </td>
       </tr><tr>
         <td>
-          47
-        </td>
-        <td>
-          1412
-        </td>
-        <td>
-          1727
-          -
-          1727
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Any.toString
-        </td>
-        <td style="background: #AEF1AE">
-          chunk.charAt(0).toString()
-        </td>
-      </tr><tr>
-        <td>
           48
         </td>
         <td>
           1414
         </td>
         <td>
-          1809
+          1781
           -
-          1809
+          1781
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.CharArraySet.contains
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.nameDictionary.apply(scala.Symbol.apply(&quot;given_name&quot;)).contains(chunk.subSequence(1, 3).toString())
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1413
+        </td>
+        <td>
+          1806
+          -
+          1806
         </td>
         <td>
           Apply
@@ -534,12 +555,12 @@
           48
         </td>
         <td>
-          1413
+          1412
         </td>
         <td>
-          1763
+          1760
           -
-          1763
+          1760
         </td>
         <td>
           Apply
@@ -552,36 +573,36 @@
         </td>
       </tr><tr>
         <td>
-          48
+          51
         </td>
         <td>
-          1415
+          1416
         </td>
         <td>
-          1784
+          1867
           -
-          1784
+          1867
         </td>
         <td>
           Apply
         </td>
         <td>
-          org.openkoreantext.processor.util.CharArraySet.contains
+          scala.Symbol.apply
         </td>
         <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.nameDictionary.apply(scala.Symbol.apply(&quot;given_name&quot;)).contains(chunk.subSequence(1, 3).toString())
+          scala.Symbol.apply(&quot;family_name&quot;)
         </td>
       </tr><tr>
         <td>
           51
         </td>
         <td>
-          1422
+          1421
         </td>
         <td>
-          1927
+          1924
           -
-          1929
+          1926
         </td>
         <td>
           Apply
@@ -597,12 +618,12 @@
           51
         </td>
         <td>
-          1418
+          1417
         </td>
         <td>
-          1917
+          1914
           -
-          1917
+          1914
         </td>
         <td>
           Apply
@@ -615,36 +636,36 @@
         </td>
       </tr><tr>
         <td>
-          51
-        </td>
-        <td>
-          1417
-        </td>
-        <td>
-          1870
-          -
-          1870
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Symbol.apply
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Symbol.apply(&quot;family_name&quot;)
-        </td>
-      </tr><tr>
-        <td>
           52
         </td>
         <td>
           1420
         </td>
         <td>
-          2001
+          1973
           -
-          2001
+          1973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.CharArraySet.contains
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.nameDictionary.apply(scala.Symbol.apply(&quot;given_name&quot;)).contains(chunk.subSequence(2, 4).toString())
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1419
+        </td>
+        <td>
+          1998
+          -
+          1998
         </td>
         <td>
           Apply
@@ -660,12 +681,12 @@
           52
         </td>
         <td>
-          1419
+          1418
         </td>
         <td>
-          1955
+          1952
           -
-          1955
+          1952
         </td>
         <td>
           Apply
@@ -678,36 +699,15 @@
         </td>
       </tr><tr>
         <td>
-          52
-        </td>
-        <td>
-          1421
-        </td>
-        <td>
-          1976
-          -
-          1976
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.CharArraySet.contains
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.nameDictionary.apply(scala.Symbol.apply(&quot;given_name&quot;)).contains(chunk.subSequence(2, 4).toString())
-        </td>
-      </tr><tr>
-        <td>
           54
         </td>
         <td>
-          1423
+          1422
         </td>
         <td>
-          2036
+          2033
           -
-          2036
+          2033
         </td>
         <td>
           Literal
@@ -723,33 +723,12 @@
           58
         </td>
         <td>
-          1425
+          1423
         </td>
         <td>
-          2108
+          2079
           -
-          2108
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Char.toInt
-        </td>
-        <td style="background: #AEF1AE">
-          x$1.toInt
-        </td>
-      </tr><tr>
-        <td>
-          58
-        </td>
-        <td>
-          1424
-        </td>
-        <td>
-          2082
-          -
-          2082
+          2079
         </td>
         <td>
           Literal
@@ -765,12 +744,54 @@
           58
         </td>
         <td>
-          1427
+          1425
         </td>
         <td>
-          2115
+          2102
           -
-          2115
+          2102
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.LowPriorityImplicits.fallbackStringCanBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.fallbackStringCanBuildFrom[Int]
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1424
+        </td>
+        <td>
+          2105
+          -
+          2105
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Char.toInt
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.toInt
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1426
+        </td>
+        <td>
+          2112
+          -
+          2112
         </td>
         <td>
           TypeApply
@@ -783,15 +804,15 @@
         </td>
       </tr><tr>
         <td>
-          58
+          59
         </td>
         <td>
-          1426
+          1429
         </td>
         <td>
-          2105
+          2179
           -
-          2105
+          2179
         </td>
         <td>
           TypeApply
@@ -807,12 +828,12 @@
           59
         </td>
         <td>
-          1429
+          1428
         </td>
         <td>
-          2185
+          2182
           -
-          2185
+          2182
         </td>
         <td>
           Select
@@ -828,33 +849,12 @@
           59
         </td>
         <td>
-          1428
+          1430
         </td>
         <td>
-          2155
+          2189
           -
-          2155
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          &quot;일이삼사오육칠팔구천백십해경조억만원배분초&quot;
-        </td>
-      </tr><tr>
-        <td>
-          59
-        </td>
-        <td>
-          1431
-        </td>
-        <td>
-          2192
-          -
-          2192
+          2189
         </td>
         <td>
           TypeApply
@@ -870,21 +870,21 @@
           59
         </td>
         <td>
-          1430
+          1427
         </td>
         <td>
-          2182
+          2152
           -
-          2182
+          2152
         </td>
         <td>
-          TypeApply
+          Literal
         </td>
         <td>
-          scala.LowPriorityImplicits.fallbackStringCanBuildFrom
+          &lt;nosymbol&gt;
         </td>
         <td style="background: #AEF1AE">
-          scala.Predef.fallbackStringCanBuildFrom[Int]
+          &quot;일이삼사오육칠팔구천백십해경조억만원배분초&quot;
         </td>
       </tr><tr>
         <td>
@@ -894,9 +894,30 @@
           1432
         </td>
         <td>
-          2278
+          2295
           -
-          2278
+          2296
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          chunk.length().-(1)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1431
+        </td>
+        <td>
+          2275
+          -
+          2275
         </td>
         <td>
           Literal
@@ -912,36 +933,12 @@
           62
         </td>
         <td>
-          1443
+          1433
         </td>
         <td>
-          2318
+          2309
           -
-          2318
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.TraversableOnce.foldLeft
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.intWrapper(0).to(chunk.length().-(1)).foldLeft[Boolean](true)(((x0$1: Boolean, x1$1: Int) =&gt; scala.Tuple2.apply[Boolean, Int](x0$1, x1$1) match {
-  case (_1: Boolean, _2: Int)(Boolean, Int)((output @ _), (i @ _)) if i.&lt;(chunk.length().-(1)) =&gt; output.&amp;&amp;(KoreanSubstantive.this.NUMBER_CHARS.contains(chunk.charAt(i).toInt))
-  case (_1: Boolean, _2: Int)(Boolean, Int)((output @ _), (i @ _)) =&gt; output.&amp;&amp;(KoreanSubstantive.this.NUMBER_LAST_CHARS.contains(chunk.charAt(i).toInt))
-}))
-        </td>
-      </tr><tr>
-        <td>
-          62
-        </td>
-        <td>
-          1434
-        </td>
-        <td>
-          2312
-          -
-          2312
+          2309
         </td>
         <td>
           Literal
@@ -957,21 +954,24 @@
           62
         </td>
         <td>
-          1433
+          1442
         </td>
         <td>
-          2298
+          2315
           -
-          2299
+          2315
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Int.-
+          scala.collection.TraversableOnce.foldLeft
         </td>
         <td style="background: #AEF1AE">
-          chunk.length().-(1)
+          scala.Predef.intWrapper(0).to(chunk.length().-(1)).foldLeft[Boolean](true)(((x0$1: Boolean, x1$1: Int) =&gt; scala.Tuple2.apply[Boolean, Int](x0$1, x1$1) match {
+  case (_1: Boolean, _2: Int)(Boolean, Int)((output @ _), (i @ _)) if i.&lt;(chunk.length().-(1)) =&gt; output.&amp;&amp;(KoreanSubstantive.this.NUMBER_CHARS.contains(chunk.charAt(i).toInt))
+  case (_1: Boolean, _2: Int)(Boolean, Int)((output @ _), (i @ _)) =&gt; output.&amp;&amp;(KoreanSubstantive.this.NUMBER_LAST_CHARS.contains(chunk.charAt(i).toInt))
+}))
         </td>
       </tr><tr>
         <td>
@@ -981,51 +981,9 @@
           1438
         </td>
         <td>
-          2403
+          2376
           -
-          2403
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.SetLike.contains
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanSubstantive.this.NUMBER_CHARS.contains(chunk.charAt(i).toInt)
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          1437
-        </td>
-        <td>
-          2420
-          -
-          2420
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Char.toInt
-        </td>
-        <td style="background: #AEF1AE">
-          chunk.charAt(i).toInt
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          1439
-        </td>
-        <td>
-          2379
-          -
-          2381
+          2378
         </td>
         <td>
           Apply
@@ -1041,33 +999,12 @@
           63
         </td>
         <td>
-          1436
+          1434
         </td>
         <td>
-          2348
+          2362
           -
-          2366
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.&lt;
-        </td>
-        <td style="background: #AEF1AE">
-          i.&lt;(chunk.length().-(1))
-        </td>
-      </tr><tr>
-        <td>
-          63
-        </td>
-        <td>
-          1435
-        </td>
-        <td>
-          2365
-          -
-          2366
+          2363
         </td>
         <td>
           Apply
@@ -1080,15 +1017,99 @@
         </td>
       </tr><tr>
         <td>
+          63
+        </td>
+        <td>
+          1437
+        </td>
+        <td>
+          2400
+          -
+          2400
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanSubstantive.this.NUMBER_CHARS.contains(chunk.charAt(i).toInt)
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1436
+        </td>
+        <td>
+          2417
+          -
+          2417
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Char.toInt
+        </td>
+        <td style="background: #AEF1AE">
+          chunk.charAt(i).toInt
+        </td>
+      </tr><tr>
+        <td>
+          63
+        </td>
+        <td>
+          1435
+        </td>
+        <td>
+          2345
+          -
+          2363
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          i.&lt;(chunk.length().-(1))
+        </td>
+      </tr><tr>
+        <td>
           64
         </td>
         <td>
           1441
         </td>
         <td>
-          2489
+          2457
           -
-          2489
+          2459
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          output.&amp;&amp;(KoreanSubstantive.this.NUMBER_LAST_CHARS.contains(chunk.charAt(i).toInt))
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          1440
+        </td>
+        <td>
+          2486
+          -
+          2486
         </td>
         <td>
           Apply
@@ -1104,12 +1125,12 @@
           64
         </td>
         <td>
-          1440
+          1439
         </td>
         <td>
-          2506
+          2503
           -
-          2506
+          2503
         </td>
         <td>
           Select
@@ -1122,57 +1143,15 @@
         </td>
       </tr><tr>
         <td>
-          64
-        </td>
-        <td>
-          1442
-        </td>
-        <td>
-          2460
-          -
-          2462
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Boolean.&amp;&amp;
-        </td>
-        <td style="background: #AEF1AE">
-          output.&amp;&amp;(KoreanSubstantive.this.NUMBER_LAST_CHARS.contains(chunk.charAt(i).toInt))
-        </td>
-      </tr><tr>
-        <td>
           74
         </td>
         <td>
-          1445
+          1443
         </td>
         <td>
-          2844
+          2842
           -
-          2844
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.util.HashMap.get
-        </td>
-        <td style="background: #AEF1AE">
-          org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanDictionary.get(org.openkoreantext.processor.util.KoreanPos.Noun)
-        </td>
-      </tr><tr>
-        <td>
-          74
-        </td>
-        <td>
-          1444
-        </td>
-        <td>
-          2845
-          -
-          2845
+          2842
         </td>
         <td>
           Select
@@ -1185,15 +1164,36 @@
         </td>
       </tr><tr>
         <td>
+          74
+        </td>
+        <td>
+          1444
+        </td>
+        <td>
+          2841
+          -
+          2841
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.HashMap.get
+        </td>
+        <td style="background: #AEF1AE">
+          org.openkoreantext.processor.util.KoreanDictionaryProvider.koreanDictionary.get(org.openkoreantext.processor.util.KoreanPos.Noun)
+        </td>
+      </tr><tr>
+        <td>
           76
         </td>
         <td>
-          1446
+          1445
         </td>
         <td>
-          2870
+          2867
           -
-          2870
+          2867
         </td>
         <td>
           Apply
@@ -1212,72 +1212,9 @@
           1447
         </td>
         <td>
-          2893
+          2902
           -
-          2893
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanSubstantive.isName
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanSubstantive.this.isName(s)
-        </td>
-      </tr><tr>
-        <td>
-          77
-        </td>
-        <td>
-          1450
-        </td>
-        <td>
-          2883
-          -
-          2883
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          77
-        </td>
-        <td>
-          1449
-        </td>
-        <td>
-          2898
-          -
-          2898
-        </td>
-        <td>
-          Return
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
-        </td>
-        <td style="background: #AEF1AE">
-          return true
-        </td>
-      </tr><tr>
-        <td>
-          77
-        </td>
-        <td>
-          1448
-        </td>
-        <td>
-          2905
-          -
-          2905
+          2902
         </td>
         <td>
           Literal
@@ -1293,12 +1230,12 @@
           77
         </td>
         <td>
-          1451
+          1450
         </td>
         <td>
-          2883
+          2880
           -
-          2883
+          2880
         </td>
         <td>
           Block
@@ -1311,15 +1248,57 @@
         </td>
       </tr><tr>
         <td>
-          78
+          77
         </td>
         <td>
-          1456
+          1449
         </td>
         <td>
-          2948
+          2880
           -
-          2948
+          2880
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1446
+        </td>
+        <td>
+          2890
+          -
+          2890
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanSubstantive.isName
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanSubstantive.this.isName(s)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1448
+        </td>
+        <td>
+          2895
+          -
+          2895
         </td>
         <td>
           Return
@@ -1328,22 +1307,22 @@
           org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
         </td>
         <td style="background: #AEF1AE">
-          return false
+          return true
         </td>
       </tr><tr>
         <td>
           78
         </td>
         <td>
-          1458
+          1456
         </td>
         <td>
-          2914
+          2911
           -
-          2914
+          2911
         </td>
         <td>
-          Block
+          Literal
         </td>
         <td>
           &lt;nosymbol&gt;
@@ -1359,18 +1338,18 @@
           1452
         </td>
         <td>
-          2929
+          2940
           -
-          2929
+          2941
         </td>
         <td>
-          Literal
+          Apply
         </td>
         <td>
-          &lt;nosymbol&gt;
+          scala.Int.&gt;
         </td>
         <td style="background: #AEF1AE">
-          3
+          s.length().&gt;(5)
         </td>
       </tr><tr>
         <td>
@@ -1380,9 +1359,30 @@
           1455
         </td>
         <td>
-          2955
+          2945
           -
-          2955
+          2945
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
+        </td>
+        <td style="background: #AEF1AE">
+          return false
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1454
+        </td>
+        <td>
+          2952
+          -
+          2952
         </td>
         <td>
           Literal
@@ -1398,36 +1398,15 @@
           78
         </td>
         <td>
-          1454
-        </td>
-        <td>
-          2927
-          -
-          2944
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Boolean.||
-        </td>
-        <td style="background: #AEF1AE">
-          s.length().&lt;(3).||(s.length().&gt;(5))
-        </td>
-      </tr><tr>
-        <td>
-          78
-        </td>
-        <td>
           1457
         </td>
         <td>
-          2914
+          2911
           -
-          2914
+          2911
         </td>
         <td>
-          Literal
+          Block
         </td>
         <td>
           &lt;nosymbol&gt;
@@ -1440,21 +1419,42 @@
           78
         </td>
         <td>
+          1451
+        </td>
+        <td>
+          2926
+          -
+          2926
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          3
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
           1453
         </td>
         <td>
-          2943
+          2924
           -
-          2944
+          2941
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Int.&gt;
+          scala.Boolean.||
         </td>
         <td style="background: #AEF1AE">
-          s.length().&gt;(5)
+          s.length().&lt;(3).||(s.length().&gt;(5))
         </td>
       </tr><tr>
         <td>
@@ -1464,9 +1464,30 @@
           1459
         </td>
         <td>
-          3017
+          2986
           -
-          3017
+          2986
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.LowPriorityImplicits.fallbackStringCanBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.fallbackStringCanBuildFrom[org.openkoreantext.processor.util.Hangul.HangulChar]
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1458
+        </td>
+        <td>
+          3014
+          -
+          3014
         </td>
         <td>
           Apply
@@ -1482,12 +1503,12 @@
           80
         </td>
         <td>
-          1461
+          1460
         </td>
         <td>
-          2989
+          2986
           -
-          2989
+          2986
         </td>
         <td>
           ApplyToImplicitArgs
@@ -1500,36 +1521,15 @@
         </td>
       </tr><tr>
         <td>
-          80
-        </td>
-        <td>
-          1460
-        </td>
-        <td>
-          2989
-          -
-          2989
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.LowPriorityImplicits.fallbackStringCanBuildFrom
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.fallbackStringCanBuildFrom[org.openkoreantext.processor.util.Hangul.HangulChar]
-        </td>
-      </tr><tr>
-        <td>
           81
         </td>
         <td>
-          1462
+          1461
         </td>
         <td>
-          3052
+          3049
           -
-          3052
+          3049
         </td>
         <td>
           Select
@@ -1548,39 +1548,18 @@
           1465
         </td>
         <td>
-          3115
+          3105
           -
-          3115
+          3105
         </td>
         <td>
-          Literal
+          Return
         </td>
         <td>
-          &lt;nosymbol&gt;
+          org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
         </td>
         <td style="background: #AEF1AE">
-          false
-        </td>
-      </tr><tr>
-        <td>
-          82
-        </td>
-        <td>
-          1468
-        </td>
-        <td>
-          3061
-          -
-          3061
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
+          return false
         </td>
       </tr><tr>
         <td>
@@ -1590,12 +1569,12 @@
           1467
         </td>
         <td>
-          3061
+          3058
           -
-          3061
+          3058
         </td>
         <td>
-          Literal
+          Block
         </td>
         <td>
           &lt;nosymbol&gt;
@@ -1611,9 +1590,30 @@
           1464
         </td>
         <td>
-          3065
+          3112
           -
-          3065
+          3112
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1463
+        </td>
+        <td>
+          3062
+          -
+          3062
         </td>
         <td>
           Select
@@ -1629,12 +1629,33 @@
           82
         </td>
         <td>
-          1463
+          1466
         </td>
         <td>
-          3100
+          3058
           -
-          3100
+          3058
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1462
+        </td>
+        <td>
+          3097
+          -
+          3097
         </td>
         <td>
           Select
@@ -1647,60 +1668,18 @@
         </td>
       </tr><tr>
         <td>
-          82
-        </td>
-        <td>
-          1466
-        </td>
-        <td>
-          3108
-          -
-          3108
-        </td>
-        <td>
-          Return
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
-        </td>
-        <td style="background: #AEF1AE">
-          return false
-        </td>
-      </tr><tr>
-        <td>
           83
         </td>
         <td>
           1474
         </td>
         <td>
-          3201
+          3122
           -
-          3201
+          3122
         </td>
         <td>
-          Return
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
-        </td>
-        <td style="background: #AEF1AE">
-          return false
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1476
-        </td>
-        <td>
-          3125
-          -
-          3125
-        </td>
-        <td>
-          Block
+          Literal
         </td>
         <td>
           &lt;nosymbol&gt;
@@ -1713,96 +1692,12 @@
           83
         </td>
         <td>
-          1470
-        </td>
-        <td>
-          3169
-          -
-          3171
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Char.!=
-        </td>
-        <td style="background: #AEF1AE">
-          lastChar.vowel.!=('ㅣ')
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1473
-        </td>
-        <td>
-          3208
-          -
-          3208
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          false
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1472
+          1468
         </td>
         <td>
           3144
           -
-          3195
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Boolean.||
-        </td>
-        <td style="background: #AEF1AE">
-          lastChar.onset.==('ㅇ').||(lastChar.vowel.!=('ㅣ')).||(lastChar.coda.!=(' '))
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1475
-        </td>
-        <td>
-          3125
-          -
-          3125
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          83
-        </td>
-        <td>
-          1469
-        </td>
-        <td>
-          3147
-          -
-          3147
+          3144
         </td>
         <td>
           Literal
@@ -1818,12 +1713,12 @@
           83
         </td>
         <td>
-          1471
+          1470
         </td>
         <td>
-          3193
+          3190
           -
-          3195
+          3192
         </td>
         <td>
           Apply
@@ -1836,15 +1731,15 @@
         </td>
       </tr><tr>
         <td>
-          84
+          83
         </td>
         <td>
-          1479
+          1473
         </td>
         <td>
-          3256
+          3198
           -
-          3256
+          3198
         </td>
         <td>
           Return
@@ -1857,36 +1752,15 @@
         </td>
       </tr><tr>
         <td>
-          84
+          83
         </td>
         <td>
-          1481
+          1472
         </td>
         <td>
-          3218
+          3205
           -
-          3218
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          ()
-        </td>
-      </tr><tr>
-        <td>
-          84
-        </td>
-        <td>
-          1478
-        </td>
-        <td>
-          3263
-          -
-          3263
+          3205
         </td>
         <td>
           Literal
@@ -1899,15 +1773,78 @@
         </td>
       </tr><tr>
         <td>
+          83
+        </td>
+        <td>
+          1475
+        </td>
+        <td>
+          3122
+          -
+          3122
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1469
+        </td>
+        <td>
+          3166
+          -
+          3168
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Char.!=
+        </td>
+        <td style="background: #AEF1AE">
+          lastChar.vowel.!=('ㅣ')
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1471
+        </td>
+        <td>
+          3141
+          -
+          3192
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          lastChar.onset.==('ㅇ').||(lastChar.vowel.!=('ㅣ')).||(lastChar.coda.!=(' '))
+        </td>
+      </tr><tr>
+        <td>
           84
         </td>
         <td>
-          1477
+          1476
         </td>
         <td>
-          3248
+          3245
           -
-          3250
+          3247
         </td>
         <td>
           Apply
@@ -1923,12 +1860,12 @@
           84
         </td>
         <td>
-          1480
+          1479
         </td>
         <td>
-          3218
+          3215
           -
-          3218
+          3215
         </td>
         <td>
           Literal
@@ -1941,15 +1878,78 @@
         </td>
       </tr><tr>
         <td>
+          84
+        </td>
+        <td>
+          1478
+        </td>
+        <td>
+          3253
+          -
+          3253
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanSubstantive.isKoreanNameVariation
+        </td>
+        <td style="background: #AEF1AE">
+          return false
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1477
+        </td>
+        <td>
+          3260
+          -
+          3260
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1480
+        </td>
+        <td>
+          3215
+          -
+          3215
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
           92
         </td>
         <td>
-          1482
+          1481
         </td>
         <td>
-          3652
+          3649
           -
-          3652
+          3649
         </td>
         <td>
           Apply
@@ -1972,9 +1972,30 @@
           1483
         </td>
         <td>
-          3687
+          3697
           -
-          3687
+          3697
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanSubstantive.isName
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanSubstantive.this.isName(chunk)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1482
+        </td>
+        <td>
+          3684
+          -
+          3684
         </td>
         <td>
           Select
@@ -1990,12 +2011,12 @@
           94
         </td>
         <td>
-          1485
+          1484
         </td>
         <td>
-          3699
+          3696
           -
-          3699
+          3696
         </td>
         <td>
           Apply
@@ -2010,57 +2031,15 @@
         </td>
       </tr><tr>
         <td>
-          94
-        </td>
-        <td>
-          1484
-        </td>
-        <td>
-          3700
-          -
-          3700
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanSubstantive.isName
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanSubstantive.this.isName(chunk)
-        </td>
-      </tr><tr>
-        <td>
           104
         </td>
         <td>
-          1487
+          1485
         </td>
         <td>
-          3990
+          3980
           -
-          3990
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Tuple2._2
-        </td>
-        <td style="background: #AEF1AE">
-          x$6._2
-        </td>
-      </tr><tr>
-        <td>
-          104
-        </td>
-        <td>
-          1486
-        </td>
-        <td>
-          3983
-          -
-          3983
+          3980
         </td>
         <td>
           Select
@@ -2073,15 +2052,36 @@
         </td>
       </tr><tr>
         <td>
+          104
+        </td>
+        <td>
+          1486
+        </td>
+        <td>
+          3987
+          -
+          3987
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$6._2
+        </td>
+      </tr><tr>
+        <td>
           116
         </td>
         <td>
-          1488
+          1487
         </td>
         <td>
-          4646
+          4643
           -
-          4646
+          4643
         </td>
         <td>
           Select

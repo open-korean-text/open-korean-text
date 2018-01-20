@@ -23,7 +23,7 @@
         <div class="tab-content">
           <div class="tab-pane active" id="codegrid">
             <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>/*
-</span>2 <span style=''> * Twitter Korean Text - Scala library to process Korean text
+</span>2 <span style=''> * Open Korean Text - Scala library to process Korean text
 </span>3 <span style=''> *
 </span>4 <span style=''> * Copyright 2014 Twitter, Inc.
 </span>5 <span style=''> *
@@ -144,34 +144,30 @@
 </span>120 <span style=''>
 </span>121 <span style=''>    val pos = shortCut(s.charAt(0))
 </span>122 <span style=''>    val rule = s.charAt(1)
-</span>123 <span style=''>    val rest = if (s.length </span><span style='background: #AEF1AE'>&gt;</span><span style=''> 1) {
-</span>124 <span style=''>      s.slice(2, s.length)
-</span>125 <span style=''>    } else {
-</span>126 <span style=''>      &quot;&quot;
-</span>127 <span style=''>    }
-</span>128 <span style=''>
-</span>129 <span style=''>    val end: Option[KoreanPos] = if (isFinal(rest)) Some(ending_pos) else None
-</span>130 <span style=''>
-</span>131 <span style=''>    rule match {
-</span>132 <span style=''>      case '+' =&gt;
-</span>133 <span style=''>        List(KoreanPosTrie(pos, selfNode </span><span style='background: #AEF1AE'>::</span><span style=''> buildTrie(rest, ending_pos), end))
-</span>134 <span style=''>      case '*' =&gt;
-</span>135 <span style=''>        List(KoreanPosTrie(pos, selfNode </span><span style='background: #AEF1AE'>::</span><span style=''> buildTrie(rest, ending_pos), end)) </span><span style='background: #AEF1AE'>++</span><span style=''> buildTrie(rest, ending_pos)
-</span>136 <span style=''>      case '1' =&gt;
-</span>137 <span style=''>        List(KoreanPosTrie(pos, buildTrie(rest, ending_pos), end))
-</span>138 <span style=''>      case '0' =&gt;
-</span>139 <span style=''>        List(KoreanPosTrie(pos, buildTrie(rest, ending_pos), end)) </span><span style='background: #AEF1AE'>++</span><span style=''> buildTrie(rest, ending_pos)
-</span>140 <span style=''>    }
-</span>141 <span style=''>  }
-</span>142 <span style=''>
-</span>143 <span style=''>  protected[processor] def getTrie(sequences: Map[String, KoreanPos]): List[KoreanPosTrie] =
-</span>144 <span style=''>    sequences.foldLeft(List[KoreanPosTrie]()) {
-</span>145 <span style=''>      case (results: List[KoreanPosTrie], (s: String, ending_pos: KoreanPos)) =&gt;
-</span>146 <span style=''>        buildTrie(s, ending_pos) </span><span style='background: #AEF1AE'>:::</span><span style=''> results
-</span>147 <span style=''>    }
-</span>148 <span style=''>
-</span>149 <span style=''>  val Predicates = Set(Verb, Adjective)
-</span>150 <span style=''>}
+</span>123 <span style=''>    val rest = s.slice(2, s.length)
+</span>124 <span style=''>
+</span>125 <span style=''>    val end: Option[KoreanPos] = if (isFinal(rest)) Some(ending_pos) else None
+</span>126 <span style=''>
+</span>127 <span style=''>    rule match {
+</span>128 <span style=''>      case '+' =&gt;
+</span>129 <span style=''>        List(KoreanPosTrie(pos, selfNode </span><span style='background: #AEF1AE'>::</span><span style=''> buildTrie(rest, ending_pos), end))
+</span>130 <span style=''>      case '*' =&gt;
+</span>131 <span style=''>        List(KoreanPosTrie(pos, selfNode </span><span style='background: #AEF1AE'>::</span><span style=''> buildTrie(rest, ending_pos), end)) </span><span style='background: #AEF1AE'>++</span><span style=''> buildTrie(rest, ending_pos)
+</span>132 <span style=''>      case '1' =&gt;
+</span>133 <span style=''>        List(KoreanPosTrie(pos, buildTrie(rest, ending_pos), end))
+</span>134 <span style=''>      case '0' =&gt;
+</span>135 <span style=''>        List(KoreanPosTrie(pos, buildTrie(rest, ending_pos), end)) </span><span style='background: #AEF1AE'>++</span><span style=''> buildTrie(rest, ending_pos)
+</span>136 <span style=''>    }
+</span>137 <span style=''>  }
+</span>138 <span style=''>
+</span>139 <span style=''>  protected[processor] def getTrie(sequences: Map[String, KoreanPos]): List[KoreanPosTrie] =
+</span>140 <span style=''>    sequences.foldLeft(List[KoreanPosTrie]()) {
+</span>141 <span style=''>      case (results: List[KoreanPosTrie], (s: String, ending_pos: KoreanPos)) =&gt;
+</span>142 <span style=''>        buildTrie(s, ending_pos) </span><span style='background: #AEF1AE'>:::</span><span style=''> results
+</span>143 <span style=''>    }
+</span>144 <span style=''>
+</span>145 <span style=''>  val Predicates = Set(Verb, Adjective)
+</span>146 <span style=''>}
 </span></pre>
           </div>
           <div class="tab-pane" id="statementlist">
@@ -188,33 +184,12 @@
           75
         </td>
         <td>
-          1255
-        </td>
-        <td>
-          2135
-          -
-          2135
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Enumeration.Value
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.Value
-        </td>
-      </tr><tr>
-        <td>
-          75
-        </td>
-        <td>
           1273
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -233,9 +208,9 @@
           1282
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -254,9 +229,9 @@
           1264
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -275,9 +250,9 @@
           1276
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -296,9 +271,30 @@
           1267
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1285
+        </td>
+        <td>
+          2132
+          -
+          2132
         </td>
         <td>
           Select
@@ -317,9 +313,9 @@
           1258
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -338,9 +334,9 @@
           1279
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -359,9 +355,9 @@
           1270
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -380,9 +376,9 @@
           1261
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -401,9 +397,9 @@
           1278
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -422,9 +418,9 @@
           1260
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -443,9 +439,9 @@
           1269
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -464,9 +460,9 @@
           1281
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -485,9 +481,9 @@
           1263
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -506,9 +502,30 @@
           1272
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1284
+        </td>
+        <td>
+          2132
+          -
+          2132
         </td>
         <td>
           Select
@@ -527,30 +544,9 @@
           1275
         </td>
         <td>
-          2135
+          2132
           -
-          2135
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Enumeration.Value
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.Value
-        </td>
-      </tr><tr>
-        <td>
-          75
-        </td>
-        <td>
-          1257
-        </td>
-        <td>
-          2135
-          -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -569,9 +565,30 @@
           1266
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.Value
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1283
+        </td>
+        <td>
+          2132
+          -
+          2132
         </td>
         <td>
           Select
@@ -590,9 +607,9 @@
           1268
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -611,9 +628,9 @@
           1277
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -632,9 +649,9 @@
           1259
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -653,9 +670,9 @@
           1262
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -674,9 +691,9 @@
           1271
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -695,9 +712,9 @@
           1280
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -716,30 +733,9 @@
           1274
         </td>
         <td>
-          2135
+          2132
           -
-          2135
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.Enumeration.Value
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.Value
-        </td>
-      </tr><tr>
-        <td>
-          75
-        </td>
-        <td>
-          1256
-        </td>
-        <td>
-          2135
-          -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -758,9 +754,9 @@
           1265
         </td>
         <td>
-          2135
+          2132
           -
-          2135
+          2132
         </td>
         <td>
           Select
@@ -776,12 +772,12 @@
           77
         </td>
         <td>
-          1294
+          1297
         </td>
         <td>
-          2164
+          2161
           -
-          2164
+          2161
         </td>
         <td>
           Apply
@@ -797,12 +793,12 @@
           78
         </td>
         <td>
-          1285
+          1288
         </td>
         <td>
-          2187
+          2184
           -
-          2187
+          2184
         </td>
         <td>
           Select
@@ -821,30 +817,9 @@
           1287
         </td>
         <td>
-          2211
+          2175
           -
-          2211
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Alpha
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.Alpha
-        </td>
-      </tr><tr>
-        <td>
-          78
-        </td>
-        <td>
-          1284
-        </td>
-        <td>
-          2178
-          -
-          2178
+          2175
         </td>
         <td>
           Select
@@ -860,12 +835,33 @@
           78
         </td>
         <td>
-          1283
+          1290
         </td>
         <td>
-          2170
+          2208
           -
-          2170
+          2208
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Alpha
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.Alpha
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1286
+        </td>
+        <td>
+          2167
+          -
+          2167
         </td>
         <td>
           Select
@@ -881,12 +877,12 @@
           78
         </td>
         <td>
-          1286
+          1289
         </td>
         <td>
-          2195
+          2192
           -
-          2195
+          2192
         </td>
         <td>
           Select
@@ -902,12 +898,12 @@
           79
         </td>
         <td>
-          1288
+          1291
         </td>
         <td>
-          2222
+          2219
           -
-          2222
+          2219
         </td>
         <td>
           Select
@@ -923,12 +919,12 @@
           79
         </td>
         <td>
-          1290
+          1293
         </td>
         <td>
-          2244
+          2241
           -
-          2244
+          2241
         </td>
         <td>
           Select
@@ -944,12 +940,12 @@
           79
         </td>
         <td>
-          1289
+          1292
         </td>
         <td>
-          2235
+          2232
           -
-          2235
+          2232
         </td>
         <td>
           Select
@@ -965,12 +961,12 @@
           80
         </td>
         <td>
-          1291
+          1294
         </td>
         <td>
-          2260
+          2257
           -
-          2260
+          2257
         </td>
         <td>
           Select
@@ -986,12 +982,12 @@
           80
         </td>
         <td>
-          1293
+          1296
         </td>
         <td>
-          2272
+          2269
           -
-          2272
+          2269
         </td>
         <td>
           Select
@@ -1007,12 +1003,12 @@
           80
         </td>
         <td>
-          1292
+          1295
         </td>
         <td>
-          2267
+          2264
           -
-          2267
+          2264
         </td>
         <td>
           Select
@@ -1028,12 +1024,12 @@
           82
         </td>
         <td>
-          1343
+          1346
         </td>
         <td>
-          2302
+          2299
           -
-          2302
+          2299
         </td>
         <td>
           Apply
@@ -1049,12 +1045,12 @@
           83
         </td>
         <td>
-          1297
+          1300
         </td>
         <td>
-          2312
+          2309
           -
-          2314
+          2311
         </td>
         <td>
           Apply
@@ -1070,12 +1066,12 @@
           83
         </td>
         <td>
-          1296
+          1299
         </td>
         <td>
-          2315
+          2312
           -
-          2315
+          2312
         </td>
         <td>
           Select
@@ -1091,12 +1087,12 @@
           83
         </td>
         <td>
-          1295
+          1298
         </td>
         <td>
-          2308
+          2305
           -
-          2308
+          2305
         </td>
         <td>
           Literal
@@ -1112,12 +1108,12 @@
           84
         </td>
         <td>
-          1300
+          1303
         </td>
         <td>
-          2329
+          2326
           -
-          2331
+          2328
         </td>
         <td>
           Apply
@@ -1133,12 +1129,12 @@
           84
         </td>
         <td>
-          1299
+          1302
         </td>
         <td>
-          2332
+          2329
           -
-          2332
+          2329
         </td>
         <td>
           Select
@@ -1154,12 +1150,12 @@
           84
         </td>
         <td>
-          1298
+          1301
         </td>
         <td>
-          2325
+          2322
           -
-          2325
+          2322
         </td>
         <td>
           Literal
@@ -1175,12 +1171,12 @@
           85
         </td>
         <td>
-          1303
+          1306
         </td>
         <td>
-          2346
+          2343
           -
-          2348
+          2345
         </td>
         <td>
           Apply
@@ -1196,12 +1192,12 @@
           85
         </td>
         <td>
-          1302
+          1305
         </td>
         <td>
-          2349
+          2346
           -
-          2349
+          2346
         </td>
         <td>
           Select
@@ -1217,12 +1213,12 @@
           85
         </td>
         <td>
-          1301
+          1304
         </td>
         <td>
-          2342
+          2339
           -
-          2342
+          2339
         </td>
         <td>
           Literal
@@ -1238,12 +1234,12 @@
           86
         </td>
         <td>
-          1306
+          1309
         </td>
         <td>
-          2368
+          2365
           -
-          2370
+          2367
         </td>
         <td>
           Apply
@@ -1259,12 +1255,12 @@
           86
         </td>
         <td>
-          1305
+          1308
         </td>
         <td>
-          2371
+          2368
           -
-          2371
+          2368
         </td>
         <td>
           Select
@@ -1280,12 +1276,12 @@
           86
         </td>
         <td>
-          1304
+          1307
         </td>
         <td>
-          2364
+          2361
           -
-          2364
+          2361
         </td>
         <td>
           Literal
@@ -1301,12 +1297,12 @@
           87
         </td>
         <td>
-          1309
+          1312
         </td>
         <td>
-          2387
+          2384
           -
-          2389
+          2386
         </td>
         <td>
           Apply
@@ -1322,12 +1318,12 @@
           87
         </td>
         <td>
-          1308
+          1311
         </td>
         <td>
-          2390
+          2387
           -
-          2390
+          2387
         </td>
         <td>
           Select
@@ -1343,12 +1339,12 @@
           87
         </td>
         <td>
-          1307
+          1310
         </td>
         <td>
-          2383
+          2380
           -
-          2383
+          2380
         </td>
         <td>
           Literal
@@ -1364,12 +1360,12 @@
           88
         </td>
         <td>
-          1312
+          1315
         </td>
         <td>
-          2410
+          2407
           -
-          2412
+          2409
         </td>
         <td>
           Apply
@@ -1385,12 +1381,12 @@
           88
         </td>
         <td>
-          1311
+          1314
         </td>
         <td>
-          2413
+          2410
           -
-          2413
+          2410
         </td>
         <td>
           Select
@@ -1406,12 +1402,12 @@
           88
         </td>
         <td>
-          1310
+          1313
         </td>
         <td>
-          2406
+          2403
           -
-          2406
+          2403
         </td>
         <td>
           Literal
@@ -1427,12 +1423,12 @@
           89
         </td>
         <td>
-          1315
+          1318
         </td>
         <td>
-          2434
+          2431
           -
-          2436
+          2433
         </td>
         <td>
           Apply
@@ -1448,12 +1444,12 @@
           89
         </td>
         <td>
-          1314
+          1317
         </td>
         <td>
-          2437
+          2434
           -
-          2437
+          2434
         </td>
         <td>
           Select
@@ -1469,12 +1465,12 @@
           89
         </td>
         <td>
-          1313
+          1316
         </td>
         <td>
-          2430
+          2427
           -
-          2430
+          2427
         </td>
         <td>
           Literal
@@ -1490,12 +1486,12 @@
           91
         </td>
         <td>
-          1318
+          1321
         </td>
         <td>
-          2459
+          2456
           -
-          2461
+          2458
         </td>
         <td>
           Apply
@@ -1511,12 +1507,12 @@
           91
         </td>
         <td>
-          1317
+          1320
         </td>
         <td>
-          2462
+          2459
           -
-          2462
+          2459
         </td>
         <td>
           Select
@@ -1532,12 +1528,12 @@
           91
         </td>
         <td>
-          1316
+          1319
         </td>
         <td>
-          2455
+          2452
           -
-          2455
+          2452
         </td>
         <td>
           Literal
@@ -1553,12 +1549,12 @@
           92
         </td>
         <td>
-          1321
+          1324
         </td>
         <td>
-          2476
+          2473
           -
-          2478
+          2475
         </td>
         <td>
           Apply
@@ -1574,12 +1570,12 @@
           92
         </td>
         <td>
-          1320
+          1323
         </td>
         <td>
-          2479
+          2476
           -
-          2479
+          2476
         </td>
         <td>
           Select
@@ -1595,12 +1591,12 @@
           92
         </td>
         <td>
-          1319
+          1322
         </td>
         <td>
-          2472
+          2469
           -
-          2472
+          2469
         </td>
         <td>
           Literal
@@ -1616,12 +1612,12 @@
           93
         </td>
         <td>
-          1324
+          1327
         </td>
         <td>
-          2493
+          2490
           -
-          2495
+          2492
         </td>
         <td>
           Apply
@@ -1637,12 +1633,12 @@
           93
         </td>
         <td>
-          1323
+          1326
         </td>
         <td>
-          2496
+          2493
           -
-          2496
+          2493
         </td>
         <td>
           Select
@@ -1658,12 +1654,12 @@
           93
         </td>
         <td>
-          1322
+          1325
         </td>
         <td>
-          2489
+          2486
           -
-          2489
+          2486
         </td>
         <td>
           Literal
@@ -1679,12 +1675,12 @@
           94
         </td>
         <td>
-          1327
+          1330
         </td>
         <td>
-          2513
+          2510
           -
-          2515
+          2512
         </td>
         <td>
           Apply
@@ -1700,12 +1696,12 @@
           94
         </td>
         <td>
-          1326
+          1329
         </td>
         <td>
-          2516
+          2513
           -
-          2516
+          2513
         </td>
         <td>
           Select
@@ -1721,12 +1717,12 @@
           94
         </td>
         <td>
-          1325
+          1328
         </td>
         <td>
-          2509
+          2506
           -
-          2509
+          2506
         </td>
         <td>
           Literal
@@ -1742,12 +1738,12 @@
           95
         </td>
         <td>
-          1330
+          1333
         </td>
         <td>
-          2534
+          2531
           -
-          2536
+          2533
         </td>
         <td>
           Apply
@@ -1763,12 +1759,12 @@
           95
         </td>
         <td>
-          1329
+          1332
         </td>
         <td>
-          2537
+          2534
           -
-          2537
+          2534
         </td>
         <td>
           Select
@@ -1784,12 +1780,12 @@
           95
         </td>
         <td>
-          1328
+          1331
         </td>
         <td>
-          2530
+          2527
           -
-          2530
+          2527
         </td>
         <td>
           Literal
@@ -1805,12 +1801,12 @@
           96
         </td>
         <td>
-          1333
+          1336
         </td>
         <td>
-          2557
+          2554
           -
-          2559
+          2556
         </td>
         <td>
           Apply
@@ -1826,12 +1822,12 @@
           96
         </td>
         <td>
-          1332
+          1335
         </td>
         <td>
-          2560
+          2557
           -
-          2560
+          2557
         </td>
         <td>
           Select
@@ -1847,12 +1843,12 @@
           96
         </td>
         <td>
-          1331
+          1334
         </td>
         <td>
-          2553
+          2550
           -
-          2553
+          2550
         </td>
         <td>
           Literal
@@ -1868,12 +1864,12 @@
           98
         </td>
         <td>
-          1336
+          1339
         </td>
         <td>
-          2577
+          2574
           -
-          2579
+          2576
         </td>
         <td>
           Apply
@@ -1889,12 +1885,12 @@
           98
         </td>
         <td>
-          1335
+          1338
         </td>
         <td>
-          2580
+          2577
           -
-          2580
+          2577
         </td>
         <td>
           Select
@@ -1910,12 +1906,12 @@
           98
         </td>
         <td>
-          1334
+          1337
         </td>
         <td>
-          2573
+          2570
           -
-          2573
+          2570
         </td>
         <td>
           Literal
@@ -1931,12 +1927,12 @@
           99
         </td>
         <td>
-          1339
+          1342
         </td>
         <td>
-          2595
+          2592
           -
-          2597
+          2594
         </td>
         <td>
           Apply
@@ -1952,12 +1948,12 @@
           99
         </td>
         <td>
-          1338
+          1341
         </td>
         <td>
-          2598
+          2595
           -
-          2598
+          2595
         </td>
         <td>
           Select
@@ -1973,12 +1969,12 @@
           99
         </td>
         <td>
-          1337
+          1340
         </td>
         <td>
-          2591
+          2588
           -
-          2591
+          2588
         </td>
         <td>
           Literal
@@ -1994,12 +1990,12 @@
           101
         </td>
         <td>
-          1342
+          1345
         </td>
         <td>
-          2615
+          2612
           -
-          2617
+          2614
         </td>
         <td>
           Apply
@@ -2015,12 +2011,12 @@
           101
         </td>
         <td>
-          1341
+          1344
         </td>
         <td>
-          2618
+          2615
           -
-          2618
+          2615
         </td>
         <td>
           Select
@@ -2036,12 +2032,12 @@
           101
         </td>
         <td>
-          1340
+          1343
         </td>
         <td>
-          2611
+          2608
           -
-          2611
+          2608
         </td>
         <td>
           Literal
@@ -2057,12 +2053,12 @@
           106
         </td>
         <td>
-          1345
+          1348
         </td>
         <td>
-          2772
+          2769
           -
-          2772
+          2769
         </td>
         <td>
           Literal
@@ -2081,30 +2077,9 @@
           1347
         </td>
         <td>
-          2765
+          2763
           -
-          2765
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.apply
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.KoreanPosTrie.apply(null, null, scala.None)
-        </td>
-      </tr><tr>
-        <td>
-          106
-        </td>
-        <td>
-          1344
-        </td>
-        <td>
-          2766
-          -
-          2766
+          2763
         </td>
         <td>
           Literal
@@ -2120,12 +2095,33 @@
           106
         </td>
         <td>
-          1346
+          1350
         </td>
         <td>
-          2787
+          2762
           -
-          2787
+          2762
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.KoreanPosTrie.apply(null, null, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1349
+        </td>
+        <td>
+          2784
+          -
+          2784
         </td>
         <td>
           Select
@@ -2141,12 +2137,12 @@
           110
         </td>
         <td>
-          1348
+          1351
         </td>
         <td>
-          2974
+          2971
           -
-          2974
+          2971
         </td>
         <td>
           Literal
@@ -2162,12 +2158,12 @@
           110
         </td>
         <td>
-          1353
+          1356
         </td>
         <td>
-          2980
+          2977
           -
-          2980
+          2977
         </td>
         <td>
           Apply
@@ -2186,12 +2182,12 @@
           111
         </td>
         <td>
-          1351
+          1354
         </td>
         <td>
-          3027
+          3024
           -
-          3041
+          3038
         </td>
         <td>
           Apply
@@ -2207,12 +2203,12 @@
           111
         </td>
         <td>
-          1350
+          1353
         </td>
         <td>
-          3039
+          3036
           -
-          3041
+          3038
         </td>
         <td>
           Apply
@@ -2231,30 +2227,9 @@
           1352
         </td>
         <td>
-          3049
+          3027
           -
-          3049
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          false
-        </td>
-      </tr><tr>
-        <td>
-          111
-        </td>
-        <td>
-          1349
-        </td>
-        <td>
-          3030
-          -
-          3030
+          3027
         </td>
         <td>
           Literal
@@ -2267,15 +2242,36 @@
         </td>
       </tr><tr>
         <td>
+          111
+        </td>
+        <td>
+          1355
+        </td>
+        <td>
+          3046
+          -
+          3046
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
           114
         </td>
         <td>
-          1354
+          1357
         </td>
         <td>
-          3131
+          3128
           -
-          3138
+          3135
         </td>
         <td>
           Apply
@@ -2291,12 +2287,12 @@
           117
         </td>
         <td>
-          1359
+          1362
         </td>
         <td>
-          3165
+          3162
           -
-          3165
+          3162
         </td>
         <td>
           Block
@@ -2312,33 +2308,12 @@
           117
         </td>
         <td>
-          1355
+          1361
         </td>
         <td>
-          3178
+          3162
           -
-          3179
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.&lt;
-        </td>
-        <td style="background: #AEF1AE">
-          s.length().&lt;(2)
-        </td>
-      </tr><tr>
-        <td>
-          117
-        </td>
-        <td>
-          1358
-        </td>
-        <td>
-          3165
-          -
-          3165
+          3162
         </td>
         <td>
           Literal
@@ -2351,15 +2326,36 @@
         </td>
       </tr><tr>
         <td>
+          117
+        </td>
+        <td>
+          1358
+        </td>
+        <td>
+          3175
+          -
+          3176
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          s.length().&lt;(2)
+        </td>
+      </tr><tr>
+        <td>
           118
         </td>
         <td>
-          1357
+          1360
         </td>
         <td>
-          3191
+          3188
           -
-          3191
+          3188
         </td>
         <td>
           Return
@@ -2375,12 +2371,12 @@
           118
         </td>
         <td>
-          1356
+          1359
         </td>
         <td>
-          3202
+          3199
           -
-          3202
+          3199
         </td>
         <td>
           Select
@@ -2396,12 +2392,12 @@
           121
         </td>
         <td>
-          1360
+          1363
         </td>
         <td>
-          3243
+          3240
           -
-          3243
+          3240
         </td>
         <td>
           Apply
@@ -2417,12 +2413,12 @@
           121
         </td>
         <td>
-          1361
+          1364
         </td>
         <td>
-          3234
+          3231
           -
-          3234
+          3231
         </td>
         <td>
           Apply
@@ -2438,12 +2434,12 @@
           122
         </td>
         <td>
-          1362
+          1365
         </td>
         <td>
-          3271
+          3268
           -
-          3271
+          3268
         </td>
         <td>
           Apply
@@ -2459,75 +2455,12 @@
           123
         </td>
         <td>
-          1363
-        </td>
-        <td>
-          3303
-          -
-          3304
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.Int.&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          s.length().&gt;(1)
-        </td>
-      </tr><tr>
-        <td>
-          124
-        </td>
-        <td>
           1366
         </td>
         <td>
-          3323
+          3295
           -
-          3323
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.immutable.StringOps.slice
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Predef.augmentString(s).slice(2, s.length())
-        </td>
-      </tr><tr>
-        <td>
-          124
-        </td>
-        <td>
-          1365
-        </td>
-        <td>
-          3329
-          -
-          3329
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          java.lang.String.length
-        </td>
-        <td style="background: #AEF1AE">
-          s.length()
-        </td>
-      </tr><tr>
-        <td>
-          124
-        </td>
-        <td>
-          1364
-        </td>
-        <td>
-          3324
-          -
-          3324
+          3295
         </td>
         <td>
           Literal
@@ -2540,18 +2473,18 @@
         </td>
       </tr><tr>
         <td>
-          124
+          123
         </td>
         <td>
-          1367
+          1368
         </td>
         <td>
-          3323
+          3294
           -
-          3323
+          3294
         </td>
         <td>
-          Block
+          Apply
         </td>
         <td>
           scala.collection.immutable.StringOps.slice
@@ -2561,120 +2494,36 @@
         </td>
       </tr><tr>
         <td>
-          126
+          123
         </td>
         <td>
-          1369
+          1367
         </td>
         <td>
-          3356
+          3300
           -
-          3356
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;&quot;
-        </td>
-      </tr><tr>
-        <td>
-          126
-        </td>
-        <td>
-          1368
-        </td>
-        <td>
-          3356
-          -
-          3356
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          &quot;&quot;
-        </td>
-      </tr><tr>
-        <td>
-          129
-        </td>
-        <td>
-          1372
-        </td>
-        <td>
-          3422
-          -
-          3422
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          scala.Some.apply
-        </td>
-        <td style="background: #AEF1AE">
-          scala.Some.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPos](ending_pos)
-        </td>
-      </tr><tr>
-        <td>
-          129
-        </td>
-        <td>
-          1374
-        </td>
-        <td>
-          3440
-          -
-          3440
-        </td>
-        <td>
-          Block
-        </td>
-        <td>
-          scala.None
-        </td>
-        <td style="background: #AEF1AE">
-          scala.None
-        </td>
-      </tr><tr>
-        <td>
-          129
-        </td>
-        <td>
-          1371
-        </td>
-        <td>
-          3422
-          -
-          3422
+          3300
         </td>
         <td>
           Apply
         </td>
         <td>
-          scala.Some.apply
+          java.lang.String.length
         </td>
         <td style="background: #AEF1AE">
-          scala.Some.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPos](ending_pos)
+          s.length()
         </td>
       </tr><tr>
         <td>
-          129
+          125
         </td>
         <td>
-          1370
+          1369
         </td>
         <td>
-          3410
+          3353
           -
-          3410
+          3353
         </td>
         <td>
           Apply
@@ -2687,15 +2536,15 @@
         </td>
       </tr><tr>
         <td>
-          129
+          125
         </td>
         <td>
-          1373
+          1372
         </td>
         <td>
-          3440
+          3383
           -
-          3440
+          3383
         </td>
         <td>
           Select
@@ -2708,15 +2557,102 @@
         </td>
       </tr><tr>
         <td>
-          133
+          125
+        </td>
+        <td>
+          1371
+        </td>
+        <td>
+          3365
+          -
+          3365
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPos](ending_pos)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          1370
+        </td>
+        <td>
+          3365
+          -
+          3365
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPos](ending_pos)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          1373
+        </td>
+        <td>
+          3383
+          -
+          3383
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          129
         </td>
         <td>
           1375
         </td>
         <td>
-          3522
+          3450
           -
-          3524
+          3450
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.KoreanPosTrie.apply(pos, {
+  &lt;synthetic&gt; &lt;artifact&gt; val x$1: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie = KoreanPos.this.selfNode;
+  KoreanPos.this.buildTrie(rest, ending_pos).::[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie](x$1)
+}, end)
+        </td>
+      </tr><tr>
+        <td>
+          129
+        </td>
+        <td>
+          1374
+        </td>
+        <td>
+          3465
+          -
+          3467
         </td>
         <td>
           Apply
@@ -2729,15 +2665,15 @@
         </td>
       </tr><tr>
         <td>
-          133
+          129
         </td>
         <td>
-          1377
+          1376
         </td>
         <td>
-          3493
+          3436
           -
-          3493
+          3436
         </td>
         <td>
           Apply
@@ -2753,102 +2689,15 @@
         </td>
       </tr><tr>
         <td>
-          133
-        </td>
-        <td>
-          1376
-        </td>
-        <td>
-          3507
-          -
-          3507
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.apply
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.KoreanPosTrie.apply(pos, {
-  &lt;synthetic&gt; &lt;artifact&gt; val x$1: org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie = KoreanPos.this.selfNode;
-  KoreanPos.this.buildTrie(rest, ending_pos).::[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie](x$1)
-}, end)
-        </td>
-      </tr><tr>
-        <td>
-          135
+          131
         </td>
         <td>
           1378
         </td>
         <td>
-          3619
+          3547
           -
-          3621
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.immutable.List.::
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.buildTrie(rest, ending_pos).::[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie](x$2)
-        </td>
-      </tr><tr>
-        <td>
-          135
-        </td>
-        <td>
-          1381
-        </td>
-        <td>
-          3657
-          -
-          3657
-        </td>
-        <td>
-          TypeApply
-        </td>
-        <td>
-          scala.collection.immutable.List.canBuildFrom
-        </td>
-        <td style="background: #AEF1AE">
-          immutable.this.List.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]
-        </td>
-      </tr><tr>
-        <td>
-          135
-        </td>
-        <td>
-          1380
-        </td>
-        <td>
-          3669
-          -
-          3669
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.buildTrie
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.buildTrie(rest, ending_pos)
-        </td>
-      </tr><tr>
-        <td>
-          135
-        </td>
-        <td>
-          1379
-        </td>
-        <td>
-          3604
-          -
-          3604
+          3547
         </td>
         <td>
           Apply
@@ -2864,15 +2713,15 @@
         </td>
       </tr><tr>
         <td>
-          135
+          131
         </td>
         <td>
-          1382
+          1381
         </td>
         <td>
-          3657
+          3600
           -
-          3659
+          3602
         </td>
         <td>
           ApplyToImplicitArgs
@@ -2888,120 +2737,15 @@
         </td>
       </tr><tr>
         <td>
-          137
+          131
         </td>
         <td>
-          1384
+          1380
         </td>
         <td>
-          3732
+          3600
           -
-          3732
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.apply
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.KoreanPosTrie.apply(pos, KoreanPos.this.buildTrie(rest, ending_pos), end)
-        </td>
-      </tr><tr>
-        <td>
-          137
-        </td>
-        <td>
-          1383
-        </td>
-        <td>
-          3747
-          -
-          3747
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.buildTrie
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.buildTrie(rest, ending_pos)
-        </td>
-      </tr><tr>
-        <td>
-          137
-        </td>
-        <td>
-          1385
-        </td>
-        <td>
-          3718
-          -
-          3718
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.collection.immutable.List.apply
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.immutable.List.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie](KoreanPos.this.KoreanPosTrie.apply(pos, KoreanPos.this.buildTrie(rest, ending_pos), end))
-        </td>
-      </tr><tr>
-        <td>
-          139
-        </td>
-        <td>
-          1387
-        </td>
-        <td>
-          3817
-          -
-          3817
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.apply
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.KoreanPosTrie.apply(pos, KoreanPos.this.buildTrie(rest, ending_pos), end)
-        </td>
-      </tr><tr>
-        <td>
-          139
-        </td>
-        <td>
-          1390
-        </td>
-        <td>
-          3858
-          -
-          3860
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.collection.immutable.List.++
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.immutable.List.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie](KoreanPos.this.KoreanPosTrie.apply(pos, KoreanPos.this.buildTrie(rest, ending_pos), end)).++[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]](KoreanPos.this.buildTrie(rest, ending_pos))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie])
-        </td>
-      </tr><tr>
-        <td>
-          139
-        </td>
-        <td>
-          1389
-        </td>
-        <td>
-          3858
-          -
-          3858
+          3600
         </td>
         <td>
           TypeApply
@@ -3014,36 +2758,204 @@
         </td>
       </tr><tr>
         <td>
-          139
+          131
+        </td>
+        <td>
+          1377
+        </td>
+        <td>
+          3562
+          -
+          3564
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.::
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.buildTrie(rest, ending_pos).::[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie](x$2)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1379
+        </td>
+        <td>
+          3612
+          -
+          3612
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.buildTrie
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.buildTrie(rest, ending_pos)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          1384
+        </td>
+        <td>
+          3661
+          -
+          3661
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.List.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie](KoreanPos.this.KoreanPosTrie.apply(pos, KoreanPos.this.buildTrie(rest, ending_pos), end))
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          1383
+        </td>
+        <td>
+          3675
+          -
+          3675
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.apply
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.KoreanPosTrie.apply(pos, KoreanPos.this.buildTrie(rest, ending_pos), end)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          1382
+        </td>
+        <td>
+          3690
+          -
+          3690
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.buildTrie
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.buildTrie(rest, ending_pos)
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          1387
+        </td>
+        <td>
+          3813
+          -
+          3813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.buildTrie
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.buildTrie(rest, ending_pos)
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          1389
+        </td>
+        <td>
+          3801
+          -
+          3803
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.immutable.List.++
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.List.apply[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie](KoreanPos.this.KoreanPosTrie.apply(pos, KoreanPos.this.buildTrie(rest, ending_pos), end)).++[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie, List[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]](KoreanPos.this.buildTrie(rest, ending_pos))(immutable.this.List.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie])
+        </td>
+      </tr><tr>
+        <td>
+          135
         </td>
         <td>
           1386
         </td>
         <td>
-          3832
+          3760
           -
-          3832
+          3760
         </td>
         <td>
           Apply
         </td>
         <td>
-          org.openkoreantext.processor.util.KoreanPos.buildTrie
+          org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie.apply
         </td>
         <td style="background: #AEF1AE">
-          KoreanPos.this.buildTrie(rest, ending_pos)
+          KoreanPos.this.KoreanPosTrie.apply(pos, KoreanPos.this.buildTrie(rest, ending_pos), end)
         </td>
       </tr><tr>
         <td>
-          139
+          135
         </td>
         <td>
           1388
         </td>
         <td>
-          3870
+          3801
           -
-          3870
+          3801
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.List.canBuildFrom[org.openkoreantext.processor.util.KoreanPos.KoreanPosTrie]
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          1385
+        </td>
+        <td>
+          3775
+          -
+          3775
         </td>
         <td>
           Apply
@@ -3056,15 +2968,36 @@
         </td>
       </tr><tr>
         <td>
-          144
+          140
         </td>
         <td>
-          1393
+          1390
         </td>
         <td>
-          4039
+          3978
           -
-          4039
+          3978
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.Nil
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.Nil
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          1392
+        </td>
+        <td>
+          3982
+          -
+          3982
         </td>
         <td>
           Apply
@@ -3082,36 +3015,15 @@
         </td>
       </tr><tr>
         <td>
-          144
+          142
         </td>
         <td>
           1391
         </td>
         <td>
-          4035
+          4098
           -
-          4035
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          scala.collection.immutable.Nil
-        </td>
-        <td style="background: #AEF1AE">
-          scala.collection.immutable.Nil
-        </td>
-      </tr><tr>
-        <td>
-          146
-        </td>
-        <td>
-          1392
-        </td>
-        <td>
-          4155
-          -
-          4158
+          4101
         </td>
         <td>
           Apply
@@ -3124,15 +3036,36 @@
         </td>
       </tr><tr>
         <td>
-          149
+          145
         </td>
         <td>
-          1396
+          1393
         </td>
         <td>
-          4196
+          4140
           -
-          4196
+          4140
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.openkoreantext.processor.util.KoreanPos.Verb
+        </td>
+        <td style="background: #AEF1AE">
+          KoreanPos.this.Verb
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1395
+        </td>
+        <td>
+          4139
+          -
+          4139
         </td>
         <td>
           Apply
@@ -3145,15 +3078,15 @@
         </td>
       </tr><tr>
         <td>
-          149
+          145
         </td>
         <td>
-          1395
+          1394
         </td>
         <td>
-          4203
+          4146
           -
-          4203
+          4146
         </td>
         <td>
           Select
@@ -3163,27 +3096,6 @@
         </td>
         <td style="background: #AEF1AE">
           KoreanPos.this.Adjective
-        </td>
-      </tr><tr>
-        <td>
-          149
-        </td>
-        <td>
-          1394
-        </td>
-        <td>
-          4197
-          -
-          4197
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          org.openkoreantext.processor.util.KoreanPos.Verb
-        </td>
-        <td style="background: #AEF1AE">
-          KoreanPos.this.Verb
         </td>
       </tr>
     </table>

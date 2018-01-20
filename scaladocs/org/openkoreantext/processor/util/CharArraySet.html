@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Open Korean Text Processor 2.1.1-SNAPSHOT API  - org.openkoreantext.processor.util.CharArraySet</title>
-          <meta name="description" content="Open Korean Text Processor 2.1.1 - SNAPSHOT API - org.openkoreantext.processor.util.CharArraySet" />
-          <meta name="keywords" content="Open Korean Text Processor 2.1.1 SNAPSHOT API org.openkoreantext.processor.util.CharArraySet" />
+          <title>Open Korean Text Processor 2.2.1-SNAPSHOT API  - org.openkoreantext.processor.util.CharArraySet</title>
+          <meta name="description" content="Open Korean Text Processor 2.2.1 - SNAPSHOT API - org.openkoreantext.processor.util.CharArraySet" />
+          <meta name="keywords" content="Open Korean Text Processor 2.2.1 SNAPSHOT API org.openkoreantext.processor.util.CharArraySet" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">Open Korean Text Processor 2.1.1-SNAPSHOT API<span id="doc-version"></span></span>
+        <span id="doc-title">Open Korean Text Processor 2.2.1-SNAPSHOT API<span id="doc-version"></span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -290,10 +290,10 @@ The <code><span class="extype" name="#iterator()">#iterator()</span></code> retu
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="org.openkoreantext.processor.util.CharArraySet#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(c:java.util.Collection[_],ignoreCase:Boolean):org.openkoreantext.processor.util.CharArraySet"></a><a id="&lt;init&gt;:CharArraySet"></a>
+              <ol><li name="org.openkoreantext.processor.util.CharArraySet#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(startSize:Int):org.openkoreantext.processor.util.CharArraySet"></a><a id="&lt;init&gt;:CharArraySet"></a>
       <span class="permalink">
-      <a href="../../../../org/openkoreantext/processor/util/CharArraySet.html#&lt;init&gt;(c:java.util.Collection[_],ignoreCase:Boolean):org.openkoreantext.processor.util.CharArraySet" title="Permalink">
+      <a href="../../../../org/openkoreantext/processor/util/CharArraySet.html#&lt;init&gt;(startSize:Int):org.openkoreantext.processor.util.CharArraySet" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -302,25 +302,7 @@ The <code><span class="extype" name="#iterator()">#iterator()</span></code> retu
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">CharArraySet</span><span class="params">(<span name="c">c: <span class="extype" name="java.util.Collection">Collection</span>[_]</span>, <span name="ignoreCase">ignoreCase: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span>
-      </span>
-      
-      <p class="shortcomment cmt">Creates a set from a Collection of objects.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a set from a Collection of objects.
-</p></div><dl class="paramcmts block"><dt class="param">c</dt><dd class="cmt"><p>a collection whose elements to be placed into the set</p></dd><dt class="param">ignoreCase</dt><dd class="cmt"><p><code>false</code> if and only if the set should be case sensitive
-                  otherwise <code>true</code>.</p></dd></dl></div>
-    </li><li name="org.openkoreantext.processor.util.CharArraySet#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(startSize:Int,ignoreCase:Boolean):org.openkoreantext.processor.util.CharArraySet"></a><a id="&lt;init&gt;:CharArraySet"></a>
-      <span class="permalink">
-      <a href="../../../../org/openkoreantext/processor/util/CharArraySet.html#&lt;init&gt;(startSize:Int,ignoreCase:Boolean):org.openkoreantext.processor.util.CharArraySet" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
-      </span>
-      <span class="symbol">
-        <span class="name">CharArraySet</span><span class="params">(<span name="startSize">startSize: <span class="extype" name="scala.Int">Int</span></span>, <span name="ignoreCase">ignoreCase: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span>
+        <span class="name">CharArraySet</span><span class="params">(<span name="startSize">startSize: <span class="extype" name="scala.Int">Int</span></span>)</span>
       </span>
       
       
@@ -807,6 +789,22 @@ are in the set
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Collection</dd></dl></div>
+    </li><li name="org.openkoreantext.processor.util.CharArraySet#remove" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="remove(text:String):Boolean"></a><a id="remove(String):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../org/openkoreantext/processor/util/CharArraySet.html#remove(text:String):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">remove</span><span class="params">(<span name="text">text: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      
     </li><li name="java.util.AbstractCollection#remove" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="remove(x$1:Any):Boolean"></a><a id="remove(Any):Boolean"></a>
       <span class="permalink">
@@ -823,6 +821,22 @@ are in the set
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AbstractCollection → Collection</dd></dl></div>
+    </li><li name="org.openkoreantext.processor.util.CharArraySet#removeAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="removeAll(words:java.util.List[String]):Boolean"></a><a id="removeAll(List[String]):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../org/openkoreantext/processor/util/CharArraySet.html#removeAll(words:java.util.List[String]):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeAll</span><span class="params">(<span name="words">words: <span class="extype" name="java.util.List">List</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      
     </li><li name="java.util.AbstractSet#removeAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="removeAll(x$1:java.util.Collection[_]):Boolean"></a><a id="removeAll(Collection[_]):Boolean"></a>
       <span class="permalink">

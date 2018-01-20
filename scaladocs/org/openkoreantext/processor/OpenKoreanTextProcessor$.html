@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Open Korean Text Processor 2.1.1-SNAPSHOT API  - org.openkoreantext.processor.OpenKoreanTextProcessor</title>
-          <meta name="description" content="Open Korean Text Processor 2.1.1 - SNAPSHOT API - org.openkoreantext.processor.OpenKoreanTextProcessor" />
-          <meta name="keywords" content="Open Korean Text Processor 2.1.1 SNAPSHOT API org.openkoreantext.processor.OpenKoreanTextProcessor" />
+          <title>Open Korean Text Processor 2.2.1-SNAPSHOT API  - org.openkoreantext.processor.OpenKoreanTextProcessor</title>
+          <meta name="description" content="Open Korean Text Processor 2.2.1 - SNAPSHOT API - org.openkoreantext.processor.OpenKoreanTextProcessor" />
+          <meta name="keywords" content="Open Korean Text Processor 2.2.1 SNAPSHOT API org.openkoreantext.processor.OpenKoreanTextProcessor" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">Open Korean Text Processor 2.1.1-SNAPSHOT API<span id="doc-version"></span></span>
+        <span id="doc-title">Open Korean Text Processor 2.2.1-SNAPSHOT API<span id="doc-version"></span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -414,9 +414,9 @@ to match with Scala's org.openkoreantext.processor.util.KoreanPos enumeration.">
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.openkoreantext.processor.OpenKoreanTextProcessor#addNounsToDictionary" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="addNounsToDictionary(words:Seq[String]):Unit"></a><a id="addNounsToDictionary(Seq[String]):Unit"></a>
+      <a id="addNounsToDictionary(words:Seq[String]):Boolean"></a><a id="addNounsToDictionary(Seq[String]):Boolean"></a>
       <span class="permalink">
-      <a href="../../../org/openkoreantext/processor/OpenKoreanTextProcessor$.html#addNounsToDictionary(words:Seq[String]):Unit" title="Permalink">
+      <a href="../../../org/openkoreantext/processor/OpenKoreanTextProcessor$.html#addNounsToDictionary(words:Seq[String]):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -425,11 +425,28 @@ to match with Scala's org.openkoreantext.processor.util.KoreanPos enumeration.">
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">addNounsToDictionary</span><span class="params">(<span name="words">words: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">addNounsToDictionary</span><span class="params">(<span name="words">words: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       
       <p class="shortcomment cmt">Add user-defined word list to the noun dictionary.</p><div class="fullcomment"><div class="comment cmt"><p>Add user-defined word list to the noun dictionary. Spaced words are not allowed.
 </p></div><dl class="paramcmts block"><dt class="param">words</dt><dd class="cmt"><p>Sequence of words to add.</p></dd></dl></div>
+    </li><li name="org.openkoreantext.processor.OpenKoreanTextProcessor#addWordsToDictionary" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addWordsToDictionary(pos:org.openkoreantext.processor.util.KoreanPos.KoreanPos,words:Seq[String]):Boolean"></a><a id="addWordsToDictionary(KoreanPos,Seq[String]):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../org/openkoreantext/processor/OpenKoreanTextProcessor$.html#addWordsToDictionary(pos:org.openkoreantext.processor.util.KoreanPos.KoreanPos,words:Seq[String]):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addWordsToDictionary</span><span class="params">(<span name="pos">pos: <a href="util/KoreanPos$.html#KoreanPos=org.openkoreantext.processor.util.KoreanPos.Value" class="extmbr" name="org.openkoreantext.processor.util.KoreanPos.KoreanPos">KoreanPos</a></span>, <span name="words">words: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Add user-defined word List to the dictionary for the specified KoreanPos.</p><div class="fullcomment"><div class="comment cmt"><p>Add user-defined word List to the dictionary for the specified KoreanPos.
+</p></div><dl class="paramcmts block"><dt class="param">pos</dt><dd class="cmt"><p>KoreanPos of words to add.</p></dd><dt class="param">words</dt><dd class="cmt"><p>Sequence of words to add.</p></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
@@ -670,6 +687,23 @@ to match with Scala's org.openkoreantext.processor.util.KoreanPos enumeration.">
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="org.openkoreantext.processor.OpenKoreanTextProcessor#removeWordsFromDictionary" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="removeWordsFromDictionary(pos:org.openkoreantext.processor.util.KoreanPos.KoreanPos,words:Seq[String]):Boolean"></a><a id="removeWordsFromDictionary(KoreanPos,Seq[String]):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../org/openkoreantext/processor/OpenKoreanTextProcessor$.html#removeWordsFromDictionary(pos:org.openkoreantext.processor.util.KoreanPos.KoreanPos,words:Seq[String]):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">removeWordsFromDictionary</span><span class="params">(<span name="pos">pos: <a href="util/KoreanPos$.html#KoreanPos=org.openkoreantext.processor.util.KoreanPos.Value" class="extmbr" name="org.openkoreantext.processor.util.KoreanPos.KoreanPos">KoreanPos</a></span>, <span name="words">words: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Remove user-defined word List from the dictionary for the specified KoreanPos.</p><div class="fullcomment"><div class="comment cmt"><p>Remove user-defined word List from the dictionary for the specified KoreanPos.
+</p></div><dl class="paramcmts block"><dt class="param">pos</dt><dd class="cmt"><p>KoreanPos of words to add.</p></dd><dt class="param">words</dt><dd class="cmt"><p>Sequence of words to add.</p></dd></dl></div>
     </li><li name="org.openkoreantext.processor.OpenKoreanTextProcessor#splitSentences" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="splitSentences(text:CharSequence):Seq[org.openkoreantext.processor.tokenizer.Sentence]"></a><a id="splitSentences(CharSequence):Seq[Sentence]"></a>
       <span class="permalink">

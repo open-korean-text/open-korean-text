@@ -18,42 +18,42 @@
 
 package org.openkoreantext.processor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Test;
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer;
 import org.openkoreantext.processor.tokenizer.Sentence;
 import scala.collection.Seq;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 
 public class OpenKoreanProcessorJavaTest {
   @Test
-  public void testNormalize() throws Exception {
+  public void testNormalize() {
     assertEquals("힘들겠습니다 그래요ㅋㅋㅋ", OpenKoreanTextProcessorJava.normalize("힘들겟씀다 그래욬ㅋㅋㅋ"));
   }
 
   @Test
-  public void testTokenize() throws Exception {
+  public void testTokenize() {
     String text = "착한강아지상을 받은 루루";
     assertEquals(
         "List(착한(Adjective(착하다): 0, 2), 강아지(Noun: 2, 3), 상(Suffix: 5, 1), " +
             "을(Josa: 6, 1),  (Space: 7, 1), 받은(Verb(받다): 8, 2),  " +
             "(Space: 10, 1), 루루(Noun: 11, 2))",
-        OpenKoreanTextProcessorJava.tokenize(text).toString()
+        String.valueOf(OpenKoreanTextProcessorJava.tokenize(text))
     );
 
     text = "백여마리";
     assertEquals(
         "List(백여(Modifier: 0, 2), 마리(Noun: 2, 2))",
-        OpenKoreanTextProcessorJava.tokenize(text).toString()
+        String.valueOf(OpenKoreanTextProcessorJava.tokenize(text))
     );
   }
 
   @Test
-  public void testTokensToJavaStringList() throws Exception {
+  public void testTokensToJavaStringList() {
     String text = "착한강아지상을 받은 루루";
     Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize(text);
     assertEquals(
@@ -110,6 +110,25 @@ public class OpenKoreanProcessorJavaTest {
     assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens).get(3).getPos(), KoreanPosJava.Adverb);
   }
 
+  @Test
+  public void testRemoveWordsFromDictionary() {
+    String text = "평창올림픽에";
+
+    // before
+    Seq<KoreanTokenizer.KoreanToken> tokens = OpenKoreanTextProcessorJava.tokenize(text);
+    assertEquals("[평창올림픽, 에]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens).get(0).getPos(), KoreanPosJava.Noun);
+
+    // remove word
+    ArrayList<String> nouns = new ArrayList<>();
+    nouns.add("평창올림픽");
+    OpenKoreanTextProcessorJava.removeWordFromDictionary(KoreanPosJava.Noun, nouns);
+
+    // after
+    tokens = OpenKoreanTextProcessorJava.tokenize(text);
+    assertEquals("[평창, 올림픽, 에]", OpenKoreanTextProcessorJava.tokensToJavaStringList(tokens).toString());
+    assertEquals(OpenKoreanTextProcessorJava.tokensToJavaKoreanTokenList(tokens).get(0).getPos(), KoreanPosJava.Noun);
+  }
 
   @Test
   public void testTokensToJavaKoreanTokenList() throws Exception {

@@ -27,6 +27,7 @@ package org.openkoreantext.processor.util;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 
@@ -48,7 +49,7 @@ import java.util.Set;
  * The {@link #iterator()} returns an {@code Iterator<char[]>}.
  */
 public class CharArraySet extends AbstractSet<Object> {
-  public static final CharArraySet EMPTY_SET = new CharArraySet(CharArrayMap.<Object>emptyMap());
+  private static final CharArraySet EMPTY_SET = new CharArraySet(CharArrayMap.emptyMap());
   private static final Object PLACEHOLDER = new Object();
 
   private final CharArrayMap<Object> map;
@@ -56,23 +57,19 @@ public class CharArraySet extends AbstractSet<Object> {
   /**
    * Create set with enough capacity to hold startSize terms
    *
-   * @param startSize  the initial capacity
-   * @param ignoreCase <code>false</code> if and only if the set should be case sensitive
-   *                   otherwise <code>true</code>.
+   * @param startSize the initial capacity
    */
-  public CharArraySet(int startSize, boolean ignoreCase) {
-    this(new CharArrayMap<>(startSize, ignoreCase));
+  public CharArraySet(int startSize) {
+    this(new CharArrayMap<>(startSize));
   }
 
   /**
    * Creates a set from a Collection of objects.
    *
-   * @param c          a collection whose elements to be placed into the set
-   * @param ignoreCase <code>false</code> if and only if the set should be case sensitive
-   *                   otherwise <code>true</code>.
+   * @param c a collection whose elements to be placed into the set
    */
-  public CharArraySet(Collection<?> c, boolean ignoreCase) {
-    this(c.size(), ignoreCase);
+  private CharArraySet(Collection<?> c) {
+    this(c.size());
     addAll(c);
   }
 
@@ -139,6 +136,19 @@ public class CharArraySet extends AbstractSet<Object> {
     return map.put(text, PLACEHOLDER) == null;
   }
 
+  public boolean remove(String text) {
+    map.remove(text);
+    return !map.containsKey(text);
+  }
+
+  public boolean removeAll(List<String> words) {
+    boolean removed = true;
+    for (String word : words) {
+      removed &= remove(word);
+    }
+    return removed;
+  }
+
   @Override
   public int size() {
     return map.size();
@@ -178,7 +188,7 @@ public class CharArraySet extends AbstractSet<Object> {
       final CharArraySet source = (CharArraySet) set;
       return new CharArraySet(CharArrayMap.copy(source.map));
     }
-    return new CharArraySet(set, false);
+    return new CharArraySet(set);
   }
 
   /**

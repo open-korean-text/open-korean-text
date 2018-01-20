@@ -77,6 +77,16 @@ public final class OpenKoreanTextProcessorJava {
   }
 
   /**
+   * Remove user-defined word List from the dictionary for the specified KoreanPos.
+   *
+   * @param pos KoreanPos of words to add.
+   * @param words Sequence of words to add.
+   */
+  public static void removeWordFromDictionary(KoreanPosJava pos, List<String> words) {
+    OpenKoreanTextProcessor.removeWordsFromDictionary(KoreanPos.withName(pos.toString()), JavaConverters.asScalaBuffer(words));
+  }
+
+  /**
    * Transforms the tokenization output to List<KoreanTokenJava>
    *
    * @param tokens Korean tokens (output of tokenize(CharSequence text)).

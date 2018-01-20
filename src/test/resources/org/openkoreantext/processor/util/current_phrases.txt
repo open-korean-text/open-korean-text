@@ -1,14 +1,14 @@
 "@user: 140604 Kiss the radio SG says he hits the members cheeks to wake them up when they get drunk #인피니트" ㅎㅎ	140604(Noun: 8, 6)/140604 Kiss(Noun: 8, 11)/140604 Kiss the(Noun: 8, 15)/140604 Kiss the radio(Noun: 8, 21)/140604 Kiss the radio SG(Noun: 8, 24)/140604 Kiss the radio SG says(Noun: 8, 29)/140604 Kiss the radio SG says he(Noun: 8, 32)/140604 Kiss the radio SG says he hits(Noun: 8, 37)/Kiss(Noun: 15, 4)/the(Noun: 20, 3)/radio(Noun: 24, 5)/SG(Noun: 30, 2)/says(Noun: 33, 4)/he(Noun: 38, 2)/hits(Noun: 41, 4)/members(Noun: 50, 7)/cheeks(Noun: 58, 6)/to(Noun: 65, 2)/wake(Noun: 68, 4)/them(Noun: 73, 4)/up(Noun: 78, 2)/when(Noun: 81, 4)/they(Noun: 86, 4)/get(Noun: 91, 3)/drunk(Noun: 95, 5)/#인피니트(Hashtag: 101, 5)
 "@user: 140604 최파타 퇴근 성규 http://link.com"ㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠㅠ울자ㅠㅠㅠㅠㅠㅠㅠ	140604(Noun: 8, 6)/140604 최파타(Noun: 8, 10)/140604 최파타 퇴근(Noun: 8, 13)/140604 최파타 퇴근 성규(Noun: 8, 16)/최파타(Noun: 15, 3)/퇴근(Noun: 19, 2)/성규(Noun: 22, 2)
 "@user: @user 400명되면 언팔해서 399명 되게 해야지"	400명(Noun: 14, 4)/400명되면 언팔(Noun: 14, 9)/399명(Noun: 26, 4)/400(Noun: 14, 3)/언팔(Noun: 21, 2)/399(Noun: 26, 3)
-"@user: @user 내가 얼굴이 아가쟈나..ㅎ" 동네사람들...!	얼굴(Noun: 17, 2)/아가(Noun: 21, 2)/동네사람들(Noun: 30, 5)
+"@user: @user 내가 얼굴이 아가쟈나..ㅎ" 동네사람들...!	얼굴(Noun: 17, 2)/아가(Noun: 21, 2)/동네사람들(Noun: 30, 5)/동네(Noun: 30, 2)/사람들(Noun: 32, 3)
 "@user: @user 수원ㅗ" 얘좀봐 효의 도시 수원 욕함	수원(Noun: 14, 2)/얘좀(Noun: 19, 2)/효의 도시(Noun: 23, 5)/효의 도시 수원(Noun: 23, 8)/효의 도시 수원 욕함(Noun: 23, 11)/도시(Noun: 26, 2)/욕함(Noun: 32, 2)
 "@user: [Dujun Yoseob] RT  @user  ·  140315 제프투어 in 도쿄, 요섭이 번쩍 들어올리는 두준이는 보나쓰! 겸둥이들❤ http://link.com"	Dujun(Noun: 9, 5)/Dujun Yoseob(Noun: 9, 12)/RT(Noun: 23, 2)/140315(Noun: 37, 6)/140315 제프투어(Noun: 37, 11)/140315 제프투어 in(Noun: 37, 14)/140315 제프투어 in 도쿄(Noun: 37, 17)/요섭(Noun: 56, 2)/번쩍(Noun: 60, 2)/두준이(Noun: 69, 3)/보나(Noun: 74, 2)/겸둥이들(Noun: 79, 4)/Yoseob(Noun: 15, 6)/제프투어(Noun: 44, 4)/in(Noun: 49, 2)/도쿄(Noun: 52, 2)/둥이들(Noun: 80, 3)
 "@user: [FANTAKEN] 140530 A Pink at Korea University Ipselenti Festival #에이핑크 :: HAYOUNG by 볼매윤보미 ^eunsa^ *5 http://link.com"	FANTAKEN(Noun: 9, 8)/140530(Noun: 19, 6)/140530 A(Noun: 19, 8)/140530 A Pink(Noun: 19, 13)/140530 A Pink at(Noun: 19, 16)/140530 A Pink at Korea(Noun: 19, 22)/140530 A Pink at Korea University(Noun: 19, 33)/HAYOUNG(Noun: 81, 7)/HAYOUNG by(Noun: 81, 10)/윤보미(Noun: 94, 3)/eunsa(Noun: 99, 5)/Pink(Noun: 28, 4)/at(Noun: 33, 2)/Korea(Noun: 36, 5)/University(Noun: 42, 10)/Ipselenti(Noun: 53, 9)/Festival(Noun: 63, 8)/by(Noun: 89, 2)/#에이핑크(Hashtag: 72, 5)
 "@user: 그래요 셀카요“@user: @user 대혀니가 셀카 찍어줬으니까 오빠도 한장...ㅋㄷㅋㄷ #BAP_whereareyou” http://link.com"	셀카(Noun: 12, 2)/대혀니(Noun: 29, 3)/오빠(Noun: 44, 2)/한장(Noun: 48, 2)/#BAP_whereareyou(Hashtag: 58, 16)
 "@user: 나 이민혁은 무한도전의 차세대 리더 후보 기호 '나', 정형돈을 전폭지지할것을 선언합니다. 무한도전을 보장할 격식없는 후보! 가식없는 후보! 정형돈을 함께 지지해주십시오~! http://link.com" 현돈 오빠!ㅋㅋ	나 이민혁(Noun: 8, 5)/무한도전(Noun: 15, 4)/무한도전의 차세대(Noun: 15, 9)/무한도전의 차세대 리더(Noun: 15, 12)/무한도전의 차세대 리더 후보(Noun: 15, 15)/무한도전의 차세대 리더 후보 기호(Noun: 15, 18)/정형돈(Noun: 39, 3)/전폭지지(Noun: 44, 4)/전폭지지할것을 선언(Noun: 44, 10)/보장(Noun: 65, 2)/보장할 격식(Noun: 65, 6)/보장할 격식없는 후보(Noun: 65, 11)/가식(Noun: 78, 2)/가식없는 후보(Noun: 78, 7)/지지(Noun: 95, 2)/현돈(Noun: 122, 2)/현돈 오빠(Noun: 122, 5)/이민혁(Noun: 10, 3)/차세대(Noun: 21, 3)/리더(Noun: 25, 2)/후보(Noun: 28, 2)/기호(Noun: 31, 2)/전폭(Noun: 44, 2)/선언(Noun: 52, 2)/격식(Noun: 69, 2)/오빠(Noun: 125, 2)
 "@user: 오거돈이 부산시장되면 롯데한테 져도 화안낼거같아" 제발~!!!!	오거돈(Noun: 8, 3)/부산시장(Noun: 13, 4)/부산시장되면 롯데(Noun: 13, 9)/화안(Noun: 28, 2)/제발(Noun: 36, 2)/롯데(Noun: 20, 2)
-"@user: 우는남자 동건형님 퐈이팅 !!^^ http://link.com"	우는남자(Noun: 8, 4)/우는남자 동건형님(Noun: 8, 9)/우는남자 동건형님 퐈이팅(Noun: 8, 13)/동건형님(Noun: 13, 4)/퐈이팅(Noun: 18, 3)
+"@user: 우는남자 동건형님 퐈이팅 !!^^ http://link.com"	우는남자(Noun: 8, 4)/우는남자 동건형님(Noun: 8, 9)/우는남자 동건형님 퐈이팅(Noun: 8, 13)/건형님(Noun: 14, 3)/퐈이팅(Noun: 18, 3)
 "뽀뽀 를 했니....?" ㅋㅋㅋㅋ	뽀뽀(Noun: 1, 2)/뽀뽀 를(Noun: 1, 4)
 "악마"는 인간의 혼을 먹는다.하지만 "악마"는 실체를 가질 수 없고 인간을 직접 죽일수 없다."마녀"는 "악마"에게 혼을 바친다.그 댓가로 "악마"는 "마녀"에게 마법을 부여한다."악마"와 계약을 맺은 인간을 "마녀"라고 부른다 #Bot	악마(Noun: 1, 2)/인간(Noun: 6, 2)/인간의 혼(Noun: 6, 5)/실체(Noun: 27, 2)/직접(Noun: 43, 2)/마녀(Noun: 54, 2)/그 대가(Noun: 73, 4)/마법(Noun: 92, 2)/부여(Noun: 96, 2)/계약(Noun: 107, 2)/대가(Noun: 75, 2)/#Bot(Hashtag: 129, 4)
 "예수 믿고 구원받으세요"	예수(Noun: 1, 2)/구원(Noun: 7, 2)
@@ -334,7 +334,7 @@
 @user 대박ㄱ대박	대박(Noun: 6, 2)
 @user 데이트 생각으로 잠을 못이루겠군.. ^오^	데이트(Noun: 6, 3)/데이트 생각(Noun: 6, 6)/생각(Noun: 10, 2)
 @user 돔은... 주인... 펨은 여자... 멜은 남자...	주인(Noun: 12, 2)/여자(Noun: 21, 2)/남자(Noun: 30, 2)
-@user 동이이이ㅣㅇ이!!!!!!!	동이이이(Noun: 6, 4)
+@user 동이이이ㅣㅇ이!!!!!!!	동이이이(Noun: 6, 4)/동이(Noun: 6, 2)/이이(Noun: 8, 2)
 @user 두명이었어^0^..~~~ ㅋㅋㅋㄱㄱㅋㄱㄱㄱㄱㄱㄲ	두명(Noun: 6, 2)
 @user 딜체님이 트레해오시려나보다	딜체님(Noun: 6, 3)/트레(Noun: 11, 2)
 @user 땡! ㅋㅋㅋ 알아서 맞춰보시오 ㅎㅎ	
@@ -406,7 +406,7 @@
 @user 싫어. 이거 놔! (소름돋았는지 강하게 발버둥) 놔! 놓으란 말이야!(바둥바둥	이거(Noun: 10, 2)/소름(Noun: 17, 2)/발버둥(Noun: 28, 3)/바둥바둥(Noun: 45, 4)
 @user 심ㅁㅈㅣ어ㄱ그 겁쟁이 코우메한테ㅎㅏ는ㅅ소리	그 겁쟁이(Noun: 12, 5)/그 겁쟁이 코우메(Noun: 12, 9)/소리(Noun: 27, 2)/겁쟁이(Noun: 14, 3)/우메(Noun: 19, 2)
 @user 십ㅂ알 궁상맞잖아! 걍 먹어!	
-@user 씨빌!!!!!!!!!!님 들음??문제 의학용어로 낸다던데 뭔말인지는 몰겠는데 걍 예를들면 오름대동먁을 오름대동맥이라는 한글말고 ㅋAscending aorta 이렇게쓰실곤가봄 시바라라라라라라	문제(Noun: 24, 2)/문제 의학용어(Noun: 24, 7)/뭔말인(Noun: 38, 3)/예를들(Noun: 51, 3)/오름대동먁(Noun: 56, 5)/오름대동맥(Noun: 63, 5)/한글(Noun: 72, 2)/Ascending(Noun: 78, 9)/Ascending aorta(Noun: 78, 15)/시바라라라(Noun: 103, 5)/의학용어(Noun: 27, 4)/오름(Noun: 56, 2)/대동먁(Noun: 58, 3)/대동맥(Noun: 65, 3)/aorta(Noun: 88, 5)/시바(Noun: 103, 2)/라라라(Noun: 105, 3)
+@user 씨빌!!!!!!!!!!님 들음??문제 의학용어로 낸다던데 뭔말인지는 몰겠는데 걍 예를들면 오름대동먁을 오름대동맥이라는 한글말고 ㅋAscending aorta 이렇게쓰실곤가봄 시바라라라라라라	문제(Noun: 24, 2)/문제 의학용어(Noun: 24, 7)/뭔말인(Noun: 38, 3)/예를들(Noun: 51, 3)/오름대동먁(Noun: 56, 5)/오름대동맥(Noun: 63, 5)/한글(Noun: 72, 2)/Ascending(Noun: 78, 9)/Ascending aorta(Noun: 78, 15)/시바라라라(Noun: 103, 5)/의학용어(Noun: 27, 4)/오름(Noun: 56, 2)/대동(Noun: 58, 2)/대동맥(Noun: 65, 3)/aorta(Noun: 88, 5)/시바(Noun: 103, 2)/라라라(Noun: 105, 3)
 @user 아 공앱새끼 또 알림 씹어드셨네	공앱새끼(Noun: 8, 4)/공앱새끼 또(Noun: 8, 6)/공앱새끼 또 알림(Noun: 8, 9)/공앱(Noun: 8, 2)/새끼(Noun: 10, 2)/알림(Noun: 15, 2)
 @user 아 구래? 한번 해봐야 겠당 ㅇ0ㅇ!! 고마웡!	구래(Noun: 8, 2)/한번(Noun: 12, 2)/고마웡(Noun: 28, 3)/고마(Noun: 28, 2)
 @user 아 그래야죠	그래야(Noun: 8, 3)
@@ -442,7 +442,7 @@
 @user 안피곤해?ㅠㅠ	
 @user 앗 그거 아키하바라에 있어요 정확한 위치는 저도 어딘지 잘 모르겠어서 ㅠㅠㅠ 먼가 맥도날드쪽이었던것같은데 주변건물 이름 기억이 ... orz ... 인터넷에 검색하시면 왠지 나올것같으은 ㅠㅠ ..	앗 그거(Noun: 6, 4)/앗 그거 아키하바라(Noun: 6, 10)/정확한 위치(Noun: 22, 6)/어디(Noun: 33, 2)/무엇(Noun: 50, 2)/맥도날드쪽(Noun: 55, 5)/주변건물(Noun: 68, 4)/주변건물 이름(Noun: 68, 7)/주변건물 이름 기억(Noun: 68, 10)/orz(Noun: 84, 3)/인터넷(Noun: 92, 3)/검색(Noun: 97, 2)/그거(Noun: 8, 2)/아키하바라(Noun: 11, 5)/위치(Noun: 26, 2)/맥도날드(Noun: 55, 4)/주변(Noun: 68, 2)/건물(Noun: 70, 2)/이름(Noun: 73, 2)/기억(Noun: 76, 2)
 @user 앗 네 가능합니다~~잘부탁드려요!	
-@user 앗 루카님 오랜만이에요 헤헤 *' '* 동네길래 왠지 신경쓰여서요 ㅠㅠㅠㅠ	앗 루카님(Noun: 6, 5)/앗 루카님 오랜만이(Noun: 6, 10)/헤헤(Noun: 19, 2)/동네길(Noun: 28, 3)/신경(Noun: 36, 2)/루카님(Noun: 8, 3)/오랜만이(Noun: 12, 4)
+@user 앗 루카님 오랜만이에요 헤헤 *' '* 동네길래 왠지 신경쓰여서요 ㅠㅠㅠㅠ	앗 루카님(Noun: 6, 5)/앗 루카님 오랜만이(Noun: 6, 10)/헤헤(Noun: 19, 2)/동네길(Noun: 28, 3)/신경(Noun: 36, 2)/루카님(Noun: 8, 3)/오랜만이(Noun: 12, 4)/동네(Noun: 28, 2)
 @user 앗 부농색이라니...! 조은걸...! ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ 뭐먹고크나요..?	앗 부농색(Noun: 6, 5)/부농(Noun: 8, 2)
 @user 앗 후배님 고마워요 ♡♥♥♥♥♥	앗 후배님(Noun: 6, 5)/후배님(Noun: 8, 3)
 @user 앗~ 합정 바보주막 예약했는데~	합정(Noun: 9, 2)/합정 바보주막(Noun: 9, 7)/합정 바보주막 예약(Noun: 9, 10)/바보(Noun: 12, 2)/주막(Noun: 14, 2)/예약(Noun: 17, 2)

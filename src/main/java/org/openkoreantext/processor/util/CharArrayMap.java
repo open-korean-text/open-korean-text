@@ -44,20 +44,16 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
 
   private final static int INIT_SIZE = 8;
   private final CharacterUtils charUtils;
-  private boolean ignoreCase;
   private int count;
-  char[][] keys; // package private because used in CharArraySet's non Set-conform CharArraySetIterator
-  V[] values; // package private because used in CharArraySet's non Set-conform CharArraySetIterator
+  private char[][] keys; // package private because used in CharArraySet's non Set-conform CharArraySetIterator
+  private V[] values; // package private because used in CharArraySet's non Set-conform CharArraySetIterator
 
   /**
    * Create map with enough capacity to hold startSize terms
    *
-   * @param startSize  the initial capacity
-   * @param ignoreCase <code>false</code> if and only if the set should be case sensitive
-   *                   otherwise <code>true</code>.
+   * @param startSize the initial capacity
    */
-  public CharArrayMap(int startSize, boolean ignoreCase) {
-    this.ignoreCase = ignoreCase;
+  CharArrayMap(int startSize) {
     int size = INIT_SIZE;
     while (startSize + (startSize >> 2) > size)
       size <<= 1;
@@ -74,7 +70,7 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
    *                   otherwise <code>true</code>.
    */
   public CharArrayMap(Map<?, ? extends V> c, boolean ignoreCase) {
-    this(c.size(), ignoreCase);
+    this(c.size());
     putAll(c);
   }
 
@@ -84,7 +80,6 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
   private CharArrayMap(CharArrayMap<V> toCopy) {
     this.keys = toCopy.keys;
     this.values = toCopy.values;
-    this.ignoreCase = toCopy.ignoreCase;
     this.count = toCopy.count;
     this.charUtils = toCopy.charUtils;
   }
@@ -208,9 +203,6 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
    * The user should never modify this text array after calling this method.
    */
   public V put(char[] text, V value) {
-    if (ignoreCase) {
-      charUtils.toLowerCase(text, 0, text.length);
-    }
     int slot = getSlot(text, 0, text.length);
     if (keys[slot] != null) {
       final V oldValue = values[slot];
@@ -252,18 +244,9 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
     if (len != text2.length)
       return false;
     final int limit = off + len;
-    if (ignoreCase) {
-      for (int i = 0; i < len; ) {
-        final int codePointAt = charUtils.codePointAt(text1, off + i, limit);
-        if (Character.toLowerCase(codePointAt) != charUtils.codePointAt(text2, i, text2.length))
-          return false;
-        i += Character.charCount(codePointAt);
-      }
-    } else {
-      for (int i = 0; i < len; i++) {
-        if (text1[off + i] != text2[i])
-          return false;
-      }
+    for (int i = 0; i < len; i++) {
+      if (text1[off + i] != text2[i])
+        return false;
     }
     return true;
   }
@@ -272,18 +255,9 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
     int len = text1.length();
     if (len != text2.length)
       return false;
-    if (ignoreCase) {
-      for (int i = 0; i < len; ) {
-        final int codePointAt = charUtils.codePointAt(text1, i);
-        if (Character.toLowerCase(codePointAt) != charUtils.codePointAt(text2, i, text2.length))
-          return false;
-        i += Character.charCount(codePointAt);
-      }
-    } else {
-      for (int i = 0; i < len; i++) {
-        if (text1.charAt(i) != text2[i])
-          return false;
-      }
+    for (int i = 0; i < len; i++) {
+      if (text1.charAt(i) != text2[i])
+        return false;
     }
     return true;
   }
@@ -293,16 +267,8 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
       throw new NullPointerException();
     int code = 0;
     final int stop = offset + len;
-    if (ignoreCase) {
-      for (int i = offset; i < stop; ) {
-        final int codePointAt = charUtils.codePointAt(text, i, stop);
-        code = code * 31 + Character.toLowerCase(codePointAt);
-        i += Character.charCount(codePointAt);
-      }
-    } else {
-      for (int i = offset; i < stop; i++) {
-        code = code * 31 + text[i];
-      }
+    for (int i = offset; i < stop; i++) {
+      code = code * 31 + text[i];
     }
     return code;
   }
@@ -312,23 +278,20 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
       throw new NullPointerException();
     int code = 0;
     int len = text.length();
-    if (ignoreCase) {
-      for (int i = 0; i < len; ) {
-        int codePointAt = charUtils.codePointAt(text, i);
-        code = code * 31 + Character.toLowerCase(codePointAt);
-        i += Character.charCount(codePointAt);
-      }
-    } else {
-      for (int i = 0; i < len; i++) {
-        code = code * 31 + text.charAt(i);
-      }
+    for (int i = 0; i < len; i++) {
+      code = code * 31 + text.charAt(i);
     }
     return code;
   }
 
   @Override
-  public V remove(Object key) {
-    throw new UnsupportedOperationException();
+  public V remove(Object o) {
+    char[] text = o.toString().toCharArray();
+
+    int slot = getSlot(text, 0, text.length);
+    keys[slot] = null;
+
+    return null;
   }
 
   @Override
@@ -375,7 +338,7 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
   public final CharArraySet keySet() {
     if (keySet == null) {
       // prevent adding of entries
-      keySet = new CharArraySet((CharArrayMap) this) {
+      keySet = new CharArraySet((CharArrayMap<Object>) this) {
         @Override
         public boolean add(Object o) {
           throw new UnsupportedOperationException();
@@ -504,9 +467,8 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
 
     @Override
     public String toString() {
-      return new StringBuilder().append(keys[pos]).append('=')
-          .append((values[pos] == CharArrayMap.this) ? "(this Map)" : values[pos])
-          .toString();
+      return String.valueOf(keys[pos]) + '=' +
+          ((values[pos] == CharArrayMap.this) ? "(this Map)" : values[pos]);
     }
   }
 
@@ -638,13 +600,13 @@ public class CharArrayMap<V> extends AbstractMap<Object, V> {
   }
 
   /**
-   * Empty {@link org.apache.lucene.analysis.util.CharArrayMap.UnmodifiableCharArrayMap} optimized for speed.
+   * Empty CharArrayMap optimized for speed.
    * Contains checks will always return <code>false</code> or throw
    * NPE if necessary.
    */
   private static final class EmptyCharArrayMap<V> extends UnmodifiableCharArrayMap<V> {
     EmptyCharArrayMap() {
-      super(new CharArrayMap<V>(0, false));
+      super(new CharArrayMap<>(0));
     }
 
     @Override

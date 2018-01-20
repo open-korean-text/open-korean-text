@@ -56,9 +56,9 @@ object KoreanDictionaryProvider {
 
   private[this] def readWordMap(filename: String): Map[String, String] = {
     readFileByLineFromResources(filename).filter {
-      case line: String => line.contains(" ")
+      line: String => line.contains(" ")
     }.map {
-      case line =>
+      line =>
         val data = line.split(" ")
         (data(0), data(1))
     }.toMap
@@ -98,14 +98,18 @@ object KoreanDictionaryProvider {
   }
 
   protected[processor] def newCharArraySet: CharArraySet = {
-    new CharArraySet(10000, false)
+    new CharArraySet(10000)
   }
 
   lazy val koreanEntityFreq: util.HashMap[CharSequence, Float] =
     readWordFreqs("freq/entity-freq.txt.gz")
 
-  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]): Unit = {
+  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]): Boolean = {
     koreanDictionary.get(pos).addAll(words.asJava)
+  }
+
+  def removeWordsToDictionary(pos: KoreanPos, words: Seq[String]): Boolean = {
+    koreanDictionary.get(pos).removeAll(words.asJava)
   }
 
   val koreanDictionary: util.HashMap[KoreanPos, CharArraySet] = {
@@ -136,7 +140,7 @@ object KoreanDictionaryProvider {
     map
   }
 
-  lazy val spamNouns = readWords("noun/spam.txt", "noun/profane.txt")
+  lazy val spamNouns: CharArraySet = readWords("noun/spam.txt", "noun/profane.txt")
 
   val properNouns: CharArraySet = readWords("noun/entities.txt",
     "noun/names.txt", "noun/twitter.txt", "noun/lol.txt", "noun/company_names.txt",
@@ -151,11 +155,11 @@ object KoreanDictionaryProvider {
     'full_name -> readWords("noun/kpop.txt", "noun/foreign.txt", "noun/names.txt")
   )
 
-  lazy val typoDictionaryByLength = readWordMap("typos/typos.txt").groupBy {
+  lazy val typoDictionaryByLength: Map[Int, Map[String, String]] = readWordMap("typos/typos.txt").groupBy {
     case (key: String, value: String) => key.length
   }
 
-  lazy val predicateStems = {
+  lazy val predicateStems: Map[KoreanPos.Value, Map[String, String]] = {
     def getConjugationMap(words: Set[String], isAdjective: Boolean): Map[String, String] = {
       words.flatMap {
         word: String =>

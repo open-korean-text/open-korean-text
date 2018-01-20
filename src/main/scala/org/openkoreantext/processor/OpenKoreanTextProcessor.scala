@@ -100,7 +100,7 @@ object OpenKoreanTextProcessor {
     *
     * @param words Sequence of words to add.
     */
-  def addNounsToDictionary(words: Seq[String]) {
+  def addNounsToDictionary(words: Seq[String]): Boolean = {
     KoreanDictionaryProvider.addWordsToDictionary(KoreanPos.Noun, words)
   }
 
@@ -110,8 +110,18 @@ object OpenKoreanTextProcessor {
     * @param pos KoreanPos of words to add.
     * @param words Sequence of words to add.
     */
-  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]) {
-    KoreanDictionaryProvider.addWordsToDictionary(pos, words);
+  def addWordsToDictionary(pos: KoreanPos, words: Seq[String]): Boolean = {
+    KoreanDictionaryProvider.addWordsToDictionary(pos, words)
+  }
+
+  /**
+    * Remove user-defined word List from the dictionary for the specified KoreanPos.
+    *
+    * @param pos KoreanPos of words to add.
+    * @param words Sequence of words to add.
+    */
+  def removeWordsFromDictionary(pos: KoreanPos, words: Seq[String]): Boolean = {
+    KoreanDictionaryProvider.removeWordsToDictionary(pos, words)
   }
 
   /**

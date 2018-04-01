@@ -19,7 +19,7 @@ open-korean-text는 normalization, tokenization, stemming, phrase extraction 이
 
 **토큰화 tokenization**
 
-* 한국어를 처리하는 예시입니다 ㅋㅋ -> 한국어Noun, 를Josa, 처리Noun, 하는Verb, 예시Noun, 입Adjective, 니다Eomi ㅋㅋKoreanParticle
+* 한국어를 처리하는 예시입니다 ㅋㅋ -> 한국어Noun, 를Josa, 처리Noun, 하는Verb, 예시Noun, 입니다Adjective(이다), ㅋㅋKoreanParticle
 
 **어근화 stemming (입니다 -> 이다)**
 

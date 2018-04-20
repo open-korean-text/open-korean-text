@@ -167,4 +167,20 @@ object OpenKoreanTextProcessor {
   def detokenize(tokens: Iterable[String]): String = {
     KoreanDetokenizer.detokenize(tokens)
   }
+
+  /**
+    * Load the dictionary resources into memory.
+    *
+    * Dictionary resources are loaded lazily by most API methods, however in some
+    * instances it is useful to be able to trigger this loading manually.
+    */
+  def loadResources():Unit = {
+    KoreanDictionaryProvider.koreanDictionary
+    KoreanDictionaryProvider.koreanEntityFreq
+    KoreanDictionaryProvider.spamNouns
+    KoreanDictionaryProvider.nameDictionary
+    KoreanDictionaryProvider.typoDictionaryByLength
+    KoreanDictionaryProvider.properNouns
+    KoreanDictionaryProvider.predicateStems
+  }
 }

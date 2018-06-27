@@ -178,4 +178,14 @@ public final class OpenKoreanTextProcessorJava {
   public static String detokenize(List<String> tokens) {
     return OpenKoreanTextProcessor.detokenize(JavaConverters.iterableAsScalaIterable(tokens));
   }
+
+  /**
+   * Load the dictionary resources into memory.
+   *
+   * Dictionary resources are loaded lazily by most API methods, however in some
+   * instances it is useful to be able to trigger this loading manually.
+   */
+  public static void loadResources() {
+    OpenKoreanTextProcessor.loadResources();
+  }
 }

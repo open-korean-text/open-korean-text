@@ -26,6 +26,7 @@ import scala.collection.Iterator;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -63,27 +64,27 @@ public final class OpenKoreanTextProcessorJava {
    * @param words List of user nouns.
    */
   public static void addNounsToDictionary(List<String> words) {
-    OpenKoreanTextProcessor.addNounsToDictionary(JavaConverters.asScalaBuffer(words));
+    OpenKoreanTextProcessor.addNounsToDictionary(JavaConverters.asScalaBufferConverter(words).asScala());
   }
 
   /**
    * Add user-defined word List to the dictionary for the specified KoreanPos.
    *
-   * @param pos KoreanPos of words to add.
+   * @param pos   KoreanPos of words to add.
    * @param words Sequence of words to add.
    */
   public static void addWordsToDictionary(KoreanPosJava pos, List<String> words) {
-    OpenKoreanTextProcessor.addWordsToDictionary(KoreanPos.withName(pos.toString()), JavaConverters.asScalaBuffer(words));
+    OpenKoreanTextProcessor.addWordsToDictionary(KoreanPos.withName(pos.toString()), JavaConverters.asScalaBufferConverter(words).asScala());
   }
 
   /**
    * Remove user-defined word List from the dictionary for the specified KoreanPos.
    *
-   * @param pos KoreanPos of words to add.
+   * @param pos   KoreanPos of words to add.
    * @param words Sequence of words to add.
    */
   public static void removeWordFromDictionary(KoreanPosJava pos, List<String> words) {
-    OpenKoreanTextProcessor.removeWordsFromDictionary(KoreanPos.withName(pos.toString()), JavaConverters.asScalaBuffer(words));
+    OpenKoreanTextProcessor.removeWordsFromDictionary(KoreanPos.withName(pos.toString()), JavaConverters.asScalaBufferConverter(words).asScala());
   }
 
   /**
@@ -152,9 +153,7 @@ public final class OpenKoreanTextProcessorJava {
    * @return List of Sentence objects.
    */
   public static List<Sentence> splitSentences(CharSequence text) {
-    return JavaConverters.seqAsJavaList(
-        OpenKoreanTextProcessor.splitSentences(text)
-    );
+    return toJavaList(OpenKoreanTextProcessor.splitSentences(text));
   }
 
   /**
@@ -164,9 +163,14 @@ public final class OpenKoreanTextProcessorJava {
    * @return List of phrase CharSequences.
    */
   public static List<KoreanPhraseExtractor.KoreanPhrase> extractPhrases(Seq<KoreanToken> tokens, boolean filterSpam, boolean includeHashtags) {
-    return JavaConverters.seqAsJavaList(
-        OpenKoreanTextProcessor.extractPhrases(tokens, filterSpam, includeHashtags)
-    );
+    Seq<KoreanPhraseExtractor.KoreanPhrase> seq = OpenKoreanTextProcessor.extractPhrases(tokens, filterSpam, includeHashtags);
+    return toJavaList(seq);
+  }
+
+  private static <T> List<T> toJavaList(Seq<T> seq) {
+    ArrayList<T> javaList = new ArrayList<>();
+    javaList.addAll(JavaConverters.asJavaCollectionConverter(seq).asJavaCollection());
+    return javaList;
   }
 
   /**
@@ -176,12 +180,12 @@ public final class OpenKoreanTextProcessorJava {
    * @return Detokenized string.
    */
   public static String detokenize(List<String> tokens) {
-    return OpenKoreanTextProcessor.detokenize(JavaConverters.iterableAsScalaIterable(tokens));
+    return OpenKoreanTextProcessor.detokenize(JavaConverters.asScalaBufferConverter(tokens).asScala());
   }
 
   /**
    * Load the dictionary resources into memory.
-   *
+   * <p>
    * Dictionary resources are loaded lazily by most API methods, however in some
    * instances it is useful to be able to trigger this loading manually.
    */

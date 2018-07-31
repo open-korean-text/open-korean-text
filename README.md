@@ -46,10 +46,10 @@ Introductory Presentation: [Google Slides](https://docs.google.com/presentation/
 
 서비스 | 사용법
 ---- | ----
-정규화 | https://open-korean-text.herokuapp.com/normalize?text=오픈코리안텍스트
-토큰화 | https://open-korean-text.herokuapp.com/tokenize?text=오픈코리안텍스트
-어근화 | https://open-korean-text.herokuapp.com/stem?text=오픈코리안텍스트
-어구 추출 | https://open-korean-text.herokuapp.com/extractPhrases?text=오픈코리안텍스트
+정규화 | https://open-korean-text-api.herokuapp.com/normalize?text=오픈코리안텍스트
+토큰화 | https://open-korean-text-api.herokuapp.com/tokenize?text=오픈코리안텍스트
+어근화 | https://open-korean-text-api.herokuapp.com/stem?text=오픈코리안텍스트
+어구 추출 | https://open-korean-text-api.herokuapp.com/extractPhrases?text=오픈코리안텍스트
 
 ## Semantic Versioning
 

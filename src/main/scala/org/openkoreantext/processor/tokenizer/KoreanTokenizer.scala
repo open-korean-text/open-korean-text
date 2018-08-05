@@ -163,6 +163,11 @@ object KoreanTokenizer {
     ) {
       val word = chunk.text.slice(start, end)
 
+      // Make sure the solutions hashmap won't have references to unused objects...
+      if (end > MAX_TRACE_BACK && start + 1 == end) {
+        solutions.remove(end - MAX_TRACE_BACK - 1)
+      }
+
       val curSolutions = solutions.get(start)
 
       val candidates = curSolutions.flatMap {

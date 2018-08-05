@@ -163,10 +163,8 @@ object KoreanTokenizer {
     ) {
       val word = chunk.text.slice(start, end)
 
-      // Make sure the solutions hashmap won't have references to unused objects...
-      if (end > MAX_TRACE_BACK && start + 1 == end) {
-        solutions.remove(end - MAX_TRACE_BACK - 1)
-      }
+      // Removing unused solutions from solutions hashmap as the chunk is getting processed
+      removeUnusedSolutions(start, end, solutions)
 
       val curSolutions = solutions.get(start)
 
@@ -224,6 +222,14 @@ object KoreanTokenizer {
     }
 
     (directMatch ++ topCandidates).distinct
+  }
+
+  private[tokenizer] def removeUnusedSolutions(start: Int, end: Int, solutions: util.HashMap[Int, _]): util.HashMap[Int, _] = {
+    // Make sure the solutions hashmap won't have references to unused objects...
+    if (end > MAX_TRACE_BACK && start + 1 == end) {
+      solutions.remove(end - MAX_TRACE_BACK - 1)
+    }
+    return solutions;
   }
 
   private def findDirectMatch(chunk: KoreanToken): Seq[Seq[KoreanToken]] = {

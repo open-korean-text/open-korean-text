@@ -18,6 +18,8 @@
 
 package org.openkoreantext.processor.tokenizer
 
+import java.util.HashMap
+
 import org.openkoreantext.processor.TestBase
 import org.openkoreantext.processor.tokenizer.KoreanTokenizer._
 import org.openkoreantext.processor.util.KoreanDictionaryProvider
@@ -273,5 +275,22 @@ class KoreanTokenizerTest extends TestBase {
     assert(tokenize("사랑로").mkString(" ") === "사랑(Noun: 0, 2) 로(Noun: 2, 1)")
 
     assert(tokenize("고화질로").mkString(" ") === "고화질(Noun: 0, 3) 로(Josa: 3, 1)")
+  }
+
+  test("test remove unused solutions") {
+    val unmodifiable = new HashMap[Int, String] { put(0, null); }
+
+    assert(removeUnusedSolutions(0, 1, unmodifiable).size() === 1)
+    assert(removeUnusedSolutions(0, 2, unmodifiable).size() === 1)
+    assert(removeUnusedSolutions(1, 3, unmodifiable).size() === 1)
+    assert(removeUnusedSolutions(1, 8, unmodifiable).size() === 1)
+    assert(removeUnusedSolutions(7, 8, unmodifiable).size() === 1)
+    assert(removeUnusedSolutions(8, 9, new HashMap[Int, String] { put(0, null); }).size() == 0)
+    assert(removeUnusedSolutions(9, 10, new HashMap[Int, String] { put(1, null); }).size() == 0)
+    assert(removeUnusedSolutions(10, 11, new HashMap[Int, String] { put(2, null); }).size() == 0)
+    assert(removeUnusedSolutions(299, 300, new HashMap[Int, String] { put(291, null); }).size() == 0)
+    assert(removeUnusedSolutions(298, 200, unmodifiable).size() === 1)
+    assert(removeUnusedSolutions(7, 10, unmodifiable).size() === 1)
+    assert(removeUnusedSolutions(9, 9, unmodifiable).size() === 1)
   }
 }

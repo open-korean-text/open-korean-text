@@ -104,6 +104,7 @@ Maven Repository: http://mvnrepository.com/artifact/org.openkoreantext/open-kore
 | Package | [Python Korean NLP](https://github.com/konlpy/konlpy) | [KoNLPy](https://github.com/konlpy/konlpy) |
 | Package | [Elastic Search](https://github.com/open-korean-text/open-korean-text-elastic-search) | [socurites](https://github.com/socurites) |
 | Package | [Elastic Search](https://github.com/open-korean-text/elasticsearch-analysis-openkoreantext) | [Jaehyun Shin](https://github.com/keepcosmos) |
+| Package | [JavaScript](https://github.com/71/oktjs) (browser-compatible) | [Grégoire Geis](https://github.com/71) |
 
 
 ## Get the source / 소스를 원하시는 경우
